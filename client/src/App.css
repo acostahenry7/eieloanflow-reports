@@ -1,0 +1,38 @@
+.App {
+  background-color: var(--main-bg-color);
+  
+}
+
+.main { 
+  height: calc(100vh - 60px);
+  display: flex;
+  overflow: hidden;
+}
+
+.content {
+  width: 100%;
+  overflow-y: auto;
+  margin-left: 242px;
+  padding: 8px 16px ;
+  transition: all var(--anim-2-5)
+}
+
+.content.closed {
+  margin-left: 0;
+}
+
+.screen-container {
+  padding: 20px
+}
+
+
+
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,71 @@
+.LoginScreen-container {
+    width: 100%;
+    min-height: 100vh;
+    background-color: #136ed6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.LoginScreen-container img {
+    width: 250px;
+    margin-bottom: 40px;
+}
+
+.LoginScreen-container  p {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+}
+
+.LoginScreen-form {
+    box-sizing: border-box;
+    width: 400px;
+    background-color: #ffffff;
+    padding: 20px 35px;
+    border-radius: 4px;
+}
+
+.LoginScreen-form-section {
+    display: flex;
+    flex-direction: column;
+    margin: 16px 0;
+}
+
+
+.LoginScreen-form-section label {
+    font-size: 15px
+}
+
+.LoginScreen-form-section input {
+    margin-top: 8px;
+    height: 35px;
+    border: 2px solid #ced4da;
+    border-radius:4px;
+    font-size: 16px;
+    color: rgb(83, 83, 83);
+    padding: 0 8px;
+}
+
+.LoginScreen-form-section input:focus {
+    outline: none;
+    box-shadow: 0 0 4px 1px #0696e4;
+}
+
+.LoginScreen-form-section button {
+    background-color: #017bfe;
+    padding: 14px 10px;
+    border: none;
+    font-size: 16px;
+    color: #fff;
+    border-radius: 4px;
+}
+
+.LoginScreen-container span{
+    margin-top: 40px;
+    font-size: 14px;
+    color: #fff;
+}
+
+
+/*hover button 0069d9*/

@@ -1,0 +1,47 @@
+.TopNavbar {
+    box-sizing: border-box;
+    z-index: 2;
+    position: sticky;
+    top: 0;
+    height: 60px;
+    width: 100%;
+    padding: 0 16px;
+    background-color: var(--main-color);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content:space-between;
+    align-items: center;
+}
+
+.TopNavbar-logo {
+    box-sizing: border-box;
+    background-color: var(--main-color);
+    padding-top: 4px;
+    min-height: 100%;
+    width: 225px;
+    box-shadow: 3px 0 12px  -3px rgba(0, 0, 0, 0.2);
+}
+
+.TopNavbar-toggle {
+    position: absolute;
+    top: 14px;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    left: 226px
+}   
+
+.TopNavbar-toggle-icon{
+    color: #017bfe;
+    cursor: pointer;
+    transition: all  300ms;
+}
+
+.TopNavbar-toggle-icon.closed {
+    transform: rotate(180deg);
+}
+
+.TopNavbar-options {
+    color: #ffffff;
+}
