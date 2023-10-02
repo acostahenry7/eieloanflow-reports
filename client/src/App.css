@@ -1,9 +1,8 @@
 .App {
   background-color: var(--main-bg-color);
-  
 }
 
-.main { 
+.main {
   height: calc(100vh - 60px);
   display: flex;
   overflow: hidden;
@@ -13,20 +12,24 @@
   width: 100%;
   overflow-y: auto;
   margin-left: 242px;
-  padding: 8px 16px ;
-  transition: all var(--anim-2-5)
+  /* padding: 8px 16px ; */
+  transition: all var(--anim-2-5);
 }
 
 .content.closed {
   margin-left: 0;
 }
 
-.screen-container {
-  padding: 20px
+.screen-content {
+  padding: 20px;
 }
 
-
-
+.crud-container {
+  box-sizing: border-box;
+  background-color: #fff;
+  padding: 16px;
+  border-radius: 4px;
+}
 
 @keyframes App-logo-spin {
   from {

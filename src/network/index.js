@@ -20,8 +20,10 @@ module.exports = (app) => {
   //Customers
 
   router.get("/api/customer", (req, res) => {
+    console.log(req.query);
+
     customerCtrl
-      .getArrearUsers()
+      .getArrearUsers(req.query)
       .then((msg) => {
         response.success(req, res, msg, 200);
       })

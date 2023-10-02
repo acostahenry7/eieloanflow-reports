@@ -6,14 +6,17 @@ import logo from "../../media/logo-fianance.png";
 import { FaAngleLeft } from "react-icons/fa";
 
 function TopNavbar() {
-  const { auth } = React.useContext(AuthContext);
+  const { auth, logout } = React.useContext(AuthContext);
   const { isSidebarOpened, setIsSidebarOpened } =
     React.useContext(SidebarContext);
 
   return (
     <div className="TopNavbar">
       <div className="TopNavbar-logo">
-        <img src={logo} alt="hola" />
+        <a href="/">
+          <img src={logo} alt="hola" />
+        </a>
+
         <div className="TopNavbar-toggle">
           <FaAngleLeft
             onClick={() => setIsSidebarOpened(!isSidebarOpened)}
@@ -25,7 +28,7 @@ function TopNavbar() {
         </div>
       </div>
       <div className="TopNavbar-options">
-        <span>{auth.login}</span>
+        <span onClick={() => logout()}>{auth.login}</span>
       </div>
     </div>
   );

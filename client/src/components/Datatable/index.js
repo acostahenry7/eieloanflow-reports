@@ -10,7 +10,15 @@ function Datatable({
   onChangePageSize,
   totalRows,
 }) {
-  return <DataTable columns={columns} data={data} />;
+  return (
+    <DataTable
+      columns={columns}
+      data={data}
+      progressPending={isLoading}
+      progressComponent={<p>Loading...</p>}
+      pagination
+    />
+  );
 }
 
 export { Datatable };
