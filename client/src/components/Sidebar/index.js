@@ -57,8 +57,8 @@ function Sidebar() {
   return (
     <div className={`Sidebar ${isSidebarOpened ? "opened" : "closed"}`}>
       <div className="Sidebar-content">
-        {sidebarItems.map((sbItem) => (
-          <div className="Sidebar-content-item">
+        {sidebarItems.map((sbItem, index) => (
+          <div key={index} className="Sidebar-content-item">
             <NavLink
               className={`Sidebar-content-item-link ${
                 sbItem.selected === true ? "selected" : ""
@@ -76,8 +76,9 @@ function Sidebar() {
                 />
               )}
             </NavLink>
-            {sbItem.subItems.map((item) => (
+            {sbItem.subItems.map((item, index) => (
               <div
+                key={index}
                 className={`Sidebar-content-subitems ${
                   sbItem.selected ? "opened" : ""
                 } `}

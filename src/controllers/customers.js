@@ -1,5 +1,4 @@
 const db = require("../models");
-const bcrypt = require("bcryptjs");
 
 const controller = {};
 
@@ -17,13 +16,14 @@ controller.getArrearUsers = async (queryParams) => {
       JOIN customer c ON (cl.customer_id = c.customer_id)
       JOIN loan l ON (cl.loan_id = l.loan_id)
       JOIN amortization a ON (a.loan_id = l.loan_id)
-      group by c.first_name, c.last_name, l.status_type,  c.identification, c.phone, l.loan_number_id, l.loan_situation, l.created_date, l.amount_approved, l.amount_of_free, l.number_of_installments
+      group by c.first_name, c.last_name, l.status_type,  c.identification, c.phone, l.loan_number_id, l.loan_situation, l.created_date, l.amount_approved, l.amount_of_free, l.number_of_installments, l.outlet_id
       having l.loan_situation like 'ARREARS'
       AND l.status_type not in ('DELETED', 'PAID')
       AND lower(c.first_name || c.last_name) like '%${
         queryParams.customerName || ""
       }%'
       AND c.identification like '%${queryParams.indetification || ""}%'
+      AND l.outlet_id like '%${queryParams.outletId || ""}%'
       ${
         queryParams.loanNumber
           ? `AND l.loan_number_id= '${queryParams.loanNumber}'`

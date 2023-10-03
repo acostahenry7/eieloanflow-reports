@@ -19,13 +19,15 @@
   margin-bottom: 4px;
 }
 
-.SearchBar-main-item input {
+.SearchBar-main-item input,
+.SearchBar-main-item select {
   border-radius: 4px;
   padding: 8px;
   border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
-.SearchBar-main-item input:focus {
+.SearchBar-main-item input:focus,
+.SearchBar-main-item select:focus {
   outline: none;
   box-shadow: 0 0 3px 1px var(--main-color);
 }

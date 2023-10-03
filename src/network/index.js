@@ -4,6 +4,7 @@ const path = require("path");
 const response = require("./response");
 const authCtrl = require("../controllers/auth");
 const customerCtrl = require("../controllers/customers");
+const outletCtrl = require("../controllers/outlets");
 
 module.exports = (app) => {
   router.post("/api/signin", (req, res) => {
@@ -17,8 +18,19 @@ module.exports = (app) => {
       });
   });
 
-  //Customers
+  //Outlets
+  router.get("/api/outlet", (req, res) => {
+    outletCtrl
+      .getOutlets()
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
 
+  //Customers
   router.get("/api/customer", (req, res) => {
     console.log(req.query);
 

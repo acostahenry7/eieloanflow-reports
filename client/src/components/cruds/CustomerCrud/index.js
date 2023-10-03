@@ -2,23 +2,28 @@ import React from "react";
 import { SearchBar } from "../../SearchBar";
 import { Datatable } from "../../Datatable";
 import { getArrearCustomersApi } from "../../../api/customer";
+import { formatClientName } from "../../../utils/stringFunctions";
+import { getOutletsApi } from "../../../api/outlet";
 
 function CustomerCrud() {
+  const [outlets, setOutlets] = React.useState([]);
   const [data, setData] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [reqToggle, setReqToggle] = React.useState([]);
   const [searchParams, setSearchParams] = React.useState([]);
+  const [searchedText, setSearchedText] = React.useState("");
 
   React.useEffect(() => {
     (async () => {
       try {
         setIsLoading(true);
+        const outlets = await getOutletsApi();
         const customers = await getArrearCustomersApi(searchParams);
         if (customers.error == true) {
           throw new Error(customers.body);
         }
 
-        console.log(customers.body);
+        setOutlets(outlets.body);
         setData(customers.body);
       } catch (error) {
         console.log(error.message);
@@ -33,7 +38,9 @@ function CustomerCrud() {
       width: "230px",
       selector: (row) => (
         <div>
-          <p style={{ margin: 0, fontWeight: 500 }}>{row.customer_name}</p>
+          <p style={{ margin: 0, fontWeight: 500 }}>
+            {formatClientName(row.customer_name)}
+          </p>
           <span style={{ fontSize: 12 }}>{row.identification}</span>
         </div>
       ),
@@ -132,7 +139,29 @@ function CustomerCrud() {
       placeholder: "No. Préstamo",
       type: "text",
     },
+    {
+      label: "Sucursal",
+      field: "outletId",
+      type: "select",
+      options: [
+        {
+          label: "Todas las sucursales",
+          value: "",
+        },
+        ...outlets.map((item) => {
+          return {
+            label: item.name,
+            value: item.outlet_id,
+          };
+        }),
+      ],
+    },
   ];
+
+  const filterData = data.filter((item) => {
+    let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}`;
+    return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
+  });
 
   return (
     <div className="crud-container">
@@ -140,8 +169,9 @@ function CustomerCrud() {
         mainFilters={mainFilters}
         setRequestToggle={setReqToggle}
         setSearchParams={setSearchParams}
+        setSearchedText={setSearchedText}
       />
-      <Datatable columns={columns} data={data} isLoading={isLoading} />
+      <Datatable columns={columns} data={filterData} isLoading={isLoading} />
     </div>
   );
 }
