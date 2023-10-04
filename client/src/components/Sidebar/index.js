@@ -4,13 +4,16 @@ import { SidebarContext } from "../../contexts/SidebarContext";
 import { NavLink } from "react-router-dom";
 import { HiOutlineDocumentDuplicate, HiChevronDown } from "react-icons/hi";
 import { FaUsersSlash } from "react-icons/fa";
+import { BiDollar, BiBlock } from "react-icons/bi";
+import { TbCurrencyDollarOff, TbBuildingBank, TbList } from "react-icons/tb";
+import { FaFileInvoiceDollar } from "react-icons/fa6";
 
 function Sidebar() {
   const { isSidebarOpened } = React.useContext(SidebarContext);
 
   const [sidebarItems, setSidebarItems] = React.useState([
     {
-      label: "Reportes",
+      label: "Clientes",
       icon: (selected) => (
         <HiOutlineDocumentDuplicate
           className="Sidebar-content-item-icon"
@@ -24,6 +27,65 @@ function Sidebar() {
           label: "Clientes en atraso",
           icon: (selected) => (
             <FaUsersSlash
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/arrear-customers",
+          selected: false,
+        },
+      ],
+    },
+    {
+      label: "Cobros",
+      icon: (selected) => (
+        <BiDollar
+          className="Sidebar-content-item-icon"
+          color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+        />
+      ),
+      route: "/reports",
+      selected: false,
+      subItems: [
+        {
+          label: "Pagos para hoy",
+          icon: (selected) => (
+            <BiDollar
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/today-payments",
+          selected: false,
+        },
+        {
+          label: "Pagos cancelados",
+          icon: (selected) => (
+            <TbCurrencyDollarOff
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/canceled-payments",
+          selected: false,
+        },
+      ],
+    },
+    {
+      label: "Préstamos",
+      icon: (selected) => (
+        <TbBuildingBank
+          className="Sidebar-content-item-icon"
+          color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+        />
+      ),
+      route: "/reports",
+      selected: false,
+      subItems: [
+        {
+          label: "Detalle de préstamo",
+          icon: (selected) => (
+            <FaFileInvoiceDollar
               className="Sidebar-content-item-icon"
               color={`${selected === true ? "var(--main-color)" : "#888888"}`}
             />

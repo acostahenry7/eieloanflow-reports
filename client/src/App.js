@@ -8,6 +8,8 @@ import { SidebarContext } from "./contexts/SidebarContext";
 import { TopNavbar } from "./components/TopNavbar";
 import { Sidebar } from "./components/Sidebar";
 import { CustomerReportScreen } from "./screens/CustomerReportScreen";
+import { TodayPaymentScreen } from "./screens/TodayPaymentScreen";
+import { CanceledPaymentScreen } from "./screens/CanceledPaymentScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -29,6 +31,14 @@ function App() {
               <Route
                 path="/reports/arrear-customers"
                 element={<CustomerReportScreen />}
+              />
+              <Route
+                path="/reports/today-payments"
+                element={<TodayPaymentScreen />}
+              />
+              <Route
+                path="/reports/canceled-payments"
+                element={<CanceledPaymentScreen />}
               />
             </Routes>
           </div>

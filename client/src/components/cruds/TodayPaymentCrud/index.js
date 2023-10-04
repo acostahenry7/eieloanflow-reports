@@ -1,11 +1,11 @@
 import React from "react";
 import { SearchBar } from "../../SearchBar";
 import { Datatable } from "../../Datatable";
-import { getArrearCustomersApi } from "../../../api/customer";
+import { getTodayPaymentsApi } from "../../../api/payment";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 
-function CustomerCrud() {
+function TodayPaymentCrud() {
   const [outlets, setOutlets] = React.useState([]);
   const [data, setData] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -18,7 +18,7 @@ function CustomerCrud() {
       try {
         setIsLoading(true);
         const outlets = await getOutletsApi();
-        const customers = await getArrearCustomersApi(searchParams);
+        const customers = await getTodayPaymentsApi(searchParams);
         if (customers.error == true) {
           throw new Error(customers.body);
         }
@@ -63,16 +63,24 @@ function CustomerCrud() {
       reorder: true,
       omit: false,
     },
+
     {
-      name: "Fecha Préstamo",
-      selector: (row) => row.created_date,
+      name: "Monto aprobado",
+      selector: (row) => row.amount_approved,
       sortable: true,
       reorder: true,
       omit: false,
     },
     {
-      name: "Monto aprobado",
-      selector: (row) => row.amount_approved,
+      name: "Cuota pendiente",
+      selector: (row) => row.pending_due,
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+    {
+      name: "Fecha de pago",
+      selector: (row) => row.payment_date,
       sortable: true,
       reorder: true,
       omit: false,
@@ -84,75 +92,6 @@ function CustomerCrud() {
       reorder: true,
       omit: false,
       hide: "lg",
-    },
-    {
-      name: "Cuotas",
-      selector: (row) => row.number_of_installments,
-      sortable: true,
-      reorder: true,
-      omit: false,
-      hide: "lg",
-    },
-    {
-      name: "Cuotas Pagadas",
-      selector: (row) => row.paid_dues,
-      sortable: true,
-      reorder: true,
-      omit: false,
-      hide: "lg",
-    },
-    {
-      name: "Cuotas en atraso",
-      selector: (row) => row.arrears_dues,
-      sortable: true,
-      reorder: true,
-      omit: false,
-      hide: "lg",
-    },
-    {
-      name: "Porcentaje atraso",
-      selector: (row) => (
-        <p
-          style={{
-            color:
-              parseFloat(row.arrear_percentaje) > 50 ? "#b25353" : "#d7a12a",
-            fontWeight: "bold",
-          }}
-        >
-          {parseFloat(row.arrear_percentaje).toFixed(2)} %
-        </p>
-      ),
-      sortable: true,
-      sortFunction: (rowA, rowB) => {
-        const a = parseFloat(rowA.arrear_percentaje) || 0;
-        const b = parseFloat(rowB.arrear_percentaje) || 0;
-
-        if (a > b) {
-          return 1;
-        }
-
-        if (b > a) {
-          return -1;
-        }
-
-        return 0;
-      },
-      reorder: true,
-      omit: false,
-    },
-    {
-      name: "Vencido desde",
-      selector: (row) => row.defeated_since,
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
-    {
-      name: "Monto Vencido",
-      selector: (row) => row.defeated_amount,
-      sortable: true,
-      reorder: true,
-      omit: false,
     },
   ]);
 
@@ -214,4 +153,4 @@ function CustomerCrud() {
   );
 }
 
-export { CustomerCrud };
+export { TodayPaymentCrud };

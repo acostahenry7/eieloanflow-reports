@@ -5,6 +5,8 @@ const response = require("./response");
 const authCtrl = require("../controllers/auth");
 const customerCtrl = require("../controllers/customers");
 const outletCtrl = require("../controllers/outlets");
+const paymentCtrl = require("../controllers/payments");
+const loanCtrl = require("../controllers/loans");
 
 module.exports = (app) => {
   router.post("/api/signin", (req, res) => {
@@ -36,6 +38,45 @@ module.exports = (app) => {
 
     customerCtrl
       .getArrearUsers(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  //Payments
+  router.get("/api/payment/today", (req, res) => {
+    console.log(req.query);
+
+    paymentCtrl
+      .getTodayPayments(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  router.get("/api/payment/canceled", (req, res) => {
+    console.log(req.query);
+
+    paymentCtrl
+      .getCanceledPayments(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  //Loans
+  router.get("/api/loan", (req, res) => {
+    loanCtrl
+      .getLoans(req.query)
       .then((msg) => {
         response.success(req, res, msg, 200);
       })

@@ -58,3 +58,30 @@
   border: none;
   padding: 6px 8px;
 }
+
+.search-bar-filter-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.search-bar-filter-list-item {
+  display: flex;
+  margin: 4px 0;
+  padding: 4px 8px;
+}
+
+.search-bar-filter-list-item input {
+  cursor: pointer;
+}
+
+.search-bar-filter-list-item:hover {
+  background-color: #eeeeee;
+}
+
+.search-bar-filter-list-item span {
+  display: inline-block;
+  font-size: 14px;
+  width: 140px;
+  cursor: default;
+}

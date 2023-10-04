@@ -4,13 +4,17 @@ import { MdFilterListAlt } from "react-icons/md";
 import { HiOutlineRefresh } from "react-icons/hi";
 import { AiOutlineUnorderedList } from "react-icons/ai";
 import { useFormik } from "formik";
+import Popover from "@mui/material/Popover";
 
 function SearchBar({
   mainFilters,
   setRequestToggle,
   setSearchParams,
   setSearchedText,
+  columns,
+  setColumns,
 }) {
+  const [anchorEl, setAnchorEl] = React.useState(null);
   const searchForm = useFormik({
     initialValues: getInitialValues(mainFilters),
     validateOnChange: false,
@@ -19,6 +23,18 @@ function SearchBar({
       setSearchParams(values);
     },
   });
+
+  const changeColumnVisibility = (columName) => {
+    let newColumns = [...columns];
+
+    newColumns.forEach((column) => {
+      if (column.name === columName) {
+        column.omit = !column.omit;
+      }
+    });
+
+    setColumns(newColumns);
+  };
 
   return (
     <div className="SearchBar">
@@ -61,17 +77,58 @@ function SearchBar({
       </div>
       <div className="SearchBar-actions">
         <button
+          title="buscar"
           className="SearchBar-actions-icon button"
           onClick={() => searchForm.handleSubmit()}
         >
           Buscar
         </button>
-        <MdFilterListAlt className="SearchBar-actions-icon" />
+        <MdFilterListAlt
+          title="Mas filtros"
+          className="SearchBar-actions-icon"
+        />
         <HiOutlineRefresh
+          title="Refresh and clear filters"
           className="SearchBar-actions-icon"
           onClick={() => setRequestToggle((state) => !state)}
         />
-        <AiOutlineUnorderedList className="SearchBar-actions-icon" />
+        <AiOutlineUnorderedList
+          title="Mostrar / ocultar columnas"
+          className="SearchBar-actions-icon"
+          aria-describedby={"filter-pop"}
+          onClick={(e) => setAnchorEl(e.currentTarget)}
+        />
+        <Popover
+          id={"filter-pop"}
+          open={Boolean(anchorEl)}
+          anchorEl={anchorEl}
+          onClose={() => {
+            setAnchorEl(null);
+          }}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "left",
+          }}
+        >
+          <ul className="search-bar-filter-list">
+            {columns?.map((column, index) => (
+              <li className="search-bar-filter-list-item" key={index}>
+                <span>{column.name}</span>
+                <input
+                  type="checkbox"
+                  onChange={() => {
+                    changeColumnVisibility(column.name);
+                  }}
+                  checked={column.omit === false ? true : false}
+                />
+              </li>
+            ))}
+          </ul>
+        </Popover>
       </div>
     </div>
   );
