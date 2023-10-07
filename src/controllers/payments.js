@@ -54,4 +54,36 @@ controller.getCanceledPayments = async (queryParams) => {
   }
 };
 
+controller.getReceivedPayments = async (queryParams) => {
+  console.log(queryParams);
+  try {
+    const [data, meta] =
+      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, p.created_by, p.payment_type,
+      l.loan_number_id, p.created_date, p.payment_origin, r.receipt_number, p.status_type,
+      STRING_AGG(a.quota_number::varchar , ', ') filter(where a.paid='true') as paid_dues,
+      STRING_AGG(a.quota_number::varchar , ', ') filter(where a.status_type='COMPOST') as compost_dues,
+      SUM(a.discount_mora + a.discount_interest) as discount,
+      SUM(a.total_paid_mora) as total_paid_mora,
+      p.pay
+      FROM payment p
+      JOIN payment_detail pd on (p.payment_id = pd.payment_id)
+      JOIN amortization a on (pd.amortization_id = a.amortization_id)
+      JOIN loan l on (p.loan_id = l.loan_id)
+      JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
+      JOIN customer c ON (la.customer_id = c.customer_id)
+      LEFT JOIN receipt r ON (p.payment_id = r.payment_id)
+      GROUP BY c.first_name, c.last_name, c.identification, l.loan_number_id, p.created_by, p.payment_type, p.created_date,
+      p.payment_origin, p.pay, l.status_type, l.outlet_id,r.receipt_number, p.status_type
+      HAVING l.status_type not in ('DELETE', 'PAID')
+      ${generateWhereStatement(queryParams)}`);
+
+    if (data.length == 0) {
+      return [];
+    }
+    return data;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 module.exports = controller;

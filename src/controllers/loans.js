@@ -9,6 +9,7 @@ controller.getLoans = async (queryParams) => {
     const [data, meta] =
       await db.query(`SELECT c.first_name || '' || c.last_name as customer_name, c.identification, l.loan_number_id, l.interest_rate_type, 
       l.amount_approved, l.number_of_installments, ir.percent, l.frequency_of_payment, lp.name, l.status_type,
+	  l.loan_situation, la.loan_type,
       COALESCE(SUM(a.capital) filter(where a.paid = 'true'), 0)  as paid_capital,
       COALESCE(SUM(a.interest) filter(where a.paid = 'true'), 0)  as paid_interest,
       COALESCE(SUM(a.discount_interest), 0) discount_interest,
@@ -27,22 +28,28 @@ controller.getLoans = async (queryParams) => {
       COALESCE(SUM(a.mora) filter(where a.status_type = 'ACTIVE'), 0) pending_mora,
       COALESCE(SUM(a.mora) filter(where a.status_type = 'DEFEATED'), 0) arrear_mora,
       COALESCE(COUNT(a.amortization_id) filter(where a.paid = 'false'), 0) pending_dues,
-      COALESCE(COUNT(a.amortization_id) filter(where a.status_type = 'DEFEATED'), 0) arrear_dues
+      COALESCE(COUNT(a.amortization_id) filter(where a.status_type = 'DEFEATED'), 0) arrear_dues,
+	  o.name as outlet_name
       FROM public.loan l
+	  LEFT JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
       LEFT JOIN customer_loan cl ON (l.loan_id = cl.loan_id)
       JOIN customer c ON (cl.customer_id = c.customer_id)
       LEFT JOIN interest_rate ir ON (l.interest_rate_id = ir.interest_rate_id)
       LEFT JOIN late_payment lp ON (l.late_payment_id = lp.late_payment_id)
       RIGHT JOIN amortization a ON (a.loan_id = l.loan_id)
+	  LEFT JOIN outlet o ON (l.outlet_id = o.outlet_id)
       GROUP BY  c.first_name, c.last_name , c.identification, l.loan_number_id, l.interest_rate_type, 
       l.amount_approved, l.number_of_installments, ir.percent, l.frequency_of_payment, lp.name, l.status_type,
-      a.total_paid_mora, l.amount_of_free
+      a.total_paid_mora, l.amount_of_free, o.name, la.loan_type, l.loan_situation, l.outlet_id
       HAVING l.status_type not in ('DELETE', 'PAID')
         ${generateWhereStatement(queryParams)}`);
 
     if (data.length == 0) {
+      console.log(data);
       return [];
     }
+
+    console.log(data);
     return data;
   } catch (error) {
     throw new Error(error.message);

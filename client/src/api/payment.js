@@ -28,4 +28,18 @@ async function getCanceledPaymentsApi(queryParams) {
   }
 }
 
-export { getTodayPaymentsApi, getCanceledPaymentsApi };
+async function getReceivedPaymentsApi(queryParams) {
+  try {
+    const customers = await request({
+      method: "GET",
+      path: "/payment/received",
+      urlParams: queryParams || {},
+    });
+
+    return customers;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export { getTodayPaymentsApi, getCanceledPaymentsApi, getReceivedPaymentsApi };

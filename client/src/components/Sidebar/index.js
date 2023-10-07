@@ -6,7 +6,7 @@ import { HiOutlineDocumentDuplicate, HiChevronDown } from "react-icons/hi";
 import { FaUsersSlash } from "react-icons/fa";
 import { BiDollar, BiBlock } from "react-icons/bi";
 import { TbCurrencyDollarOff, TbBuildingBank, TbList } from "react-icons/tb";
-import { FaFileInvoiceDollar } from "react-icons/fa6";
+import { FaFileInvoiceDollar, FaHandHoldingDollar } from "react-icons/fa6";
 
 function Sidebar() {
   const { isSidebarOpened } = React.useContext(SidebarContext);
@@ -69,6 +69,17 @@ function Sidebar() {
           route: "/reports/canceled-payments",
           selected: false,
         },
+        {
+          label: "Pagos recibidos",
+          icon: (selected) => (
+            <FaHandHoldingDollar
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/received-payments",
+          selected: false,
+        },
       ],
     },
     {
@@ -90,7 +101,7 @@ function Sidebar() {
               color={`${selected === true ? "var(--main-color)" : "#888888"}`}
             />
           ),
-          route: "/reports/arrear-customers",
+          route: "/reports/loan-detail",
           selected: false,
         },
       ],
@@ -98,7 +109,6 @@ function Sidebar() {
   ]);
 
   const selectItem = (label) => {
-    console.log(label);
     const arr = [...sidebarItems];
 
     arr.forEach((item) => {

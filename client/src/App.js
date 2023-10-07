@@ -10,6 +10,8 @@ import { Sidebar } from "./components/Sidebar";
 import { CustomerReportScreen } from "./screens/CustomerReportScreen";
 import { TodayPaymentScreen } from "./screens/TodayPaymentScreen";
 import { CanceledPaymentScreen } from "./screens/CanceledPaymentScreen";
+import { LoanDetailScreen } from "./screens/LoanDetailScreen";
+import { ReceivedPaymentScreen } from "./screens/ReceivedPaymentScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -39,6 +41,14 @@ function App() {
               <Route
                 path="/reports/canceled-payments"
                 element={<CanceledPaymentScreen />}
+              />
+              <Route
+                path="/reports/received-payments"
+                element={<ReceivedPaymentScreen />}
+              />
+              <Route
+                path="/reports/loan-detail"
+                element={<LoanDetailScreen />}
               />
             </Routes>
           </div>

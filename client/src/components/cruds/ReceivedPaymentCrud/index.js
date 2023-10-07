@@ -1,12 +1,11 @@
 import React from "react";
 import { SearchBar } from "../../SearchBar";
 import { Datatable } from "../../Datatable";
-import { getLoans } from "../../../api/loan";
+import { getReceivedPaymentsApi } from "../../../api/payment";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
-import "./index.css";
 
-function LoanDetailCrud() {
+function ReceivedPaymentCrud() {
   const [outlets, setOutlets] = React.useState([]);
   const [data, setData] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -19,11 +18,11 @@ function LoanDetailCrud() {
       try {
         setIsLoading(true);
         const outlets = await getOutletsApi();
-        const customers = await getLoans(searchParams);
+        const customers = await getReceivedPaymentsApi(searchParams);
         if (customers.error == true) {
           throw new Error(customers.body);
         }
-        console.log(customers.body);
+
         setOutlets(outlets.body);
         setData(customers.body);
       } catch (error) {
@@ -59,45 +58,73 @@ function LoanDetailCrud() {
       omit: false,
     },
     {
-      name: "Sucursal",
+      name: "Recibo",
       width: "140px",
-      selector: (row) => row.outlet_name,
+      selector: (row) => row.receipt_number,
       sortable: true,
       reorder: true,
       omit: false,
     },
 
     {
-      name: "Tipo de préstamo",
-      selector: (row) => row.loan_type,
+      name: "Cajero",
+      selector: (row) => row.created_by,
       sortable: true,
       reorder: true,
       omit: false,
     },
     {
-      name: "Monto aprobado",
-      selector: (row) => row.amount_approved,
+      name: "Tipo de pago",
+      selector: (row) => row.payment_type,
       sortable: true,
       reorder: true,
       omit: false,
     },
     {
-      name: "Total",
-      selector: (row) => row.total_amount,
+      name: "Fecha recibo",
+      selector: (row) => row.created_date,
       sortable: true,
       reorder: true,
       omit: false,
     },
     {
-      name: "Cantidad de cuotas",
-      selector: (row) => row.number_of_installments,
+      name: "Cuotas pagadas",
+      selector: (row) =>
+        row.paid_dues
+          ?.split(",")
+          .map((i) => parseInt(i))
+          .sort()
+          .join(","),
+      sortable: true,
+      reorder: true,
+      width: "200px",
+      wrap: true,
+      omit: false,
+    },
+    {
+      name: "Abono a cuota",
+      selector: (row) => row.compost_dues,
       sortable: true,
       reorder: true,
       omit: false,
     },
     {
-      name: "Monto de cuota",
-      selector: (row) => row.due_amount,
+      name: "Descuento",
+      selector: (row) => row.discount,
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+    {
+      name: "Mora pagada",
+      selector: (row) => row.total_paid_mora,
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+    {
+      name: "Monto",
+      selector: (row) => row.pay,
       sortable: true,
       reorder: true,
       omit: false,
@@ -108,15 +135,16 @@ function LoanDetailCrud() {
         row.status_type === "CANCEL" ? "Cancelado" : "Activo",
       sortable: true,
       reorder: true,
-      omit: false,
+      omit: true,
       hide: "lg",
     },
     {
-      name: "Situación",
-      selector: (row) => row.loan_situation,
+      name: "Pagado desde",
+      selector: (row) => row.payment_origin,
       sortable: true,
       reorder: true,
-      omit: false,
+      omit: true,
+      hide: "lg",
     },
   ]);
 
@@ -173,67 +201,9 @@ function LoanDetailCrud() {
         columns={columns}
         setColumns={setColumns}
       />
-      <Datatable
-        columns={columns}
-        data={filterData}
-        isLoading={isLoading}
-        dtOptions={{
-          expandableRows: true,
-          expandableRowsComponent: ({ data }) => {
-            return <LoanDetailSummary data={data} />;
-          },
-        }}
-      />
+      <Datatable columns={columns} data={filterData} isLoading={isLoading} />
     </div>
   );
 }
 
-function LoanDetailSummary({ data }) {
-  const fields = [
-    "Nombre Cliente",
-    "Cédula",
-    "Préstamo",
-    "Tipo de tasa",
-    "Monto aprobado",
-    "Número de cuotas",
-    "Porcentaje",
-    "Frecuencia de pago",
-    "Tipo de mora",
-    "Estado",
-    "Situación",
-    "Tipo de préstamo",
-    "Capital pagado",
-    "Interés pagado",
-    "Descuento de interés",
-    "Descuenot de mora",
-    "Mora",
-    "Mora pagada",
-    "Total pagado",
-    "Total en atraso",
-    "Cuotas pagadas",
-    "Total",
-    "Interés",
-    "Monto de cuota",
-    "Monto pendiente",
-    "Capital pendiente",
-    "Interés pendiente",
-    "Mora pendiente",
-    "Mora en atraso",
-    "Cuotas pendientes",
-    "Cuotas en atraso",
-    "Sucursal",
-  ];
-
-  return (
-    <div className="LoanDetailSummary-container">
-      {Object.entries(data).map((item, index) => (
-        <div className="LoanDetailSummary-item">
-          <p>{fields[index] || "key"} :</p>
-          <p> {item[1]}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export { LoanDetailCrud };
+export { ReceivedPaymentCrud };
