@@ -5,7 +5,12 @@ import { NavLink } from "react-router-dom";
 import { HiOutlineDocumentDuplicate, HiChevronDown } from "react-icons/hi";
 import { FaUsersSlash } from "react-icons/fa";
 import { BiDollar, BiBlock } from "react-icons/bi";
-import { TbCurrencyDollarOff, TbBuildingBank, TbList } from "react-icons/tb";
+import {
+  TbCurrencyDollarOff,
+  TbBuildingBank,
+  TbCalendarDollar,
+  TbList,
+} from "react-icons/tb";
 import { FaFileInvoiceDollar, FaHandHoldingDollar } from "react-icons/fa6";
 
 function Sidebar() {
@@ -73,6 +78,17 @@ function Sidebar() {
           label: "Pagos recibidos",
           icon: (selected) => (
             <FaHandHoldingDollar
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/received-payments",
+          selected: false,
+        },
+        {
+          label: "Proyección de cobros --",
+          icon: (selected) => (
+            <TbCalendarDollar
               className="Sidebar-content-item-icon"
               color={`${selected === true ? "var(--main-color)" : "#888888"}`}
             />

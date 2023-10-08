@@ -93,7 +93,9 @@ function ReceivedPaymentCrud() {
         row.paid_dues
           ?.split(",")
           .map((i) => parseInt(i))
-          .sort()
+          .sort(function (a, b) {
+            return a - b;
+          })
           .join(","),
       sortable: true,
       reorder: true,
