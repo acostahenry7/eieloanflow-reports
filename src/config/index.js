@@ -6,7 +6,7 @@ const routes = require("../network");
 
 module.exports = (app) => {
   //Port
-  app.set("port", process.env.PORT || 5000);
+  app.set("port", process.env.PORT || 3001);
 
   //Middlewares
   app.use(cors({ origin: "*" }));
