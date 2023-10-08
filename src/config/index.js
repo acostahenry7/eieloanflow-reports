@@ -5,6 +5,7 @@ const path = require("path");
 const routes = require("../network");
 
 module.exports = (app) => {
+  console.log(app);
   //Port
   app.set("port", process.env.PORT || 3001);
 
