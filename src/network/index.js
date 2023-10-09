@@ -10,6 +10,7 @@ const loanCtrl = require("../controllers/loans");
 
 module.exports = (app) => {
   router.post("/api/signin", (req, res) => {
+    console.log("here");
     authCtrl
       .signin(req.body)
       .then((msg) => {

@@ -8,6 +8,8 @@ async function loginApi(username, password) {
       data: { username, password },
     });
 
+    console.log(user);
+
     return user;
   } catch (error) {
     throw error;
