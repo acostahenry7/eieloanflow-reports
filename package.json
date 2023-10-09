@@ -830,6 +830,7 @@
     "yocto-queue": "^0.1.0"
   },
   "scripts": {
+    "start": "node src/index.js",
     "test": "nodemon src/index.js"
   },
   "repository": {
