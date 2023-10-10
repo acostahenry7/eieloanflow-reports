@@ -9,6 +9,7 @@ import {
   TbCurrencyDollarOff,
   TbBuildingBank,
   TbCalendarDollar,
+  TbClockDollar,
   TbList,
 } from "react-icons/tb";
 import { FaFileInvoiceDollar, FaHandHoldingDollar } from "react-icons/fa6";
@@ -86,14 +87,25 @@ function Sidebar() {
           selected: false,
         },
         {
-          label: "Proyección de cobros --",
+          label: "Tendencia de cobros",
           icon: (selected) => (
             <TbCalendarDollar
               className="Sidebar-content-item-icon"
               color={`${selected === true ? "var(--main-color)" : "#888888"}`}
             />
           ),
-          route: "/reports/received-payments",
+          route: "/reports/payment-proyection",
+          selected: false,
+        },
+        {
+          label: "Histórico control de cobros",
+          icon: (selected) => (
+            <TbClockDollar
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/payment-control-history",
           selected: false,
         },
       ],
@@ -134,7 +146,9 @@ function Sidebar() {
 
       item.subItems.forEach((subItem) => {
         if (subItem.label == label) {
-          subItem.selected = !subItem.selected;
+          subItem.selected = true;
+        } else {
+          subItem.selected = false;
         }
       });
     });

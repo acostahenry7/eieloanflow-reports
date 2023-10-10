@@ -1,9 +1,9 @@
 let config = {
   server: {
-    // url: "https://10.202.8.122:3001/api",
-    url: "https://eieloanflow-reports.whelastic.net/api",
-    // url: "https://7h9wr08d-5000.use2.devtunnels.ms/api",
-    //
+    // url: "http://162.219.247.180:3001/api",
+    // url: "http://node84051-devfinance-clonetest.whelastic.net/api",
+    url: "http://eieloanflow-reports.whelastic.net/api",
+    // url: "http://localhost:3001/api",
   },
 };
 

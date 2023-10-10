@@ -87,6 +87,32 @@ module.exports = (app) => {
       });
   });
 
+  router.get("/api/payment/proyection", (req, res) => {
+    console.log(req.query);
+
+    paymentCtrl
+      .getPaymentProyection(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  router.get("/api/payment/control-history", (req, res) => {
+    console.log(req.query);
+
+    paymentCtrl
+      .getHistoryPaymentControl(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   //Loans
   router.get("/api/loan", (req, res) => {
     loanCtrl

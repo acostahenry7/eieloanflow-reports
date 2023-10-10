@@ -42,4 +42,38 @@ async function getReceivedPaymentsApi(queryParams) {
   }
 }
 
-export { getTodayPaymentsApi, getCanceledPaymentsApi, getReceivedPaymentsApi };
+async function getPaymentProyectionApi(queryParams) {
+  try {
+    const customers = await request({
+      method: "GET",
+      path: "/payment/proyection",
+      urlParams: queryParams || {},
+    });
+
+    return customers;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getHistoryPaymentControl(queryParams) {
+  try {
+    const customers = await request({
+      method: "GET",
+      path: "/payment/control-history",
+      urlParams: queryParams || {},
+    });
+
+    return customers;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export {
+  getTodayPaymentsApi,
+  getCanceledPaymentsApi,
+  getReceivedPaymentsApi,
+  getPaymentProyectionApi,
+  getHistoryPaymentControl,
+};

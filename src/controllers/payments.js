@@ -86,4 +86,58 @@ controller.getReceivedPayments = async (queryParams) => {
   }
 };
 
+controller.getPaymentProyection = async (queryParams) => {
+  console.log(queryParams);
+  try {
+    const [data, meta] =
+      await db.query(`SELECT l.loan_number_id, z.name as zone, e.first_name || ' ' || e.last_name as employee_name,
+      COALESCE(SUM(a.total_paid + a.total_paid_mora) filter(where a.paid='true'),0) as paid_amount,
+      COALESCE(SUM(a.amount_of_fee + a.mora) filter(where a.paid='false'),0) as pending_amount,
+      TRUNC(COALESCE((SUM(a.total_paid + a.total_paid_mora) filter(where a.paid='true')/SUM(a.amount_of_fee + a.mora)),0) * 100, 2) - 8.5 as payment_proyection,
+      TRUNC(COALESCE((SUM(a.total_paid + a.total_paid_mora) filter(where a.paid='true')/SUM(a.amount_of_fee + a.mora)),0) * 100, 2) as efficiency
+      FROM loan l
+      JOIN loan_payment_address lpa ON (l.loan_payment_address_id = lpa.loan_payment_address_id)
+      JOIN zone z ON (lpa.municipality_id = z.municipality_id)
+      JOIN employee_zone ez ON (z.zone_id = ez.zone_id)
+      JOIN employee e ON (ez.employee_id = e.employee_id)
+      JOIN amortization a ON (l.loan_id = a.loan_id)
+      GROUP BY l.loan_number_id, z.name, e.first_name, e.last_name, l.status_type
+      HAVING l.status_type NOT IN ('PAID', 'DELETE')`);
+
+    if (data.length == 0) {
+      return [];
+    }
+    return data;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+controller.getHistoryPaymentControl = async (queryParams) => {
+  console.log(queryParams);
+  try {
+    const [data, meta] =
+      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, r.receipt_number, 
+      e.first_name || ' ' || e.last_name as employee_name, p.status_type, pcc.comment_type,
+      pcc.created_date as comment_date, pcc.comment, pcc.letters_sent_type as letter_type, pcc.commitment_date
+      FROM payment p
+      JOIN payment_control_comment pcc ON (p.loan_id = pcc.loan_id)
+      JOIN customer_loan cl ON (p.loan_id = cl.loan_id)
+      JOIN customer c ON (cl.customer_id = c.customer_id)
+      JOIN loan l ON (p.loan_id = l.loan_id)
+      JOIN receipt r ON (r.payment_id = p.payment_id)
+      JOIN jhi_user ju ON (p.created_by = ju.login)
+      JOIN employee e ON (ju.employee_id = e.employee_id)
+      AND l.status_type not in ('DELETE', 'PAID')
+      ${generateWhereStatement(queryParams)}`);
+
+    if (data.length == 0) {
+      return [];
+    }
+    return data;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 module.exports = controller;

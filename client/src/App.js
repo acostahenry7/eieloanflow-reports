@@ -12,6 +12,8 @@ import { TodayPaymentScreen } from "./screens/TodayPaymentScreen";
 import { CanceledPaymentScreen } from "./screens/CanceledPaymentScreen";
 import { LoanDetailScreen } from "./screens/LoanDetailScreen";
 import { ReceivedPaymentScreen } from "./screens/ReceivedPaymentScreen";
+import { PaymentProyectionScreen } from "./screens/PaymentProyectionScreen";
+import { PaymentControlHistoryScreen } from "./screens/PaymentControlHistoryScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -45,6 +47,14 @@ function App() {
               <Route
                 path="/reports/received-payments"
                 element={<ReceivedPaymentScreen />}
+              />
+              <Route
+                path="/reports/payment-proyection"
+                element={<PaymentProyectionScreen />}
+              />
+              <Route
+                path="/reports/payment-control-history"
+                element={<PaymentControlHistoryScreen />}
               />
               <Route
                 path="/reports/loan-detail"
