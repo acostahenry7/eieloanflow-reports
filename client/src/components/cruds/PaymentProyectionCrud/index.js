@@ -134,6 +134,15 @@ function PaymentProyectionCrud() {
     },
   ];
 
+  const secondaryFilters = [
+    {
+      label: "Fecha",
+      field: "date",
+      placeholder: "Búsqueda por nombre",
+      type: "dateRange",
+    },
+  ];
+
   const filterData = data.filter((item) => {
     let searchText = `customerName${item.employee_name}indetification${item.identification}loanNumber${item.loan_number_id}`;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
@@ -143,6 +152,7 @@ function PaymentProyectionCrud() {
     <div className="crud-container">
       <SearchBar
         mainFilters={mainFilters}
+        secondaryFilters={secondaryFilters}
         setRequestToggle={setReqToggle}
         setSearchParams={setSearchParams}
         setSearchedText={setSearchedText}

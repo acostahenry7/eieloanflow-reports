@@ -8,6 +8,7 @@ import Popover from "@mui/material/Popover";
 
 function SearchBar({
   mainFilters,
+  secondaryFilters,
   setRequestToggle,
   setSearchParams,
   setSearchedText,
@@ -15,8 +16,9 @@ function SearchBar({
   setColumns,
 }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [showOtherfilters, setShowOtherFilters] = React.useState(false);
   const searchForm = useFormik({
-    initialValues: getInitialValues(mainFilters),
+    initialValues: getInitialValues([...mainFilters, ...secondaryFilters]),
     validateOnChange: false,
     onSubmit: async (values, { resetForm }) => {
       console.log(values);
@@ -75,6 +77,62 @@ function SearchBar({
             </div>
           ))}
       </div>
+      <div
+        className={`SearchBar-seconday-items ${
+          showOtherfilters === true ? "open" : ""
+        }`}
+      >
+        {secondaryFilters
+          ?.filter((item) => item.type === "text")
+          .map((sf, index) => (
+            <div key={index} className={`SearchBar-secondary-item `}>
+              <label>{sf.label}</label>
+              <input
+                value={searchForm.values[sf.field]}
+                onChange={(e) => {
+                  setSearchedText(sf.field + e.target.value);
+                  searchForm.setFieldValue(sf.field, e.target.value);
+                }}
+                type="search"
+                placeholder={sf.placeholder}
+              />
+            </div>
+          ))}
+        {secondaryFilters
+          ?.filter((item) => item.type === "dateRange")
+          .map((sf, index) => (
+            <div key={index} className={`SearchBar-secondary-item`}>
+              <label>{sf.label}</label>
+              <div className="SearchBar-secondary-item--date">
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <label>Desde</label>
+                  <input
+                    value={searchForm.values[sf.field + "From"]}
+                    onChange={(e) => {
+                      searchForm.setFieldValue(
+                        sf.field + "From",
+                        e.target.value + ""
+                      );
+                    }}
+                    type="date"
+                    placeholder={sf.placeholder}
+                  />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <label>Hasta</label>
+                  <input
+                    value={searchForm.values[sf.field + "To"]}
+                    onChange={(e) => {
+                      searchForm.setFieldValue(sf.field + "To", e.target.value);
+                    }}
+                    type="date"
+                    placeholder={sf.placeholder}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+      </div>
       <div className="SearchBar-actions">
         <button
           title="buscar"
@@ -86,6 +144,7 @@ function SearchBar({
         <MdFilterListAlt
           title="Mas filtros"
           className="SearchBar-actions-icon"
+          onClick={() => setShowOtherFilters((state) => !state)}
         />
         <HiOutlineRefresh
           title="Refresh and clear filters"
@@ -137,10 +196,20 @@ function SearchBar({
 function getInitialValues(arr) {
   let initialValues = {};
   arr.forEach((item) => {
-    if (item.type != "text") {
-      initialValues[item.name] = item.options[0]?.value;
-    } else {
-      initialValues[item.name] = "";
+    switch (item.type) {
+      case "text":
+        initialValues[item.field] = "";
+        break;
+      case "select":
+        initialValues[item.field] = item.options[0]?.value;
+        break;
+      case "dateRange":
+        initialValues[item.field + "From"] = "";
+        initialValues[item.field + "To"] = "";
+        break;
+
+      default:
+        break;
     }
   });
 
