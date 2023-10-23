@@ -138,9 +138,8 @@ function CanceledPaymentCrud() {
 
   const secondaryFilters = [
     {
-      label: "Fecha",
+      label: "Fecha cancelación",
       field: "date",
-      placeholder: "Búsqueda por nombre",
       type: "dateRange",
     },
   ];

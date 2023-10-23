@@ -1,5 +1,5 @@
 function generateWhereStatement(queryParams) {
-  return `AND lower(c.first_name || c.last_name) like '%${
+  let whereString = `AND lower(c.first_name || c.last_name) like '%${
     queryParams.customerName?.toLowerCase() || ""
   }%'
       AND c.identification like '%${queryParams.indetification || ""}%'
@@ -9,8 +9,17 @@ function generateWhereStatement(queryParams) {
           ? `AND l.loan_number_id= '${queryParams.loanNumber}'`
           : ""
       }`;
+
+  return whereString;
+}
+
+function getDateRangeFilter(field, fromDate, toDate) {
+  let condition = `AND ${field} BETWEEN '${fromDate}' AND '${toDate}'`;
+
+  return condition;
 }
 
 module.exports = {
   generateWhereStatement,
+  getDateRangeFilter,
 };

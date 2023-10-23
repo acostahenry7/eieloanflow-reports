@@ -54,7 +54,7 @@ function Sidebar() {
       selected: false,
       subItems: [
         {
-          label: "Pagos para hoy",
+          label: "Pagos pendientes",
           icon: (selected) => (
             <BiDollar
               className="Sidebar-content-item-icon"

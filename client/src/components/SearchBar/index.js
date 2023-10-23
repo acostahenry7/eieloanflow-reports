@@ -21,6 +21,7 @@ function SearchBar({
     initialValues: getInitialValues([...mainFilters, ...secondaryFilters]),
     validateOnChange: false,
     onSubmit: async (values, { resetForm }) => {
+      setSearchParams({});
       console.log(values);
       setSearchParams(values);
     },
@@ -104,7 +105,14 @@ function SearchBar({
             <div key={index} className={`SearchBar-secondary-item`}>
               <label>{sf.label}</label>
               <div className="SearchBar-secondary-item--date">
-                <div style={{ display: "flex", flexDirection: "column" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
                   <label>Desde</label>
                   <input
                     value={searchForm.values[sf.field + "From"]}
@@ -118,7 +126,14 @@ function SearchBar({
                     placeholder={sf.placeholder}
                   />
                 </div>
-                <div style={{ display: "flex", flexDirection: "column" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
                   <label>Hasta</label>
                   <input
                     value={searchForm.values[sf.field + "To"]}
@@ -149,7 +164,11 @@ function SearchBar({
         <HiOutlineRefresh
           title="Refresh and clear filters"
           className="SearchBar-actions-icon"
-          onClick={() => setRequestToggle((state) => !state)}
+          onClick={() => {
+            searchForm.resetForm();
+            setSearchParams({});
+            setRequestToggle((state) => !state);
+          }}
         />
         <AiOutlineUnorderedList
           title="Mostrar / ocultar columnas"

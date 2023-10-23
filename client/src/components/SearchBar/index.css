@@ -9,10 +9,12 @@
 .SearchBar-seconday-items {
   height: 0;
   margin-top: 20px;
+  padding: 0 2px;
   white-space: nowrap;
   overflow-y: hidden;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   transition: var(--anim-2-5);
 }
 
@@ -37,7 +39,7 @@
 }
 
 .SearchBar-secondary-item--date {
-  width: 1000px;
+  
   display: flex;
   gap: 8px;
 }
@@ -58,7 +60,9 @@
 }
 
 .SearchBar-main-item input:focus,
-.SearchBar-main-item select:focus {
+.SearchBar-main-item select:focus,
+.SearchBar-secondary-item input:focus,
+.SearchBar-secondary-item select:focus  {
   outline: none;
   box-shadow: 0 0 3px 1px var(--main-color);
 }

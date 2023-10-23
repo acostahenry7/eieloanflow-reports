@@ -14,6 +14,10 @@ module.exports = (app) => {
 
   //Static
   app.use(express.static(path.join(__dirname, "../../client/build")));
+  app.use(
+    "/static",
+    express.static(path.join(__dirname, "../../client/build"))
+  );
 
   //Routes
   routes(app);

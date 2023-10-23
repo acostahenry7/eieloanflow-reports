@@ -1,5 +1,6 @@
+const ENTITY = "payment";
 const db = require("../models");
-const { generateWhereStatement } = require("../utils");
+const { generateWhereStatement, getDateRangeFilter } = require("../utils");
 
 const controller = {};
 
@@ -15,15 +16,27 @@ controller.getTodayPayments = async (queryParams) => {
         JOIN loan l ON (cl.loan_id = l.loan_id)
         JOIN amortization a ON (a.loan_id = l.loan_id)
         GROUP BY c.first_name, c.last_name, l.status_type,  c.identification, c.phone, l.loan_number_id, 
-        l.created_date, l.amount_approved, l.amount_of_free,  l.outlet_id
+        l.created_date, l.amount_approved, l.amount_of_free,  l.outlet_id ${
+          queryParams.dateFrom ? ", a.payment_date" : ""
+        }
         HAVING l.status_type not in ('DELETE', 'PAID')
-        ${generateWhereStatement(queryParams)}`);
+        ${generateWhereStatement(queryParams)}
+        ${
+          queryParams.dateFrom
+            ? getDateRangeFilter(
+                "a.payment_date",
+                queryParams.dateFrom,
+                queryParams.dateTo
+              )
+            : ""
+        }`);
 
     if (data.length == 0) {
       return [];
     }
     return data;
   } catch (error) {
+    console.log(error);
     throw new Error(error.message);
   }
 };
@@ -40,16 +53,26 @@ controller.getCanceledPayments = async (queryParams) => {
       JOIN loan l ON (p.loan_id = l.loan_id)
       JOIN receipt r ON (r.payment_id = p.payment_id)
       JOIN jhi_user ju ON (p.created_by = ju.login)
-      JOIN employee e ON (ju.employee_id = e.employee_id)
+      JOIN employee e ON (p.employee_reverse_id = e.employee_id)
       WHERE p.status_type = 'CANCEL' 
       AND l.status_type not in ('DELETE', 'PAID')
-      ${generateWhereStatement(queryParams)}`);
+      ${generateWhereStatement(queryParams)}
+      ${
+        queryParams.dateFrom
+          ? getDateRangeFilter(
+              "p.last_modified_date",
+              queryParams.dateFrom,
+              queryParams.dateTo
+            )
+          : ""
+      }`);
 
     if (data.length == 0) {
       return [];
     }
     return data;
   } catch (error) {
+    console.log(error);
     throw new Error(error.message);
   }
 };
@@ -75,7 +98,16 @@ controller.getReceivedPayments = async (queryParams) => {
       GROUP BY c.first_name, c.last_name, c.identification, l.loan_number_id, p.created_by, p.payment_type, p.created_date,
       p.payment_origin, p.pay, l.status_type, l.outlet_id,r.receipt_number, p.status_type
       HAVING l.status_type not in ('DELETE', 'PAID')
-      ${generateWhereStatement(queryParams)}`);
+      ${generateWhereStatement(queryParams)}
+      ${
+        queryParams.dateFrom
+          ? getDateRangeFilter(
+              "p.created_date",
+              queryParams.dateFrom,
+              queryParams.dateTo
+            )
+          : ""
+      }`);
 
     if (data.length == 0) {
       return [];

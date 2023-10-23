@@ -75,7 +75,26 @@ function ReceivedPaymentCrud() {
     },
     {
       name: "Tipo de pago",
-      selector: (row) => row.payment_type,
+      selector: (row) =>
+        (() => {
+          let paymentType = "";
+          switch (row.payment_type) {
+            case "CASH":
+              paymentType = "Efectivo";
+              break;
+            case "TRANSFER":
+              paymentType = "Transferencia";
+              break;
+            case "CHECK":
+              paymentType = "Cheque";
+              break;
+
+            default:
+              break;
+          }
+
+          return paymentType;
+        })(),
       sortable: true,
       reorder: true,
       omit: false,
@@ -195,10 +214,22 @@ function ReceivedPaymentCrud() {
       placeholder: "Búsqueda por nombre",
       type: "dateRange",
     },
+    {
+      label: "Cajero",
+      placeholder: "cajero",
+      field: "createdBy",
+      type: "text",
+    },
+    {
+      label: "Recibo",
+      placeholder: "número recibo",
+      field: "receiptNumber",
+      type: "text",
+    },
   ];
 
   const filterData = data.filter((item) => {
-    let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}`;
+    let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}createdBy${item.created_by}receiptNumber${item.receipt_number}`;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
 

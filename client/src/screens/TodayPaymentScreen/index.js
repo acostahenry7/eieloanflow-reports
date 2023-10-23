@@ -5,7 +5,7 @@ import { TodayPaymentCrud } from "../../components/cruds/TodayPaymentCrud";
 function TodayPaymentScreen() {
   return (
     <div className="">
-      <TopBar title="Pagos para hoy" />
+      <TopBar title="Pagos pendientes" />
       <div className="screen-content">
         <TodayPaymentCrud />
       </div>
