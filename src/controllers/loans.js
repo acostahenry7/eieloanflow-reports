@@ -1,5 +1,5 @@
 const db = require("../models");
-const { generateWhereStatement } = require("../utils");
+const { generateWhereStatement, getDateRangeFilter } = require("../utils");
 
 const controller = {};
 
@@ -7,7 +7,7 @@ controller.getLoans = async (queryParams) => {
   console.log(queryParams);
   try {
     const [data, meta] =
-      await db.query(`SELECT c.first_name || '' || c.last_name as customer_name, c.identification, l.loan_number_id, l.interest_rate_type, 
+      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, l.interest_rate_type, 
       l.amount_approved, l.number_of_installments, ir.percent, l.frequency_of_payment, lp.name, l.status_type,
 	  l.loan_situation, la.loan_type,
       COALESCE(SUM(a.capital) filter(where a.paid = 'true'), 0)  as paid_capital,
@@ -50,6 +50,101 @@ controller.getLoans = async (queryParams) => {
     }
 
     console.log(data);
+    return data;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+controller.getLoanActivities = async (queryParams) => {
+  console.log(queryParams);
+  try {
+    const [data, meta] =
+      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, activity_loan_type as action_type,
+      al.note as commentary, e.first_name || ' ' || e.last_name as employee_name, al.created_date
+      FROM activity_loan al
+      JOIN loan l ON (al.loan_id = l.loan_id)
+      JOIN loan_application la ON (al.loan_application_id = la.loan_application_id)
+      JOIN customer c ON (la.customer_id = c.customer_id)
+      JOIN jhi_user u ON (al.created_by = c.created_by)
+      JOIN employee e ON (u.employee_id = e.employee_id)
+      WHERE l.status_type not in ('DELETE', 'PAID')  
+        ${generateWhereStatement(queryParams)}
+        ${
+          queryParams.dateFrom
+            ? getDateRangeFilter(
+                "al.created_date",
+                queryParams.dateFrom,
+                queryParams.dateTo
+              )
+            : ""
+        }`);
+
+    if (data.length == 0) {
+      console.log(data);
+      return [];
+    }
+
+    console.log(data);
+    return data;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+controller.getLoanDiscounts = async (queryParams) => {
+  console.log(queryParams);
+
+  let query = `SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, discount_type,
+  a.quota_number, ad.description as commentary, e.first_name || ' ' || e.last_name as employee_name, ad.created_date, ad.status_type
+  FROM amortization_discount ad
+  LEFT JOIN amortization a ON (ad.amortization_id = a.amortization_id )
+  LEFT JOIN loan l ON (a.loan_id = l.loan_id)
+  JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
+  JOIN customer c ON (la.customer_id = c.customer_id)
+  JOIN jhi_user u ON (ad.created_by = u.login)
+  JOIN employee e ON (u.employee_id = e.employee_id)
+  ${generateWhereStatement(queryParams)}
+  ${
+    queryParams.dateFrom
+      ? getDateRangeFilter(
+          "ad.created_date",
+          queryParams.dateFrom,
+          queryParams.dateTo
+        )
+      : ""
+  }`;
+
+  if (queryParams.discountType == "GLOBAL") {
+    query = `SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, discount_type,
+    ad.description as commentary, e.first_name || ' ' || e.last_name as employee_name, ad.created_date, ad.status_type
+    FROM amortization_discount ad
+    LEFT JOIN loan l ON (ad.loan_id = l.loan_id)
+    JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
+    JOIN customer c ON (la.customer_id = c.customer_id)
+    JOIN jhi_user u ON (ad.created_by = u.login)
+    JOIN employee e ON (u.employee_id = e.employee_id)
+    ${generateWhereStatement(queryParams)}
+    ${
+      queryParams.dateFrom
+        ? getDateRangeFilter(
+            "ad.created_date",
+            queryParams.dateFrom,
+            queryParams.dateTo
+          )
+        : ""
+    }`;
+  }
+
+  try {
+    const [data, meta] = await db.query(query);
+
+    if (data.length == 0) {
+      // console.log(data);
+      return [];
+    }
+
+    // console.log(data);
     return data;
   } catch (error) {
     throw new Error(error.message);

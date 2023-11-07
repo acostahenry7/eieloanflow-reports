@@ -30,6 +30,7 @@ controller.signin = async (data) => {
         });
     }
   } catch (err) {
+    console.log(err);
     throw new Error(err.message);
   }
 };

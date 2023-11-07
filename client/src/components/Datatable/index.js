@@ -91,7 +91,11 @@ function Datatable({
           visible={true}
         />
       }
-      pagination
+      pagination={true}
+      paginationComponentOptions={{
+        selectAllRowsItem: true,
+        selectAllRowsItemText: "Todos",
+      }}
       {...dtOptions}
     />
   );

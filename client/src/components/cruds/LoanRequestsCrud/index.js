@@ -6,7 +6,7 @@ import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import { Margin, usePDF } from "react-to-pdf";
 
-function ReceivedPaymentCrud() {
+function LoanRequestsCrud() {
   const [outlets, setOutlets] = React.useState([]);
   const [data, setData] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -258,4 +258,4 @@ function ReceivedPaymentCrud() {
   );
 }
 
-export { ReceivedPaymentCrud };
+export { LoanRequestsCrud };

@@ -5,6 +5,7 @@ import { NavLink } from "react-router-dom";
 import { HiOutlineDocumentDuplicate, HiChevronDown } from "react-icons/hi";
 import { FaUsersSlash } from "react-icons/fa";
 import { BiDollar, BiBlock } from "react-icons/bi";
+import { AiOutlineAudit } from "react-icons/ai";
 import {
   TbCurrencyDollarOff,
   TbBuildingBank,
@@ -130,6 +131,28 @@ function Sidebar() {
             />
           ),
           route: "/reports/loan-detail",
+          selected: false,
+        },
+        {
+          label: "Acciones al préstamo",
+          icon: (selected) => (
+            <AiOutlineAudit
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/loan-activities",
+          selected: false,
+        },
+        {
+          label: "Descuentos a préstamos",
+          icon: (selected) => (
+            <AiOutlineAudit
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/loan-discounts",
           selected: false,
         },
       ],

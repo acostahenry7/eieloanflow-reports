@@ -14,4 +14,32 @@ async function getLoans(queryParams) {
   }
 }
 
-export { getLoans };
+async function getLoanActivities(queryParams) {
+  try {
+    const loans = await request({
+      method: "GET",
+      path: "/loan-activities",
+      urlParams: queryParams || {},
+    });
+
+    return loans;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getLoanDiscounts(queryParams) {
+  try {
+    const loans = await request({
+      method: "GET",
+      path: "/loan-discount",
+      urlParams: queryParams || {},
+    });
+
+    return loans;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export { getLoans, getLoanActivities, getLoanDiscounts };

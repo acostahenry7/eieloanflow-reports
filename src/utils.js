@@ -8,7 +8,18 @@ function generateWhereStatement(queryParams) {
         queryParams.loanNumber
           ? `AND l.loan_number_id= '${queryParams.loanNumber}'`
           : ""
-      }`;
+      }
+      ${
+        queryParams.actionType
+          ? `AND activity_loan_type= '${queryParams.actionType}'`
+          : ""
+      }
+      ${
+        queryParams.discountType && queryParams.discountType != "GLOBAL"
+          ? `AND discount_type= '${queryParams.discountType}'`
+          : ""
+      }
+      `;
 
   return whereString;
 }

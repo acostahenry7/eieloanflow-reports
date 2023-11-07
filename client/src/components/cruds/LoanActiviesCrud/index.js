@@ -1,12 +1,12 @@
 import React from "react";
 import { SearchBar } from "../../SearchBar";
 import { Datatable } from "../../Datatable";
-import { getReceivedPaymentsApi } from "../../../api/payment";
+import { getLoanActivities } from "../../../api/loan";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import { Margin, usePDF } from "react-to-pdf";
 
-function ReceivedPaymentCrud() {
+function LoanActivitiesCrud() {
   const [outlets, setOutlets] = React.useState([]);
   const [data, setData] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -24,13 +24,53 @@ function ReceivedPaymentCrud() {
       try {
         setIsLoading(true);
         const outlets = await getOutletsApi();
-        const customers = await getReceivedPaymentsApi(searchParams);
-        if (customers.error == true) {
-          throw new Error(customers.body);
+        const loanActivities = await getLoanActivities(searchParams);
+        if (loanActivities.error == true) {
+          throw new Error(loanActivities.body);
         }
 
         setOutlets(outlets.body);
-        setData(customers.body);
+        console.log(loanActivities.body);
+
+        loanActivities.body.map((la) => {
+          switch (la.action_type) {
+            case "RENEGOTIATED":
+              la.action_type = "Renegociado";
+              break;
+            case "NORMAL":
+              la.action_type = "Des-Incautado";
+              break;
+            case "REFINANCE":
+              la.action_type = "Refinanciado";
+              break;
+            case "CHANGE_PAYMENT_DATE":
+              la.action_type = "Cambio de fecha";
+              break;
+            case "BAD_LOAN":
+              la.action_type = "DEFINIR";
+              break;
+            case "TRANSFERRED":
+              la.action_type = "Transferido";
+              break;
+            case "EDIT":
+              la.action_type = "Editado";
+              break;
+            case "SEIZE":
+              la.action_type = "Incautado";
+              break;
+            case "CREATED":
+              la.action_type = "Creado";
+              break;
+
+            default:
+              break;
+          }
+
+          return la;
+        });
+
+        // console.log("PARSED DATA", parseData);
+        setData(loanActivities.body);
       } catch (error) {
         console.log(error.message);
       }
@@ -64,114 +104,33 @@ function ReceivedPaymentCrud() {
       omit: false,
     },
     {
-      name: "Recibo",
-      width: "140px",
-      selector: (row) => row.receipt_number,
+      name: "Acción",
+      selector: (row) => row.action_type,
       sortable: true,
       reorder: true,
       omit: false,
     },
 
     {
-      name: "Cajero",
-      selector: (row) => row.created_by,
+      name: "Nota/comentario",
+      selector: (row) => row.commentary,
       sortable: true,
       reorder: true,
       omit: false,
     },
     {
-      name: "Tipo de pago",
-      selector: (row) =>
-        (() => {
-          let paymentType = "";
-          switch (row.payment_type) {
-            case "CASH":
-              paymentType = "Efectivo";
-              break;
-            case "TRANSFER":
-              paymentType = "Transferencia";
-              break;
-            case "CHECK":
-              paymentType = "Cheque";
-              break;
-
-            default:
-              break;
-          }
-
-          return paymentType;
-        })(),
+      name: "Empleado",
+      selector: (row) => row.employee_name,
       sortable: true,
       reorder: true,
       omit: false,
     },
     {
-      name: "Fecha recibo",
+      name: "Fecha ",
       selector: (row) => row.created_date,
       sortable: true,
       reorder: true,
       omit: false,
-    },
-    {
-      name: "Cuotas pagadas",
-      selector: (row) =>
-        row.paid_dues
-          ?.split(",")
-          .map((i) => parseInt(i))
-          .sort(function (a, b) {
-            return a - b;
-          })
-          .join(","),
-      sortable: true,
-      reorder: true,
-      width: "200px",
-      wrap: true,
-      omit: false,
-    },
-    {
-      name: "Abono a cuota",
-      selector: (row) => row.compost_dues,
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
-    {
-      name: "Descuento",
-      selector: (row) => row.discount,
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
-    {
-      name: "Mora pagada",
-      selector: (row) => row.total_paid_mora,
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
-    {
-      name: "Monto",
-      selector: (row) => row.pay,
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
-    {
-      name: "Estado",
-      selector: (row) =>
-        row.status_type === "CANCEL" ? "Cancelado" : "Activo",
-      sortable: true,
-      reorder: true,
-      omit: true,
-      hide: "lg",
-    },
-    {
-      name: "Pagado desde",
-      selector: (row) => row.payment_origin,
-      sortable: true,
-      reorder: true,
-      omit: true,
-      hide: "lg",
     },
   ]);
 
@@ -181,6 +140,54 @@ function ReceivedPaymentCrud() {
       field: "customerName",
       placeholder: "Búsqueda por nombre",
       type: "text",
+    },
+    {
+      label: "Tipo de Acción",
+      field: "actionType",
+      placeholder: "Búsqueda por acción",
+      type: "select",
+      options: [
+        {
+          label: "Todas",
+          value: "",
+        },
+        {
+          label: "Creado",
+          value: "CREATED",
+        },
+        {
+          label: "Renegociado",
+          value: "RENEGOTIATED",
+        },
+        {
+          label: "Refinanciado",
+          value: "REFINANCE",
+        },
+        {
+          label: "Des-Incautado",
+          value: "NORMAL",
+        },
+        {
+          label: "Cambio de fecha",
+          value: "CHANGE_PAYMENT_DATE",
+        },
+        {
+          label: "Incobrable",
+          value: "BAD_LOAN",
+        },
+        {
+          label: "Transferido",
+          value: "TRANSFERRED",
+        },
+        {
+          label: "Editado",
+          value: "EDIT",
+        },
+        {
+          label: "Incautado",
+          value: "SEIZE",
+        },
+      ],
     },
     {
       label: "No. Cédula/Pasaporte",
@@ -221,21 +228,22 @@ function ReceivedPaymentCrud() {
       type: "dateRange",
     },
     {
-      label: "Cajero",
-      placeholder: "cajero",
-      field: "createdBy",
+      label: "Empleado",
+      placeholder: "Empleado",
+      field: "employeeName",
       type: "text",
     },
-    {
-      label: "Recibo",
-      placeholder: "número recibo",
-      field: "receiptNumber",
-      type: "text",
-    },
+    // {
+    //   label: "Recibo",
+    //   placeholder: "número recibo",
+    //   field: "receiptNumber",
+    //   type: "text",
+    // },
   ];
 
   const filterData = data.filter((item) => {
-    let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}createdBy${item.created_by}receiptNumber${item.receipt_number}`;
+    let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}
+    createdBy${item.created_by}receiptNumber${item.receipt_number}actionType${item.action_type}employeeName${item.employee_name}`;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
 
@@ -250,7 +258,7 @@ function ReceivedPaymentCrud() {
         columns={columns}
         setColumns={setColumns}
       />
-      <button onClick={toPDF}>exportar</button>
+      {/* <button onClick={toPDF}>exportar</button> */}
       <div ref={targetRef}>
         <Datatable columns={columns} data={filterData} isLoading={isLoading} />
       </div>
@@ -258,4 +266,4 @@ function ReceivedPaymentCrud() {
   );
 }
 
-export { ReceivedPaymentCrud };
+export { LoanActivitiesCrud };

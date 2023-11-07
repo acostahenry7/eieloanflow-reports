@@ -14,6 +14,8 @@ import { LoanDetailScreen } from "./screens/LoanDetailScreen";
 import { ReceivedPaymentScreen } from "./screens/ReceivedPaymentScreen";
 import { PaymentProyectionScreen } from "./screens/PaymentProyectionScreen";
 import { PaymentControlHistoryScreen } from "./screens/PaymentControlHistoryScreen";
+import { LoanActivitiesScreen } from "./screens/LoanActiviesScreen";
+import { LoanDiscountsScreen } from "./screens/LoanDiscountsScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -59,6 +61,14 @@ function App() {
               <Route
                 path="/reports/loan-detail"
                 element={<LoanDetailScreen />}
+              />
+              <Route
+                path="/reports/loan-activities"
+                element={<LoanActivitiesScreen />}
+              />
+              <Route
+                path="/reports/loan-discounts"
+                element={<LoanDiscountsScreen />}
               />
             </Routes>
           </div>

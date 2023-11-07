@@ -125,6 +125,30 @@ module.exports = (app) => {
       });
   });
 
+  router.get("/api/loan-activities", (req, res) => {
+    console.log("hi");
+    loanCtrl
+      .getLoanActivities(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  router.get("/api/loan-discount", (req, res) => {
+    console.log("hi");
+    loanCtrl
+      .getLoanDiscounts(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   router.get("*", (req, res) => {
     res.sendFile(path.resolve(__dirname, "../../client/build/index.html"));
   });
