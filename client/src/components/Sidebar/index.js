@@ -2,10 +2,14 @@ import React from "react";
 import "./index.css";
 import { SidebarContext } from "../../contexts/SidebarContext";
 import { NavLink } from "react-router-dom";
-import { HiOutlineDocumentDuplicate, HiChevronDown } from "react-icons/hi";
-import { FaUsersSlash } from "react-icons/fa";
+import {
+  HiOutlineDocumentDuplicate,
+  HiChevronDown,
+  HiOutlineCalculator,
+} from "react-icons/hi";
+import { FaUsersSlash, FaCalculator } from "react-icons/fa";
 import { BiDollar, BiBlock } from "react-icons/bi";
-import { AiOutlineAudit } from "react-icons/ai";
+import { AiOutlineAudit, AiTwotoneBank } from "react-icons/ai";
 import {
   TbCurrencyDollarOff,
   TbBuildingBank,
@@ -14,6 +18,9 @@ import {
   TbList,
 } from "react-icons/tb";
 import { FaFileInvoiceDollar, FaHandHoldingDollar } from "react-icons/fa6";
+import { BsFolderCheck } from "react-icons/bs";
+import { MdRequestPage } from "react-icons/md";
+import { IoDocumentAttachSharp } from "react-icons/io5";
 
 function Sidebar() {
   const { isSidebarOpened } = React.useContext(SidebarContext);
@@ -54,6 +61,17 @@ function Sidebar() {
       route: "/reports",
       selected: false,
       subItems: [
+        {
+          label: "Cierre de caja",
+          icon: (selected) => (
+            <BsFolderCheck
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/register-close",
+          selected: false,
+        },
         {
           label: "Pagos pendientes",
           icon: (selected) => (
@@ -153,6 +171,41 @@ function Sidebar() {
             />
           ),
           route: "/reports/loan-discounts",
+          selected: false,
+        },
+        {
+          label: "Solicitudes de préstamos",
+          icon: (selected) => (
+            <IoDocumentAttachSharp
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/loan-request",
+          selected: false,
+        },
+      ],
+    },
+    {
+      label: "Contabilidad",
+      icon: (selected) => (
+        <HiOutlineCalculator
+          className="Sidebar-content-item-icon"
+          color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+        />
+      ),
+      route: "/accounting",
+      selected: false,
+      subItems: [
+        {
+          label: "Balance General",
+          icon: (selected) => (
+            <FaUsersSlash
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/accounting-general-balance",
           selected: false,
         },
       ],

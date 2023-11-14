@@ -42,4 +42,18 @@ async function getLoanDiscounts(queryParams) {
   }
 }
 
-export { getLoans, getLoanActivities, getLoanDiscounts };
+async function getRegisterClose(queryParams) {
+  try {
+    const loans = await request({
+      method: "GET",
+      path: "/register-close",
+      urlParams: queryParams || {},
+    });
+
+    return loans;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export { getLoans, getLoanActivities, getLoanDiscounts, getRegisterClose };

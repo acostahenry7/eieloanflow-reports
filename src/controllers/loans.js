@@ -1,5 +1,6 @@
 const db = require("../models");
 const { generateWhereStatement, getDateRangeFilter } = require("../utils");
+var _ = require("lodash");
 
 const controller = {};
 
@@ -146,6 +147,34 @@ controller.getLoanDiscounts = async (queryParams) => {
 
     // console.log(data);
     return data;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+controller.getRegisterClose = async (queryParams) => {
+  console.log(queryParams);
+  try {
+    const [data, meta] =
+      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, p.pay, 
+      r.amount, p.register_id, r.total_cash, r.total_check, r.total_transfer, r.total_discount, r.total_pay, 
+      e.first_name || ' ' || e.last_name as employee_name, r.created_date opening_date, r.last_modified_date, p.created_date, p.payment_type
+      FROM payment p
+      JOIN loan l ON (p.loan_id = l.loan_id)
+      JOIN customer c ON (p.customer_id = c.customer_id)
+      JOIN register r ON (p.register_id = r.register_id)
+      JOIN jhi_user u ON (r.user_id = u.user_id)
+      JOIN employee e ON (u.employee_id = e.employee_id)
+      WHERE l.status_type NOT IN ('PAID', 'DELETE')
+      ORDER BY r.created_date desc,  p.register_id`);
+
+    if (data.length == 0) {
+      console.log(data);
+      return [];
+    }
+
+    console.log("##################", _.groupBy(data, "register_id"));
+    return _.groupBy(data, "register_id");
   } catch (error) {
     throw new Error(error.message);
   }

@@ -7,6 +7,7 @@ const customerCtrl = require("../controllers/customers");
 const outletCtrl = require("../controllers/outlets");
 const paymentCtrl = require("../controllers/payments");
 const loanCtrl = require("../controllers/loans");
+const accountingCtrl = require("../controllers/accounting");
 
 module.exports = (app) => {
   router.post("/api/signin", (req, res) => {
@@ -141,6 +142,30 @@ module.exports = (app) => {
     console.log("hi");
     loanCtrl
       .getLoanDiscounts(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  router.get("/api/register-close", (req, res) => {
+    console.log("hi");
+    loanCtrl
+      .getRegisterClose(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  router.get("/api/general-balance", (req, res) => {
+    console.log("hi");
+    accountingCtrl
+      .getGeneralBalance(req.query)
       .then((msg) => {
         response.success(req, res, msg, 200);
       })
