@@ -70,10 +70,25 @@ async function getHistoryPaymentControl(queryParams) {
   }
 }
 
+async function getCollectorVisitsApi(queryParams) {
+  try {
+    const visits = await request({
+      method: "GET",
+      path: "/payment/collector-visits",
+      urlParams: queryParams || {},
+    });
+
+    return visits;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export {
   getTodayPaymentsApi,
   getCanceledPaymentsApi,
   getReceivedPaymentsApi,
   getPaymentProyectionApi,
   getHistoryPaymentControl,
+  getCollectorVisitsApi,
 };

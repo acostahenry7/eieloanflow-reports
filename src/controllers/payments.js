@@ -172,4 +172,25 @@ controller.getHistoryPaymentControl = async (queryParams) => {
   }
 };
 
+controller.getCollectorVisits = async (queryParams) => {
+  console.log(queryParams);
+  try {
+    const [data, meta] =
+      await db.query(`SELECT c.first_name ||' '||c.last_name as customer_name,c.identification, v.visit_date, e.first_name ||' '||e.last_name  as employee,
+      v.commentary, v.actual_location
+      FROM collector_customer_visits v
+      LEFT JOIN customer c ON (v.customer_id = c.customer_id)
+      JOIN jhi_user u ON (v.user_id = u.user_id)
+      JOIN employee e ON (u.employee_id = e.employee_id)
+      order by v.visit_date desc`);
+
+    if (data.length == 0) {
+      return [];
+    }
+    return data;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 module.exports = controller;

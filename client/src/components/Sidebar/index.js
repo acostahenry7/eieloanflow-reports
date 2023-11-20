@@ -17,7 +17,11 @@ import {
   TbClockDollar,
   TbList,
 } from "react-icons/tb";
-import { FaFileInvoiceDollar, FaHandHoldingDollar } from "react-icons/fa6";
+import {
+  FaFileInvoiceDollar,
+  FaHandHoldingDollar,
+  FaMotorcycle,
+} from "react-icons/fa6";
 import { BsFolderCheck } from "react-icons/bs";
 import { MdRequestPage } from "react-icons/md";
 import { IoDocumentAttachSharp } from "react-icons/io5";
@@ -127,6 +131,17 @@ function Sidebar() {
           route: "/reports/payment-control-history",
           selected: false,
         },
+        {
+          label: "Visitas a clientes",
+          icon: (selected) => (
+            <FaMotorcycle
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/payment-visits",
+          selected: false,
+        },
       ],
     },
     {
@@ -206,6 +221,29 @@ function Sidebar() {
             />
           ),
           route: "/reports/accounting-general-balance",
+          selected: false,
+        },
+        {
+          label: "Estado de Resultado",
+          icon: (selected) => (
+            <FaUsersSlash
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/accounting-result-status",
+          selected: false,
+        },
+
+        {
+          label: "Balanza de comprobación",
+          icon: (selected) => (
+            <FaUsersSlash
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/accounting-result-status",
           selected: false,
         },
       ],

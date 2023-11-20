@@ -18,6 +18,8 @@ import { LoanActivitiesScreen } from "./screens/LoanActiviesScreen";
 import { LoanDiscountsScreen } from "./screens/LoanDiscountsScreen";
 import { RegisterCloseScreen } from "./screens/RegisterCloseScreen";
 import { GeneralBalanceScreen } from "./screens/GeneralBalanceScreen";
+import { ResultStatusScreen } from "./screens/ResultStatusScreen";
+import { CollectorVisitsScreen } from "./screens/CollectorVisitsScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -79,6 +81,14 @@ function App() {
               <Route
                 path="/reports/accounting-general-balance"
                 element={<GeneralBalanceScreen />}
+              />
+              <Route
+                path="/reports/accounting-result-status"
+                element={<ResultStatusScreen />}
+              />
+              <Route
+                path="/reports/payment-visits"
+                element={<CollectorVisitsScreen />}
               />
             </Routes>
           </div>

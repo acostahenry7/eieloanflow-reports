@@ -114,6 +114,19 @@ module.exports = (app) => {
       });
   });
 
+  router.get("/api/payment/collector-visits", (req, res) => {
+    console.log(req.query);
+
+    paymentCtrl
+      .getCollectorVisits(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   //Loans
   router.get("/api/loan", (req, res) => {
     loanCtrl

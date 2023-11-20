@@ -3,8 +3,8 @@
     background-color: #fafafa;
     color: #333333;
     font-weight:500;
-    padding: 24px 18px;
-    border-bottom: 2px solid rgba(153,190,226, 0.8);
+    padding:  18px;
+    border-bottom: 1px solid rgba(153,190,226, 0.2);
     font-size: 14px;
 }
 
@@ -44,4 +44,10 @@
 
 .expandable-body .expandable-layout:last-child p  {
     font-weight: bold;
+}
+
+.expandable-last-child {
+    display: flex;
+    justify-content:space-between;
+    align-items:center;
 }
