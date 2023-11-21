@@ -14,4 +14,18 @@ async function getGeneralBalance(queryParams) {
   }
 }
 
-export { getGeneralBalance };
+async function getValidationBalance(queryParams) {
+  try {
+    const validationBalance = await request({
+      method: "GET",
+      path: "/validation-balance",
+      urlParams: queryParams || {},
+    });
+
+    return validationBalance;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export { getGeneralBalance, getValidationBalance };

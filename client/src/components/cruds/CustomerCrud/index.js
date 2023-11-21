@@ -65,7 +65,7 @@ function CustomerCrud() {
     },
     {
       name: "Fecha Préstamo",
-      selector: (row) => row.created_date,
+      selector: (row) => new Date(row.created_date).toLocaleString("en-US"),
       sortable: true,
       reorder: true,
       omit: false,
@@ -142,7 +142,7 @@ function CustomerCrud() {
     },
     {
       name: "Vencido desde",
-      selector: (row) => row.defeated_since,
+      selector: (row) => new Date(row.defeated_since).toLocaleString("en-US"),
       sortable: true,
       reorder: true,
       omit: false,

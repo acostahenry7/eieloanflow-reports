@@ -4,11 +4,26 @@ import { AuthContext } from "../../contexts/AuthContext";
 import { SidebarContext } from "../../contexts/SidebarContext";
 import logo from "../../media/logo-fianance.png";
 import { FaAngleLeft } from "react-icons/fa";
+import Popover from "@mui/material/Popover";
+import Typography from "@mui/material/Typography";
 
 function TopNavbar() {
   const { auth, logout } = React.useContext(AuthContext);
   const { isSidebarOpened, setIsSidebarOpened } =
     React.useContext(SidebarContext);
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? "simple-popover" : undefined;
 
   return (
     <div className="TopNavbar">
@@ -28,7 +43,39 @@ function TopNavbar() {
         </div>
       </div>
       <div className="TopNavbar-options">
-        <span onClick={() => logout()}>{auth.login}</span>
+        <p style={{ cursor: "pointer" }} onClick={handleClick}>
+          {auth.login}
+        </p>
+        <Popover
+          id={id}
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "right",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+        >
+          {/* <Typography sx={{ p: 2 }}>{auth.login}</Typography> */}
+          <Typography
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              logout();
+            }}
+            sx={{ p: 2 }}
+          >
+            Logout
+          </Typography>
+        </Popover>
+
+        {/* <span onClick={() => logout()}>
+          {auth.login}
+          
+          </span> */}
       </div>
     </div>
   );

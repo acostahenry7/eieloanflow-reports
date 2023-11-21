@@ -80,7 +80,7 @@ function TodayPaymentCrud() {
     },
     {
       name: "Fecha de pago",
-      selector: (row) => row.payment_date,
+      selector: (row) => new Date(row.payment_date).toLocaleString("en-US"),
       sortable: true,
       reorder: true,
       omit: false,

@@ -7,7 +7,7 @@ import {
   HiChevronDown,
   HiOutlineCalculator,
 } from "react-icons/hi";
-import { FaUsersSlash, FaCalculator } from "react-icons/fa";
+import { FaUsersSlash, FaCalculator, FaChartBar } from "react-icons/fa";
 import { BiDollar, BiBlock } from "react-icons/bi";
 import { AiOutlineAudit, AiTwotoneBank } from "react-icons/ai";
 import {
@@ -23,7 +23,7 @@ import {
   FaMotorcycle,
 } from "react-icons/fa6";
 import { BsFolderCheck } from "react-icons/bs";
-import { MdRequestPage } from "react-icons/md";
+import { MdInsertChart, MdOutlineBalance } from "react-icons/md";
 import { IoDocumentAttachSharp } from "react-icons/io5";
 
 function Sidebar() {
@@ -215,18 +215,18 @@ function Sidebar() {
         {
           label: "Balance General",
           icon: (selected) => (
-            <FaUsersSlash
+            <FaChartBar
               className="Sidebar-content-item-icon"
               color={`${selected === true ? "var(--main-color)" : "#888888"}`}
             />
           ),
           route: "/reports/accounting-general-balance",
-          selected: false,
+          selected: true,
         },
         {
           label: "Estado de Resultado",
           icon: (selected) => (
-            <FaUsersSlash
+            <MdInsertChart
               className="Sidebar-content-item-icon"
               color={`${selected === true ? "var(--main-color)" : "#888888"}`}
             />
@@ -238,12 +238,12 @@ function Sidebar() {
         {
           label: "Balanza de comprobación",
           icon: (selected) => (
-            <FaUsersSlash
+            <MdOutlineBalance
               className="Sidebar-content-item-icon"
               color={`${selected === true ? "var(--main-color)" : "#888888"}`}
             />
           ),
-          route: "/reports/accounting-result-status",
+          route: "/reports/accouting-validation-balance",
           selected: false,
         },
       ],
@@ -279,11 +279,20 @@ function Sidebar() {
               className={`Sidebar-content-item-link ${
                 sbItem.selected === true ? "selected" : ""
               }`}
-              onClick={(e) => selectItem(e.target.innerText)}
+              onClick={(e) => selectItem(sbItem.label)}
               //   to={sbItem.route}
             >
               {sbItem.icon(sbItem.selected)}
-              <span>{sbItem.label}</span>
+              <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                }}
+              >
+                <span>
+                  {sbItem.label} - {`(${sbItem.subItems.length})`}
+                </span>
+              </div>
               {sbItem.subItems.length > 0 && (
                 <HiChevronDown
                   className="toggle-icon"

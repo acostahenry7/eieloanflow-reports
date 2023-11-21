@@ -107,6 +107,55 @@ controller.getGeneralBalance = async (queryParams) => {
   }
 };
 
+controller.getValidationBalance = async (queryParams) => {
+  let data = {};
+
+  try {
+    const [data, meta] = await db.query(`SELECT distinct(ac.number), ac.name,
+    COALESCE(SUM(gda.debit)
+       filter (where extract(month from gda.created_date) = 08 and extract(year from gda.created_date) = 2023),0) as prev_debit,
+    COALESCE(SUM(gda.credit)
+       filter (where extract(month from gda.created_date) = 08 and extract(year from gda.created_date) = 2023),0) as prev_credit,
+    COALESCE(SUM(gda.debit)
+       filter (where extract(month from gda.created_date) = 09 and extract(year from gda.created_date) = 2023),0) as actual_debit,
+    COALESCE(SUM(gda.credit)
+       filter (where extract(month from gda.created_date) = 09 and extract(year from gda.created_date) = 2023),0) as actual_credit
+    FROM general_diary_account gda
+    JOIN general_diary gd ON (gda.general_diary_id = gd.general_diary_id)
+    RIGHT OUTER JOIN account_catalog ac ON (gda.account_catalog_id = ac.account_catalog_id)
+    WHERE ac.outlet_id = '4a812a14-f46d-4a99-8d88-c1f14ea419f4'
+    GROUP BY ac.number, ac.name
+    ORDER BY ac.number`);
+
+    if (data.length == 0) {
+      return [];
+    }
+
+    const parseData = data.map((item) => {
+      item.prev_credit = parseFloat(item.prev_credit) * -1;
+      item.actual_credit = parseFloat(item.actual_credit) * -1;
+
+      let totalDebit =
+        parseFloat(item.prev_debit) + parseFloat(item.actual_debit);
+      let totalCredit =
+        parseFloat(item.prev_credit) + parseFloat(item.actual_credit);
+
+      let sum = totalDebit + totalCredit;
+
+      return {
+        ...item,
+        sum_debit: sum > 0 ? sum : 0,
+        sum_credit: sum < 0 ? sum : 0,
+      };
+    });
+
+    return parseData;
+  } catch (error) {
+    console.log(error);
+    throw new Error(error.message);
+  }
+};
+
 function getMainAccountsArr(arr) {
   let testAccounts = [];
   for (let i = 0; i < arr.length; i++) {

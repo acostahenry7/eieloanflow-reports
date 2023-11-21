@@ -20,6 +20,7 @@ import { RegisterCloseScreen } from "./screens/RegisterCloseScreen";
 import { GeneralBalanceScreen } from "./screens/GeneralBalanceScreen";
 import { ResultStatusScreen } from "./screens/ResultStatusScreen";
 import { CollectorVisitsScreen } from "./screens/CollectorVisitsScreen";
+import { ValidationBalanceScreen } from "./screens/ValidationBalanceScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -89,6 +90,10 @@ function App() {
               <Route
                 path="/reports/payment-visits"
                 element={<CollectorVisitsScreen />}
+              />
+              <Route
+                path="/reports/accouting-validation-balance"
+                element={<ValidationBalanceScreen />}
               />
             </Routes>
           </div>

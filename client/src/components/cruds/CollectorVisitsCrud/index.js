@@ -51,7 +51,7 @@ function CollectorVisitsCrud() {
     },
     {
       name: "Fecha visita",
-      selector: (row) => row.visit_date,
+      selector: (row) => new Date(row.visit_date).toLocaleString("en-US"),
       sortable: true,
       reorder: true,
       omit: false,

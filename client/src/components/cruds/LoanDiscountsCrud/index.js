@@ -114,7 +114,7 @@ function LoanDiscountsCrud() {
     },
     {
       name: "Fecha ",
-      selector: (row) => row.created_date,
+      selector: (row) => new Date(row.created_date).toLocaleString("en-US"),
       sortable: true,
       reorder: true,
       omit: false,

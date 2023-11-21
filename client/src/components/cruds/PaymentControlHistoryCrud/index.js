@@ -68,7 +68,7 @@ function PaymentControlHistoryCrud() {
 
     {
       name: "Fecha comentario",
-      selector: (row) => row.comment_date,
+      selector: (row) => new Date(row.comment_date).toLocaleString("en-US"),
       sortable: true,
       reorder: true,
       omit: false,

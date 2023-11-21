@@ -14,7 +14,9 @@ function ExpandableItem(props) {
       {props.data?.controlledAccounts?.length > 0 ? (
         <>
           <div className="expandable-header" onClick={toggleItem}>
-            <span>{props?.title}</span>
+            <span>
+              {props.data.number} - {props?.title}
+            </span>
             <BiChevronDown
               size={20}
               className={`expandable-header-icon ${
@@ -57,7 +59,9 @@ function ExpandableItem(props) {
 function LasChild(props) {
   return (
     <div className="expandable-last-child">
-      <p>{props.data.name}</p>
+      <p>
+        {props.data.number} - {props.data.name}
+      </p>
       <CurrencyFormat
         value={props.data.balance}
         displayType={"text"}

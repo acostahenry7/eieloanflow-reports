@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useRef } from "react";
 import { SearchBar } from "../../SearchBar";
 import { Datatable } from "../../Datatable";
 import { getReceivedPaymentsApi } from "../../../api/payment";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import { Margin, usePDF } from "react-to-pdf";
+import { useReactToPrint } from "react-to-print";
 
 function ReceivedPaymentCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -13,10 +14,42 @@ function ReceivedPaymentCrud() {
   const [reqToggle, setReqToggle] = React.useState([]);
   const [searchParams, setSearchParams] = React.useState([]);
   const [searchedText, setSearchedText] = React.useState("");
+  const [isPrinting, setIsPrinting] = React.useState(false);
 
-  const { toPDF, targetRef } = usePDF({
-    filename: "reporte-pagos-recibidos.pdf",
-    page: { margin: Margin.MEDIUM },
+  // const { toPDF, targetRef } = usePDF({
+  //   filename: "reporte-pagos-recibidos.pdf",
+  //   page: { margin: Margin.MEDIUM },
+  // });
+
+  const componentPDF = useRef();
+  const promiseResolveRef = useRef(null);
+
+  React.useEffect(() => {
+    if (isPrinting && promiseResolveRef.current) {
+      promiseResolveRef.current();
+    }
+  }, [isPrinting]);
+
+  const generatePDF = useReactToPrint({
+    content: () => componentPDF.current,
+    filename: "reporte-pagos-recibidos",
+    onBeforeGetContent: () => {
+      return new Promise((resolve) => {
+        promiseResolveRef.current = resolve;
+        setIsPrinting(true);
+      });
+    },
+    pageStyle: `@media print {
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+    }`,
+    onAfterPrint: () => {
+      promiseResolveRef.current = null;
+      setIsPrinting(false);
+      //alert("PDF File generated");
+    },
   });
 
   React.useEffect(() => {
@@ -107,7 +140,7 @@ function ReceivedPaymentCrud() {
     },
     {
       name: "Fecha recibo",
-      selector: (row) => row.created_date,
+      selector: (row) => new Date(row.created_date).toLocaleString("en-US"),
       sortable: true,
       reorder: true,
       omit: false,
@@ -250,8 +283,18 @@ function ReceivedPaymentCrud() {
         columns={columns}
         setColumns={setColumns}
       />
-      <button onClick={toPDF}>exportar</button>
-      <div ref={targetRef}>
+      <button
+        onClick={() => {
+          setIsPrinting(true);
+          generatePDF();
+        }}
+      >
+        exportar
+      </button>
+      <div
+        ref={componentPDF}
+        //style={{ padding: isPrinting ? 30 : 0, marginBottom: 15 }}
+      >
         <Datatable columns={columns} data={filterData} isLoading={isLoading} />
       </div>
     </div>
