@@ -64,6 +64,14 @@ function RegisterCloseCrud() {
       omit: false,
     },
     {
+      name: "Cant. Transacciones",
+      width: "150px",
+      selector: (row) => row.child.length,
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+    {
       name: "Total apertura",
       width: "120px",
       selector: (row) => row.register.amount,
@@ -126,12 +134,12 @@ function RegisterCloseCrud() {
       type: "text",
     },
 
-    {
-      label: "No. Préstamo",
-      field: "loanNumber",
-      placeholder: "No. Préstamo",
-      type: "text",
-    },
+    // {
+    //   label: "No. Préstamo",
+    //   field: "loanNumber",
+    //   placeholder: "No. Préstamo",
+    //   type: "text",
+    // },
     {
       label: "Sucursal",
       field: "outletId",
@@ -239,6 +247,7 @@ function RegisterCloseCrud() {
                 </div>
               );
             },
+            fixedHeader: true,
           }}
         />
       </div>

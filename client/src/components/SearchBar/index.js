@@ -10,6 +10,7 @@ function SearchBar({
   mainFilters,
   secondaryFilters,
   setRequestToggle,
+  searchParams,
   setSearchParams,
   setSearchedText,
   columns,
@@ -56,6 +57,12 @@ function SearchBar({
                 type="search"
                 placeholder={mf.placeholder}
               />
+              <div style={{ fontSize: 12, marginTop: 2, color: "grey" }}>
+                <span>Búsqueda: </span>
+                <b style={{ color: "rgba(0,0,0,0.6)" }}>
+                  {searchParams != undefined ? searchParams[`${mf.field}`] : ""}
+                </b>
+              </div>
             </div>
           ))}
         {mainFilters
@@ -97,6 +104,25 @@ function SearchBar({
                 type="search"
                 placeholder={sf.placeholder}
               />
+            </div>
+          ))}
+        {secondaryFilters
+          .filter((item) => item.type === "select")
+          .map((mf, index) => (
+            <div key={index} className="SearchBar-main-item">
+              <label>{mf.label}</label>
+              <select
+                value={searchForm.values[mf.field]}
+                onChange={(e) =>
+                  searchForm.setFieldValue(mf.field, e.target.value)
+                }
+              >
+                {mf.options.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
             </div>
           ))}
         {secondaryFilters

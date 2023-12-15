@@ -245,7 +245,15 @@ function LoanDiscountsCrud() {
         columns={columns}
         setColumns={setColumns}
       />
-      {/* <button onClick={toPDF}>exportar</button> */}
+      <button
+        onClick={async () =>
+          toPDF().then((res) => {
+            console.log("done");
+          })
+        }
+      >
+        exportar
+      </button>
       <div ref={targetRef}>
         <Datatable columns={columns} data={filterData} isLoading={isLoading} />
       </div>

@@ -22,7 +22,12 @@ controller.getArrearUsers = async (queryParams) => {
       having l.loan_situation like 'ARREARS'
       AND l.status_type not in ('DELETE', 'PAID')
       AND COUNT(a.amortization_id) filter (where a.status_type = 'DEFEATED') > 0
-      ${generateWhereStatement(queryParams)}`);
+      AND lower(c.first_name || ' ' || c.last_name) like '${
+        queryParams.customerName || ""
+      }%'
+      AND c.identification like '${queryParams.identification || ""}%'
+      AND l.loan_number_id::varchar like '${queryParams.loanNumber || ""}%'
+      AND l.outlet_id like '${queryParams.outletId || ""}%'`);
 
     if (data.length == 0) {
       return [];

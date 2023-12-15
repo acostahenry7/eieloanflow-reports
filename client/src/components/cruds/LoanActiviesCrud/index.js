@@ -2,7 +2,10 @@ import React from "react";
 import { SearchBar } from "../../SearchBar";
 import { Datatable } from "../../Datatable";
 import { getLoanActivities } from "../../../api/loan";
-import { formatClientName } from "../../../utils/stringFunctions";
+import {
+  formatClientName,
+  getLoanSituationLabel,
+} from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import { Margin, usePDF } from "react-to-pdf";
 
@@ -33,39 +36,7 @@ function LoanActivitiesCrud() {
         console.log(loanActivities.body);
 
         loanActivities.body.map((la) => {
-          switch (la.action_type) {
-            case "RENEGOTIATED":
-              la.action_type = "Renegociado";
-              break;
-            case "NORMAL":
-              la.action_type = "Des-Incautado";
-              break;
-            case "REFINANCE":
-              la.action_type = "Refinanciado";
-              break;
-            case "CHANGE_PAYMENT_DATE":
-              la.action_type = "Cambio de fecha";
-              break;
-            case "BAD_LOAN":
-              la.action_type = "DEFINIR";
-              break;
-            case "TRANSFERRED":
-              la.action_type = "Transferido";
-              break;
-            case "EDIT":
-              la.action_type = "Editado";
-              break;
-            case "SEIZE":
-              la.action_type = "Incautado";
-              break;
-            case "CREATED":
-              la.action_type = "Creado";
-              break;
-
-            default:
-              break;
-          }
-
+          la.action_type = getLoanSituationLabel(la.action_type);
           return la;
         });
 
@@ -232,6 +203,115 @@ function LoanActivitiesCrud() {
       placeholder: "Empleado",
       field: "employeeName",
       type: "text",
+    },
+    {
+      label: "Estatus",
+      field: "loanStatus",
+      type: "select",
+      options: [
+        {
+          label: "Todos",
+          value: "",
+        },
+        {
+          label: "Creado",
+          value: "CREATED",
+        },
+        {
+          label: "Pagado",
+          value: "PAID",
+        },
+        {
+          label: "Cancelado",
+          value: "CANCEL",
+        },
+        {
+          label: "Renegociado",
+          value: "RENEGOTIATED",
+        },
+        {
+          label: "Transferido",
+          value: "TRANSFERRED",
+        },
+        {
+          label: "Incobrable",
+          value: "BAD-LOAN",
+        },
+        {
+          label: "Reenganchado",
+          value: "reenganchado",
+        },
+      ],
+    },
+    {
+      label: "Tipo de préstamo",
+      field: "loanType",
+      type: "select",
+      options: [
+        {
+          label: "Todos",
+          value: "",
+        },
+        {
+          label: "Personal",
+          value: "LOAN_TYPE_PERSONAL",
+        },
+        {
+          label: "Vehículo",
+          value: "LOAN_TYPE_VEHICLE",
+        },
+        {
+          label: "Hipotecario",
+          value: "LOAN_TYPE_MORTGAGE",
+        },
+        {
+          label: "Pymes",
+          value: "LOAN_PYMES",
+        },
+        {
+          label: "Micro",
+          value: "LOAN_MICRO",
+        },
+        {
+          label: "Seguro",
+          value: "LOAN_INSURANCE",
+        },
+      ],
+    },
+    {
+      label: "Situación",
+      field: "loanSituation",
+      type: "select",
+      options: [
+        {
+          label: "Todos",
+          value: "",
+        },
+        {
+          label: "Normal",
+          value: "NORMAL",
+        },
+        {
+          label: "Pagado",
+          value: "PAID",
+        },
+        {
+          label: "Atraso",
+          value: "ARREARS",
+        },
+        {
+          label: "Legal",
+          value: "legal",
+        },
+        {
+          label: "Refinanciado",
+          value: "REFINANCE",
+        },
+        {
+          label: "Incautado",
+          value: "SEIZED",
+        },
+      ],
     },
     // {
     //   label: "Recibo",

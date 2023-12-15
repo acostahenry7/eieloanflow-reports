@@ -5,10 +5,9 @@ var _ = require("lodash");
 const controller = {};
 
 controller.getLoans = async (queryParams) => {
-  console.log(queryParams);
   try {
-    const [data, meta] =
-      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, l.interest_rate_type, 
+    const [data, meta] = await db.query(
+      `SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, l.interest_rate_type, 
       l.amount_approved, l.number_of_installments, ir.percent, l.frequency_of_payment, lp.name, l.status_type,
 	  l.loan_situation, la.loan_type,
       COALESCE(SUM(a.capital) filter(where a.paid = 'true'), 0)  as paid_capital,
@@ -42,15 +41,26 @@ controller.getLoans = async (queryParams) => {
       GROUP BY  c.first_name, c.last_name , c.identification, l.loan_number_id, l.interest_rate_type, 
       l.amount_approved, l.number_of_installments, ir.percent, l.frequency_of_payment, lp.name, l.status_type,
       a.total_paid_mora, l.amount_of_free, o.name, la.loan_type, l.loan_situation, l.outlet_id
-      HAVING l.status_type not in ('DELETE', 'PAID')
-        ${generateWhereStatement(queryParams)}`);
+      HAVING l.status_type not in ('DELETE')
+	  AND lower(c.first_name || ' ' || c.last_name) like '${
+      queryParams.customerName || ""
+    }%'
+	  AND c.identification like '${queryParams.identification || ""}%'
+	  AND l.loan_number_id::varchar like '${queryParams.loanNumber || ""}%'
+	  AND l.outlet_id like '${queryParams.outletId || ""}%'	
+	  AND l.status_type like '${queryParams.loanStatus || ""}%'
+	  AND la.loan_type like '${queryParams.loanType || ""}%'
+	  AND l.loan_situation like '${queryParams.loanSituation || ""}%'`
+    );
+
+    console.log(queryParams);
 
     if (data.length == 0) {
       console.log(data);
       return [];
     }
 
-    console.log(data);
+    // console.log(data);
     return data;
   } catch (error) {
     throw new Error(error.message);
@@ -166,6 +176,7 @@ controller.getRegisterClose = async (queryParams) => {
       JOIN jhi_user u ON (r.user_id = u.user_id)
       JOIN employee e ON (u.employee_id = e.employee_id)
       WHERE l.status_type NOT IN ('PAID', 'DELETE')
+      AND l.outlet_id like '${queryParams.outletId || ""}%'
       ORDER BY r.created_date desc,  p.register_id`);
 
     if (data.length == 0) {

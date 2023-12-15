@@ -1,5 +1,7 @@
-function generateWhereStatement(queryParams) {
-  let whereString = `AND lower(c.first_name || c.last_name) like '%${
+function generateWhereStatement(queryParams, whereClause) {
+  let whereString = `${
+    whereClause == true ? "WHERE" : "AND"
+  } lower(c.first_name || c.last_name) like '%${
     queryParams.customerName?.toLowerCase() || ""
   }%'
       AND c.identification like '%${queryParams.indetification || ""}%'

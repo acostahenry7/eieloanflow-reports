@@ -29,7 +29,7 @@ function Datatable({
     },
     responsiveWrapper: {
       style: {
-        // borderRadius: 20,
+        marginTop: 40,
       },
     },
     rows: {
@@ -55,12 +55,18 @@ function Datatable({
         borderTop: "1px solid rgba(0,0,0,0.2)",
         borderBottom: "1px solid rgba(0,0,0,0.2)",
         color: "#364454",
+        // position: "fixed",
+        // top: 300,
 
         // fontSize: 14,
         // borderRadius: 20,
         fontSize: 13,
         fontWeight: "bold",
       },
+    },
+
+    body: {
+      marginTop: 40,
     },
 
     pagination: {

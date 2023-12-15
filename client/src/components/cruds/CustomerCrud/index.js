@@ -4,6 +4,7 @@ import { Datatable } from "../../Datatable";
 import { getArrearCustomersApi } from "../../../api/customer";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
+import { tableUIHelper } from "../../../utils/ui-helpers";
 
 function CustomerCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -51,6 +52,7 @@ function CustomerCrud() {
     },
     {
       name: "Préstamo",
+      width: tableUIHelper.columns.width.loan,
       selector: (row) => row.loan_number_id,
       sortable: true,
       reorder: true,
@@ -58,6 +60,7 @@ function CustomerCrud() {
     },
     {
       name: "Teléfono",
+      width: tableUIHelper.columns.width.phone,
       selector: (row) => row.phone,
       sortable: true,
       reorder: true,
@@ -65,6 +68,7 @@ function CustomerCrud() {
     },
     {
       name: "Fecha Préstamo",
+      width: tableUIHelper.columns.width.date,
       selector: (row) => new Date(row.created_date).toLocaleString("en-US"),
       sortable: true,
       reorder: true,
@@ -87,14 +91,18 @@ function CustomerCrud() {
     },
     {
       name: "Cuotas",
-      selector: (row) => row.number_of_installments,
+      width: tableUIHelper.columns.width.fee,
+      selector: (row) => (
+        <p style={{ textAlign: "start" }}>{row.number_of_installments}</p>
+      ),
       sortable: true,
       reorder: true,
       omit: false,
       hide: "lg",
     },
     {
-      name: "Cuotas Pagadas",
+      name: "C. Pagadas",
+      width: tableUIHelper.columns.width.fee,
       selector: (row) => row.paid_dues,
       sortable: true,
       reorder: true,
@@ -102,7 +110,8 @@ function CustomerCrud() {
       hide: "lg",
     },
     {
-      name: "Cuotas en atraso",
+      name: "C. atraso",
+      width: tableUIHelper.columns.width.fee,
       selector: (row) => row.arrears_dues,
       sortable: true,
       reorder: true,
@@ -142,6 +151,7 @@ function CustomerCrud() {
     },
     {
       name: "Vencido desde",
+      width: tableUIHelper.columns.width.date,
       selector: (row) => new Date(row.defeated_since).toLocaleString("en-US"),
       sortable: true,
       reorder: true,
@@ -165,7 +175,7 @@ function CustomerCrud() {
     },
     {
       label: "No. Cédula/Pasaporte",
-      field: "indetification",
+      field: "identification",
       placeholder: "Cédula",
       type: "text",
     },
@@ -209,7 +219,7 @@ function CustomerCrud() {
   ];
 
   const filterData = data.filter((item) => {
-    let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}`;
+    let searchText = `customerName${item.customer_name}identification${item.identification}loanNumber${item.loan_number_id}`;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
 
@@ -219,6 +229,7 @@ function CustomerCrud() {
         mainFilters={mainFilters}
         secondaryFilters={secondaryFilters}
         setRequestToggle={setReqToggle}
+        searchParams={searchParams}
         setSearchParams={setSearchParams}
         setSearchedText={setSearchedText}
         columns={columns}

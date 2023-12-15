@@ -2,7 +2,11 @@ import React from "react";
 import { SearchBar } from "../../SearchBar";
 import { Datatable } from "../../Datatable";
 import { getLoans } from "../../../api/loan";
-import { formatClientName } from "../../../utils/stringFunctions";
+import {
+  formatClientName,
+  getLoanSituationLabel,
+  getLoanTypeLabel,
+} from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import "./index.css";
 
@@ -32,6 +36,8 @@ function LoanDetailCrud() {
       setIsLoading(false);
     })();
   }, [reqToggle, searchParams]);
+
+  console.log("hola", searchParams);
 
   const [columns, setColumns] = React.useState([
     {
@@ -69,7 +75,7 @@ function LoanDetailCrud() {
 
     {
       name: "Tipo de préstamo",
-      selector: (row) => row.loan_type,
+      selector: (row) => getLoanTypeLabel(row.loan_type),
       sortable: true,
       reorder: true,
       omit: false,
@@ -103,9 +109,8 @@ function LoanDetailCrud() {
       omit: false,
     },
     {
-      name: "Estado",
-      selector: (row) =>
-        row.status_type === "CANCEL" ? "Cancelado" : "Activo",
+      name: "Estatus",
+      selector: (row) => getLoanSituationLabel(row.status_type),
       sortable: true,
       reorder: true,
       omit: false,
@@ -113,7 +118,7 @@ function LoanDetailCrud() {
     },
     {
       name: "Situación",
-      selector: (row) => row.loan_situation,
+      selector: (row) => getLoanSituationLabel(row.loan_situation),
       sortable: true,
       reorder: true,
       omit: false,
@@ -129,7 +134,7 @@ function LoanDetailCrud() {
     },
     {
       label: "No. Cédula/Pasaporte",
-      field: "indetification",
+      field: "identification",
       placeholder: "Cédula",
       type: "text",
     },
@@ -165,9 +170,118 @@ function LoanDetailCrud() {
       placeholder: "Búsqueda por nombre",
       type: "dateRange",
     },
+    {
+      label: "Estatus",
+      field: "loanStatus",
+      type: "select",
+      options: [
+        {
+          label: "Todos",
+          value: "",
+        },
+        {
+          label: "Creado",
+          value: "CREATED",
+        },
+        {
+          label: "Pagado",
+          value: "PAID",
+        },
+        {
+          label: "Cancelado",
+          value: "CANCEL",
+        },
+        {
+          label: "Renegociado",
+          value: "RENEGOTIATED",
+        },
+        {
+          label: "Transferido",
+          value: "TRANSFERRED",
+        },
+        {
+          label: "Incobrable",
+          value: "BAD-LOAN",
+        },
+        {
+          label: "Reenganchado",
+          value: "reenganchado",
+        },
+      ],
+    },
+    {
+      label: "Tipo de préstamo",
+      field: "loanType",
+      type: "select",
+      options: [
+        {
+          label: "Todos",
+          value: "",
+        },
+        {
+          label: "Personal",
+          value: "LOAN_TYPE_PERSONAL",
+        },
+        {
+          label: "Vehículo",
+          value: "LOAN_TYPE_VEHICLE",
+        },
+        {
+          label: "Hipotecario",
+          value: "LOAN_TYPE_MORTGAGE",
+        },
+        {
+          label: "Pymes",
+          value: "LOAN_PYMES",
+        },
+        {
+          label: "Micro",
+          value: "LOAN_MICRO",
+        },
+        {
+          label: "Seguro",
+          value: "LOAN_INSURANCE",
+        },
+      ],
+    },
+    {
+      label: "Situación",
+      field: "loanSituation",
+      type: "select",
+      options: [
+        {
+          label: "Todos",
+          value: "",
+        },
+        {
+          label: "Normal",
+          value: "NORMAL",
+        },
+        {
+          label: "Pagado",
+          value: "PAID",
+        },
+        {
+          label: "Atraso",
+          value: "ARREARS",
+        },
+        {
+          label: "Legal",
+          value: "legal",
+        },
+        {
+          label: "Refinanciado",
+          value: "REFINANCE",
+        },
+        {
+          label: "Incautado",
+          value: "SEIZED",
+        },
+      ],
+    },
   ];
   const filterData = data.filter((item) => {
-    let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}`;
+    let searchText = `customerName${item.customer_name}identification${item.identification}loanNumber${item.loan_number_id}`;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
 
@@ -177,6 +291,7 @@ function LoanDetailCrud() {
         mainFilters={mainFilters}
         secondaryFilters={secondaryFilters}
         setRequestToggle={setReqToggle}
+        searchParams={searchParams}
         setSearchParams={setSearchParams}
         setSearchedText={setSearchedText}
         columns={columns}

@@ -12,6 +12,7 @@ function GeneralBalanceScreen() {
       try {
         let balance = await getGeneralBalance({});
         console.log(balance.body);
+
         let arr = balance.body?.filter(
           (item) =>
             item.account_catalog_id == "2f8cee32-92d8-40bb-9dcd-522bbe068285" ||
