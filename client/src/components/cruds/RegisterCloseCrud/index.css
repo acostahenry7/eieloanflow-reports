@@ -1,0 +1,11 @@
+.list-container ul{
+    list-style: none;
+    margin-left: 235px;
+    overflow-x: auto;
+}
+
+.list-item {
+    width: 180px;
+    font-size: 12px;
+    font-weight: bold;
+}

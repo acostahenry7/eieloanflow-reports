@@ -5,6 +5,7 @@ export const tableUIHelper = {
       loan: "110px",
       phone: "140px",
       fee: "110px",
+      amount: "150px",
     },
   },
 };

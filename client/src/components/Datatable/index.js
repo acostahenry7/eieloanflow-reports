@@ -71,7 +71,7 @@ function Datatable({
 
     pagination: {
       style: {
-        marginTop: 15,
+        marginTop: 100,
         borderRadius: 20,
         // boxShadow: "0px 0px 10px var(--container-shadow-color)",
       },

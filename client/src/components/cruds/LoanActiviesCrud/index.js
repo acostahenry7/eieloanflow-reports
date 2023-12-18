@@ -338,7 +338,7 @@ function LoanActivitiesCrud() {
         columns={columns}
         setColumns={setColumns}
       />
-      {/* <button onClick={toPDF}>exportar</button> */}
+      <button onClick={toPDF}>exportar</button>
       <div ref={targetRef}>
         <Datatable columns={columns} data={filterData} isLoading={isLoading} />
       </div>

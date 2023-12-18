@@ -5,6 +5,9 @@ import { getRegisterClose } from "../../../api/loan";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import { Margin, usePDF } from "react-to-pdf";
+import "./index.css";
+import { tableUIHelper } from "../../../utils/ui-helpers";
+import CurrencyFormat from "react-currency-format";
 
 function RegisterCloseCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -65,7 +68,7 @@ function RegisterCloseCrud() {
     },
     {
       name: "Cant. Transacciones",
-      width: "150px",
+      width: tableUIHelper.columns.width.amount,
       selector: (row) => row.child.length,
       sortable: true,
       reorder: true,
@@ -73,7 +76,7 @@ function RegisterCloseCrud() {
     },
     {
       name: "Total apertura",
-      width: "120px",
+      width: tableUIHelper.columns.width.amount,
       selector: (row) => row.register.amount,
       sortable: true,
       reorder: true,
@@ -81,7 +84,7 @@ function RegisterCloseCrud() {
     },
     {
       name: "Total de efectivo",
-      width: "140px",
+      width: tableUIHelper.columns.width.amount,
       selector: (row) => row.register.total_cash,
       sortable: true,
       reorder: true,
@@ -90,6 +93,7 @@ function RegisterCloseCrud() {
 
     {
       name: "Total de cheques",
+      width: tableUIHelper.columns.width.amount,
       selector: (row) => row.register.total_check,
       sortable: true,
       reorder: true,
@@ -97,13 +101,15 @@ function RegisterCloseCrud() {
     },
     {
       name: "Total de transferencia",
-      selector: (row) => row.register.total_check,
+      width: tableUIHelper.columns.width.amount,
+      selector: (row) => row.register.total_transfer,
       sortable: true,
       reorder: true,
       omit: false,
     },
     {
       name: "Total de descuento",
+      width: tableUIHelper.columns.width.amount,
       selector: (row) => row.register.total_discount,
       sortable: true,
       reorder: true,
@@ -111,6 +117,7 @@ function RegisterCloseCrud() {
     },
     {
       name: "Total pagado",
+      width: tableUIHelper.columns.width.amount,
       selector: (row) => row.register.total_pay,
       sortable: true,
       reorder: true,
@@ -250,6 +257,122 @@ function RegisterCloseCrud() {
             fixedHeader: true,
           }}
         />
+
+        <div
+          style={{
+            display: isLoading ? "none" : "flex",
+            alignItems: "center",
+            marginTop: "-150px",
+            // justifyContent: "space-between",
+            width: "100%",
+          }}
+        >
+          <div>Total</div>
+          <div className="list-container">
+            <ul
+              style={{
+                display: "flex",
+                width: "70%",
+                justifyContent: "flex-start",
+              }}
+            >
+              <li className="list-item">
+                <CurrencyFormat
+                  value={filterData.reduce(
+                    (acc, item) => acc + item.child.length,
+                    0
+                  )}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  prefix={""}
+                />
+              </li>
+              <li className="list-item">
+                <CurrencyFormat
+                  value={filterData
+                    .reduce(
+                      (acc, item) => acc + parseFloat(item.register.amount),
+                      0
+                    )
+                    .toFixed(2)}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  prefix={"RD $"}
+                />
+              </li>
+              <li className="list-item">
+                <CurrencyFormat
+                  value={filterData
+                    .reduce(
+                      (acc, item) =>
+                        acc + parseFloat(item.register.total_cash || 0),
+                      0
+                    )
+                    .toFixed(2)}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  prefix={"RD $"}
+                />
+              </li>
+              <li className="list-item">
+                <CurrencyFormat
+                  value={filterData
+                    .reduce(
+                      (acc, item) =>
+                        acc + parseFloat(item.register.total_check || 0),
+                      0
+                    )
+                    .toFixed(2)}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  prefix={"RD $"}
+                />
+              </li>
+              <li className="list-item">
+                <CurrencyFormat
+                  value={filterData
+                    .reduce(
+                      (acc, item) =>
+                        acc + parseFloat(item.register.total_transfer || 0),
+                      0
+                    )
+                    .toFixed(2)}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  prefix={"RD $"}
+                />
+              </li>
+              <li className="list-item">
+                <CurrencyFormat
+                  value={filterData
+                    .reduce(
+                      (acc, item) =>
+                        acc + parseFloat(item.register.total_discount || 0),
+                      0
+                    )
+                    .toFixed(2)}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  prefix={"RD $"}
+                />
+              </li>
+              <li className="list-item">
+                <CurrencyFormat
+                  value={filterData
+                    .reduce(
+                      (acc, item) =>
+                        acc + parseFloat(item.register.total_pay || 0),
+                      0
+                    )
+                    .toFixed(2)}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  prefix={"RD $"}
+                />
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );

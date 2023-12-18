@@ -7,10 +7,10 @@ const controller = {};
 controller.getLoans = async (queryParams) => {
   try {
     const [data, meta] = await db.query(
-      `SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, l.interest_rate_type, 
-      l.amount_approved, l.number_of_installments, ir.percent, l.frequency_of_payment, lp.name, l.status_type,
-	  l.loan_situation, la.loan_type,
-      COALESCE(SUM(a.capital) filter(where a.paid = 'true'), 0)  as paid_capital,
+      `SELECT distinct(l.loan_number_id), c.first_name || ' ' || c.last_name as customer_name, c.identification,  l.interest_rate_type, 
+      l.amount_approved, l.number_of_installments, l.frequency_of_payment, l.status_type, lp.name, l.status_type,
+      l.loan_situation, la.loan_type, l.amount_of_free,
+      SUM(a.capital) filter(where a.paid = 'true')  paid_capital,
       COALESCE(SUM(a.interest) filter(where a.paid = 'true'), 0)  as paid_interest,
       COALESCE(SUM(a.discount_interest), 0) discount_interest,
       COALESCE(SUM(a.discount_mora), 0) discount_mora,
@@ -28,29 +28,24 @@ controller.getLoans = async (queryParams) => {
       COALESCE(SUM(a.mora) filter(where a.status_type = 'ACTIVE'), 0) pending_mora,
       COALESCE(SUM(a.mora) filter(where a.status_type = 'DEFEATED'), 0) arrear_mora,
       COALESCE(COUNT(a.amortization_id) filter(where a.paid = 'false'), 0) pending_dues,
-      COALESCE(COUNT(a.amortization_id) filter(where a.status_type = 'DEFEATED'), 0) arrear_dues,
-	  o.name as outlet_name
+      COALESCE(COUNT(a.amortization_id) filter(where a.status_type = 'DEFEATED'), 0) arrear_dues
       FROM public.loan l
-	  LEFT JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
-      LEFT JOIN customer_loan cl ON (l.loan_id = cl.loan_id)
-      JOIN customer c ON (cl.customer_id = c.customer_id)
-      LEFT JOIN interest_rate ir ON (l.interest_rate_id = ir.interest_rate_id)
+      LEFT JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
+      LEFT JOIN customer c ON (la.customer_id = c.customer_id)
       LEFT JOIN late_payment lp ON (l.late_payment_id = lp.late_payment_id)
-      RIGHT JOIN amortization a ON (a.loan_id = l.loan_id)
-	  LEFT JOIN outlet o ON (l.outlet_id = o.outlet_id)
-      GROUP BY  c.first_name, c.last_name , c.identification, l.loan_number_id, l.interest_rate_type, 
-      l.amount_approved, l.number_of_installments, ir.percent, l.frequency_of_payment, lp.name, l.status_type,
-      a.total_paid_mora, l.amount_of_free, o.name, la.loan_type, l.loan_situation, l.outlet_id
-      HAVING l.status_type not in ('DELETE')
+      LEFT JOIN amortization a ON (l.loan_id = a.loan_id and l.outlet_id = a.outlet_id)
+      WHERE l.outlet_id like '${queryParams.outletId || ""}%'	
 	  AND lower(c.first_name || ' ' || c.last_name) like '${
       queryParams.customerName || ""
     }%'
 	  AND c.identification like '${queryParams.identification || ""}%'
 	  AND l.loan_number_id::varchar like '${queryParams.loanNumber || ""}%'
-	  AND l.outlet_id like '${queryParams.outletId || ""}%'	
 	  AND l.status_type like '${queryParams.loanStatus || ""}%'
 	  AND la.loan_type like '${queryParams.loanType || ""}%'
-	  AND l.loan_situation like '${queryParams.loanSituation || ""}%'`
+	  AND l.loan_situation like '${queryParams.loanSituation || ""}%'
+    GROUP BY  c.first_name, c.last_name , c.identification, l.loan_number_id, l.interest_rate_type, 
+l.amount_approved, l.number_of_installments,l.frequency_of_payment, lp.name, l.status_type,
+l.amount_of_free, la.loan_type, l.loan_situation, l.outlet_id`
     );
 
     console.log(queryParams);
