@@ -111,7 +111,7 @@ function LoanDetailCrud() {
     },
     {
       name: "Monto de cuota",
-      selector: (row) => row.due_amount,
+      selector: (row) => row.amount_of_free,
       sortable: true,
       reorder: true,
       omit: false,
@@ -330,15 +330,16 @@ function LoanDetailSummary({ data }) {
   React.useEffect(() => {
     (async () => {
       const res = await getLoanDetail(data.loan_id);
+      console.log(res);
       setDetail(res.body[0]);
     })();
   }, [data]);
 
   console.log(detail);
   const fields = [
+    "Préstamo",
     "Nombre Cliente",
     "Cédula",
-    "Préstamo",
     "Tipo de tasa",
     "Monto aprobado",
     "Número de cuotas",
