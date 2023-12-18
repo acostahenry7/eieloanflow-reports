@@ -1,11 +1,25 @@
 import { request } from "../utils/request";
 
-async function getLoans(queryParams) {
+async function getLoans(queryParams, loanId) {
   try {
     const loans = await request({
       method: "GET",
       path: "/loan",
-      urlParams: queryParams || {},
+      urlParams: { ...queryParams, loanId } || {},
+    });
+
+    return loans;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getLoanDetail(id) {
+  try {
+    const loans = await request({
+      method: "GET",
+      path: `/loanDetail/${id}`,
+      urlParams: {},
     });
 
     return loans;
@@ -56,4 +70,10 @@ async function getRegisterClose(queryParams) {
   }
 }
 
-export { getLoans, getLoanActivities, getLoanDiscounts, getRegisterClose };
+export {
+  getLoans,
+  getLoanActivities,
+  getLoanDiscounts,
+  getRegisterClose,
+  getLoanDetail,
+};

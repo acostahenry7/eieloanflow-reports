@@ -139,6 +139,18 @@ module.exports = (app) => {
       });
   });
 
+  router.get("/api/loanDetail/:id", (req, res) => {
+    console.log(req.params.id);
+    loanCtrl
+      .getLoanDetails(req)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   router.get("/api/loan-activities", (req, res) => {
     console.log("hi");
     loanCtrl

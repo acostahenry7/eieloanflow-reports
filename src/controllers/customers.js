@@ -26,14 +26,21 @@ controller.getArrearUsers = async (queryParams) => {
         queryParams.customerName || ""
       }%'
       AND c.identification like '${queryParams.identification || ""}%'
-      AND l.loan_number_id::varchar like '${queryParams.loanNumber || ""}'
-      AND l.outlet_id like '${queryParams.outletId || ""}'`);
+      ${
+        queryParams.loanNumber
+          ? `AND l.loan_number_id::varchar like '${
+              queryParams.loanNumber || ""
+            }'`
+          : ""
+      } 
+      AND l.outlet_id like '${queryParams.outletId || ""}%'`);
 
     if (data.length == 0) {
       return [];
     }
     return data;
   } catch (error) {
+    console.log(error);
     throw new Error(error.message);
   }
 };

@@ -1,7 +1,7 @@
 import React from "react";
 import { SearchBar } from "../../SearchBar";
 import { Datatable } from "../../Datatable";
-import { getLoans } from "../../../api/loan";
+import { getLoanDetail, getLoans } from "../../../api/loan";
 import {
   formatClientName,
   getLoanSituationLabel,
@@ -17,13 +17,14 @@ function LoanDetailCrud() {
   const [reqToggle, setReqToggle] = React.useState([]);
   const [searchParams, setSearchParams] = React.useState([]);
   const [searchedText, setSearchedText] = React.useState("");
+  const [currentLoanId, setCurrentLoanId] = React.useState("");
 
   React.useEffect(() => {
     (async () => {
       try {
         setIsLoading(true);
         const outlets = await getOutletsApi();
-        const customers = await getLoans(searchParams);
+        const customers = await getLoans(searchParams, currentLoanId);
         if (customers.error == true) {
           throw new Error(customers.body);
         }
@@ -35,7 +36,14 @@ function LoanDetailCrud() {
       }
       setIsLoading(false);
     })();
-  }, [reqToggle, searchParams]);
+  }, [reqToggle, searchParams, currentLoanId]);
+
+  // React.useEffect(() => {
+  //   (async () => {
+  //     const res = await getLoanDetail(data.loan_id);
+  //     setDetailedData(res);
+  //   })();
+  // }, [toggleExpandable]);
 
   console.log("hola", searchParams);
 
@@ -304,6 +312,8 @@ function LoanDetailCrud() {
         dtOptions={{
           expandableRows: true,
           expandableRowsComponent: ({ data }) => {
+            // console.log(data);
+
             return <LoanDetailSummary data={data} />;
           },
         }}
@@ -312,7 +322,19 @@ function LoanDetailCrud() {
   );
 }
 
+function getDetailedData() {}
+
 function LoanDetailSummary({ data }) {
+  const [detail, setDetail] = React.useState([]);
+
+  React.useEffect(() => {
+    (async () => {
+      const res = await getLoanDetail(data.loan_id);
+      setDetail(res.body[0]);
+    })();
+  }, [data]);
+
+  console.log(detail);
   const fields = [
     "Nombre Cliente",
     "Cédula",
@@ -350,7 +372,7 @@ function LoanDetailSummary({ data }) {
 
   return (
     <div className="LoanDetailSummary-container">
-      {Object.entries(data).map((item, index) => (
+      {Object.entries(detail).map((item, index) => (
         <div className="LoanDetailSummary-item">
           <p>{fields[index] || "key"} :</p>
           <p> {item[1]}</p>
