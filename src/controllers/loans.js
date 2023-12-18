@@ -61,9 +61,9 @@ controller.getLoanDetails = async (req) => {
           COALESCE(SUM(a.interest), 0)  as total_interest,
           l.amount_of_free,
           COALESCE(SUM(a.amount_of_fee) - SUM(a.total_paid) filter(where a.paid = 'false'), 0) as pending_amount,
-          COALESCE(SUM(a.capital) filter(where a.status_type = 'ACTIVE'), 0)  as pending_capital,
-          COALESCE(SUM(a.interest) filter(where a.status_type = 'ACTIVE'), 0)  as pending_interest,
-          COALESCE(SUM(a.mora) filter(where a.status_type = 'ACTIVE'), 0) pending_mora,
+          COALESCE(SUM(a.capital) filter(where a.paid = 'false'), 0)  as pending_capital,
+          COALESCE(SUM(a.interest) filter(where a.paid = 'false'), 0)  as pending_interest,
+          COALESCE(SUM(a.mora) filter(where a.paid = 'false'), 0) pending_mora,
           COALESCE(SUM(a.mora) filter(where a.status_type = 'DEFEATED'), 0) arrear_mora,
           COALESCE(COUNT(a.amortization_id) filter(where a.paid = 'false'), 0) pending_dues,
           COALESCE(COUNT(a.amortization_id) filter(where a.status_type = 'DEFEATED'), 0) arrear_dues
