@@ -9,6 +9,20 @@ function ExpandableItem(props) {
     setOpened(!opened);
   };
 
+  // console.log("#########", props.balances);
+  // console.log(
+  //   props.data.name,
+  //   props.balances?.filter(
+  //     (sItem) => sItem.account_catalog_id == props.data.account_catalog_id
+  //   )
+  // );
+
+  let currentAccountBalance = props.balances?.filter(
+    (sItem) => sItem.account_catalog_id == props.data.account_catalog_id
+  )[0].balance;
+
+  // console.log(currentAccountBalance);
+
   return (
     <div className="expandable">
       {props.data?.controlledAccounts?.length > 0 ? (
@@ -30,7 +44,7 @@ function ExpandableItem(props) {
           </div>
         </>
       ) : (
-        <LasChild {...props} />
+        <LasChild {...props} balance={currentAccountBalance} />
       )}
       {props.data?.controlledAccounts?.length > 0 && (
         <div
@@ -44,12 +58,14 @@ function ExpandableItem(props) {
             <b>Total</b>
           </p>
           {/* <span>{props.data.balance}</span> */}
-          <CurrencyFormat
-            value={props.data.balance}
-            displayType={"text"}
-            thousandSeparator={true}
-            prefix={"RD$"}
-          />
+          <b>
+            <CurrencyFormat
+              value={currentAccountBalance}
+              displayType={"text"}
+              thousandSeparator={true}
+              prefix={"RD$"}
+            />
+          </b>
         </div>
       )}
     </div>
@@ -63,7 +79,7 @@ function LasChild(props) {
         {props.data.number} - {props.data.name}
       </p>
       <CurrencyFormat
-        value={props.data.balance}
+        value={props.balance + parseFloat(props.data.balance)}
         displayType={"text"}
         thousandSeparator={true}
         prefix={"RD$"}

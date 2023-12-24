@@ -200,6 +200,11 @@ controller.getRegisterClose = async (queryParams) => {
       JOIN employee e ON (u.employee_id = e.employee_id)
       WHERE l.status_type NOT IN ('PAID', 'DELETE')
       AND l.outlet_id like '${queryParams.outletId || ""}%'
+      ${
+        queryParams.dateFrom && queryParams.dateTo
+          ? `AND r.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
+          : ""
+      }
       ORDER BY r.created_date desc,  p.register_id`);
 
     if (data.length == 0) {
@@ -207,9 +212,10 @@ controller.getRegisterClose = async (queryParams) => {
       return [];
     }
 
-    console.log("##################", _.groupBy(data, "register_id"));
+    // console.log("##################", _.groupBy(data, "register_id"));
     return _.groupBy(data, "register_id");
   } catch (error) {
+    console.log(error);
     throw new Error(error.message);
   }
 };

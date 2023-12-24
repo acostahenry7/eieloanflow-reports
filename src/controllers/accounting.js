@@ -5,15 +5,37 @@ const controller = {};
 
 controller.getGeneralBalance = async (queryParams) => {
   let data = {};
+  console.log(queryParams);
+  //'4a812a14-f46d-4a99-8d88-c1f14ea419f4'
 
   try {
-    const [generalBalance, meta] = await db.query(`SELECT *
-      FROM account_catalog
-      WHERE outlet_id = '4a812a14-f46d-4a99-8d88-c1f14ea419f4'`);
+    const [generalBalance, meta] =
+      await db.query(`SELECT ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
+    ac.is_control, ac.status_type, ac.created_by, ac.created_date, ac.last_modified_by, ac.last_modified_date,
+    ac.balance as catalog_balance, 
+    COALESCE(sum(gda.debit) , 0) as debit,
+    COALESCE(sum(gda.credit) , 0)as credit, 
+    COALESCE(sum(gda.credit + gda.debit) ,0)as balance, 
+    ac.outlet_id
+    FROM account_catalog ac
+    LEFT JOIN general_diary_account gda ON (ac.account_catalog_id = gda.account_catalog_id ${
+      queryParams.dateFrom
+        ? `and gda.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
+        : ""
+    })
+    WHERE outlet_id like '${
+      queryParams.outletId || "4a812a14-f46d-4a99-8d88-c1f14ea419f4"
+    }'
+    GROUP BY ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
+    ac.is_control, ac.status_type, ac.created_by, ac.created_date, ac.last_modified_by, ac.last_modified_date,
+    ac.balance, ac.outlet_id
+    ORDER BY number`);
 
     if (data.length == 0) {
       return [];
     }
+
+    let originalData = generalBalance;
 
     // generalBalance.map((item, index) => {
     //   if (item.control_account === null && item.is_control === true) {
@@ -84,6 +106,31 @@ controller.getGeneralBalance = async (queryParams) => {
 
     let mainAccounts = getMainAccountsArr(generalBalance);
     let accounts = getAccountsArr(generalBalance, mainAccounts);
+    let accountBalances = [];
+
+    for (item of originalData) {
+      // if (item.number == "1102") {
+
+      let balance = 0;
+      let isParent =
+        originalData.filter(
+          (sItem) => sItem.control_account == item.account_catalog_id
+        ).length > 0;
+
+      if (isParent) balance = parseFloat(item.balance);
+
+      accountBalances.push({
+        account_catalog_id: item.account_catalog_id,
+        number: item.number,
+        name: item.name,
+        is_control: item.is_control,
+        control_account: item.control_account,
+        balance: getAccountBalance(originalData, item, balance),
+      });
+      //}
+    }
+
+    // console.log(accountBalances);
 
     // let ctrlAccounts = 0;
     // console.log(
@@ -100,7 +147,7 @@ controller.getGeneralBalance = async (queryParams) => {
     //   })(accounts)
     // );
 
-    return accounts;
+    return { accounts, accountBalances };
   } catch (error) {
     console.log(error);
     throw new Error(error.message);
@@ -164,6 +211,9 @@ function getMainAccountsArr(arr) {
     );
 
     if (arr[i].control_account === null && arr[i].is_control === true) {
+      // arr[i].balance = arr
+      //   .filter((subItem) => subItem.control_account == arr[i].control_account)
+      //   .reduce((acc, item) => acc + parseFloat(item.balance), 0);
       testAccounts.push({
         ...arr[i],
         controlledAccounts,
@@ -176,13 +226,15 @@ function getMainAccountsArr(arr) {
 
 function getAccountsArr(baseArr, arr) {
   let testAccounts = [];
-  arr = arr?.map((item) => ({
-    ...item,
-    controlledAccounts: baseArr.filter(
-      (element) => element.control_account === item.account_catalog_id
-    ),
-  }));
-  // console.log(arr);
+  arr = arr?.map((item, index) => {
+    return {
+      ...item,
+      controlledAccounts: baseArr.filter(
+        (element) => element.control_account === item.account_catalog_id
+      ),
+    };
+  });
+
   for (let i = 0; i < arr?.length; i++) {
     testAccounts.push({
       ...arr[i],
@@ -196,6 +248,45 @@ function getAccountsArr(baseArr, arr) {
   // console.log(testAccounts);
 
   return testAccounts;
+}
+
+function getAccountBalance(accountList, currentAccount, balance) {
+  let accounts = accountList.filter(
+    (item) => item.control_account == currentAccount.account_catalog_id
+  );
+
+  // console.log({
+  //   item: currentAccount.number,
+  //   name: currentAccount.name,
+  //   balance: currentAccount.balance,
+  //   ctrl: accounts.length,
+  // });
+
+  // console.log(accounts.length);
+
+  for (item of accounts) {
+    let controlledAcccounts = accountList.filter(
+      (sItem) => sItem.control_account == item.account_catalog_id
+    );
+
+    if (controlledAcccounts.length > 0) {
+      balance += getAccountBalance(accountList, item, parseFloat(item.balance));
+    } else {
+      balance += parseFloat(item.balance);
+    }
+
+    /*getAccountBalance(
+      item?.controlledAccounts,
+      item?.account_catalog_id
+    );*/
+  }
+  // console.log(balance);
+
+  // if (accounts.length > 0) {
+  //   return accounts.reduce((acc, item) => acc + parseFloat(item.balance));
+  // }
+
+  return balance;
 }
 
 module.exports = controller;
