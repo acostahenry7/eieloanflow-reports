@@ -187,6 +187,7 @@ module.exports = (app) => {
       });
   });
 
+  //Accounting
   router.get("/api/general-balance", (req, res) => {
     console.log("hi");
     accountingCtrl
@@ -209,6 +210,24 @@ module.exports = (app) => {
       .catch((err) => {
         response.error(req, res, err.message, 500);
       });
+  });
+
+  router.post("/api/606", (req, res) => {
+    accountingCtrl
+      .generate606(req, res, req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  router.get("/api/606", (req, res) => {
+    console.log(req.query);
+    res.download(
+      path.join(__dirname, `../../client/public/reports/${req.query.fileName}`)
+    );
   });
 
   router.get("*", (req, res) => {

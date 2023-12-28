@@ -25,6 +25,7 @@ import {
 import { BsFolderCheck } from "react-icons/bs";
 import { MdInsertChart, MdOutlineBalance } from "react-icons/md";
 import { IoDocumentAttachSharp } from "react-icons/io5";
+import { TbReportSearch } from "react-icons/tb";
 
 function Sidebar() {
   const { isSidebarOpened } = React.useContext(SidebarContext);
@@ -234,7 +235,6 @@ function Sidebar() {
           route: "/reports/accounting-result-status",
           selected: false,
         },
-
         {
           label: "Balanza de comprobación",
           icon: (selected) => (
@@ -244,6 +244,17 @@ function Sidebar() {
             />
           ),
           route: "/reports/accouting-validation-balance",
+          selected: false,
+        },
+        {
+          label: "606",
+          icon: (selected) => (
+            <TbReportSearch
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/accouting-606",
           selected: false,
         },
       ],

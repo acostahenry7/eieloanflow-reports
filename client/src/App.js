@@ -21,6 +21,7 @@ import { GeneralBalanceScreen } from "./screens/GeneralBalanceScreen";
 import { ResultStatusScreen } from "./screens/ResultStatusScreen";
 import { CollectorVisitsScreen } from "./screens/CollectorVisitsScreen";
 import { ValidationBalanceScreen } from "./screens/ValidationBalanceScreen";
+import { DGI606Screen } from "./screens/DGI606Screen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -95,6 +96,7 @@ function App() {
                 path="/reports/accouting-validation-balance"
                 element={<ValidationBalanceScreen />}
               />
+              <Route path="/reports/accouting-606" element={<DGI606Screen />} />
             </Routes>
           </div>
         </Router>

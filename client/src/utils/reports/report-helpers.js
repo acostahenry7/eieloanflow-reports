@@ -2,18 +2,18 @@
 let baseColor = "#58585a";
 
 //Header
-let mainTitleFontSize = 20;
+let mainTitleFontSize = 14;
 let mainSubTitleFontSize = mainTitleFontSize - 2;
 let dateFontSize = mainSubTitleFontSize - 2;
 
 //Body
-let baseFontSize = 14;
-let subtitleFontSize = baseFontSize + 2;
-let titleFontSize = baseFontSize + 4;
+let baseFontSize = 10;
+let subtitleFontSize = baseFontSize;
+let titleFontSize = baseFontSize + 2;
 
 //------Text Layout-------
-let spacing = 15;
-let sectionSpacing = 25;
+export const spacing = 5;
+export const sectionSpacing = 10;
 
 export function createTitle(doc, text, left, top, color) {
   if (!color) color = baseColor;

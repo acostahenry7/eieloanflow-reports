@@ -1,5 +1,8 @@
 const db = require("../models");
 const { generateWhereStatement, getDateRangeFilter } = require("../utils");
+const path = require("path");
+const XlsxPopulate = require("xlsx-populate");
+const { nanoid } = require("nanoid");
 
 const controller = {};
 
@@ -288,5 +291,134 @@ function getAccountBalance(accountList, currentAccount, balance) {
 
   return balance;
 }
+
+//--------------------- DGI REPORTS --------------------------
+let alphabet = [];
+for (i = 0; i < 26; i++) {
+  alphabet.push((i + 10).toString(36).toUpperCase());
+}
+
+console.log(alphabet);
+
+let testArr = [
+  {
+    id: "40240604682",
+    tipoId: "",
+    expenseType: "01-GASTOS DE PERSONAL",
+    ncf: "B0200000001",
+    modifiedNcf: "",
+    cYearMonth: "",
+    cDay: "01",
+    payYearMonth: "202301",
+    pDay: "05",
+    billedService: 2500,
+    billedProducts: 0,
+    totalBilled: 2500,
+    billedITBIS: 450,
+    notGivenITBIS: 0,
+    art349ITBIS: 0,
+    atCostITBIS: "",
+    toPayBeforeITBIS: 0,
+    byPurchaseITBIS: 0,
+    isrRetentionType: "",
+    rentRetentionAmount: "",
+    byPurchaseISR: 450,
+    atCosumptionTax: "",
+    otherTaxesOrTasas: "",
+    legalTipAmount: "",
+    paymentType: "01 - EFECTIVO",
+  },
+  {
+    id: "40240604682",
+    tipoId: "",
+    expenseType: "01-GASTOS DE PERSONAL",
+    ncf: "B0200000001",
+    modifiedNcf: "",
+    cYearMonth: "",
+    cDay: "01",
+    payYearMonth: "202301",
+    pDay: "05",
+    billedService: 2500,
+    billedProducts: 0,
+    totalBilled: 2500,
+    billedITBIS: 450,
+    notGivenITBIS: 0,
+    art349ITBIS: 0,
+    atCostITBIS: "",
+    toPayBeforeITBIS: 0,
+    byPurchaseITBIS: 0,
+    isrRetentionType: "",
+    rentRetentionAmount: "",
+    byPurchaseISR: 450,
+    atCosumptionTax: "",
+    otherTaxesOrTasas: "",
+    legalTipAmount: "",
+    paymentType: "01 - EFECTIVO",
+  },
+  {
+    id: "40240604682",
+    tipoId: "",
+    expenseType: "01-GASTOS DE PERSONAL",
+    ncf: "B0200000001",
+    modifiedNcf: "",
+    cYearMonth: "",
+    cDay: "01",
+    payYearMonth: "202301",
+    pDay: "05",
+    billedService: 2500,
+    billedProducts: 0,
+    totalBilled: 2500,
+    billedITBIS: 450,
+    notGivenITBIS: 0,
+    art349ITBIS: 0,
+    atCostITBIS: "",
+    toPayBeforeITBIS: 0,
+    byPurchaseITBIS: 0,
+    isrRetentionType: "",
+    rentRetentionAmount: "",
+    byPurchaseISR: 450,
+    atCosumptionTax: "",
+    otherTaxesOrTasas: "",
+    legalTipAmount: "",
+    paymentType: "01 - EFECTIVO",
+  },
+];
+
+controller.generate606 = async (req, res, queryParams) => {
+  let generatedId = nanoid();
+  let filePath = path.join(__dirname, `../../client/public/reports`);
+  let fileName = `606-${generatedId}.xlsm`;
+
+  return XlsxPopulate.fromFileAsync(
+    path.join(__dirname, "../Formato-de-Envio-606.xlsm")
+  ).then((workbook) => {
+    //Fill preconf-ingo
+    workbook.sheet("Herramienta Formato 606").cell("C4").value("40240604682");
+    workbook.sheet("Herramienta Formato 606").cell("C5").value("202301");
+    workbook
+      .sheet("Herramienta Formato 606")
+      .cell("C6")
+      .value(`${testArr.length}`);
+
+    for (let row = 0; row < testArr.length; row++) {
+      let currentRow = Object.values(testArr[row]);
+
+      for (i = 0; i < currentRow.length; i++) {
+        console.log(`${alphabet[i + 1]}${12 + row}`);
+        workbook
+          .sheet("Herramienta Formato 606")
+          .cell(`${alphabet[i + 1]}${12 + row}`)
+          .value(currentRow[i]);
+      }
+    }
+    console.log(new Date().toLocaleDateString().trim());
+
+    console.log(`http://${req.headers.host}/static/reports/${fileName}`);
+
+    // Write to file.
+    workbook.toFileAsync(`${filePath}/${fileName}`).then;
+    return `http://${req.headers.host}/static/reports/${fileName}`;
+  });
+};
 
 module.exports = controller;
