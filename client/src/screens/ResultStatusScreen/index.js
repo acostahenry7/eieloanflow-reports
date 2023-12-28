@@ -17,9 +17,9 @@ function ResultStatusScreen() {
         let obj = {
           accounts: balance.body?.accounts.filter(
             (item) =>
-              item.account_catalog_id ==
-                "e93080ed-513f-4dea-9f78-a49b08207eea" ||
-              item.account_catalog_id == "460fdec1-8e2f-4cd3-8944-f93f656ba1cb"
+              item.number[0] == "4" ||
+              item.number[0] == "5" ||
+              item.number[0] == "6"
           ),
           balances: balance.body?.accountBalances,
         };
@@ -33,11 +33,18 @@ function ResultStatusScreen() {
   }, []);
 
   const savepdf = () => {
-    let arr = data.balances.filter(
-      (item) => item.number[0] == "4" || item.number[0] == "6"
-    );
+    // let arr = data.balances.filter(
+    //   (item) =>
+    //     item.number[0] == "4" || item.number[0] == "5" || item.number[0] == "6"
+    // );
 
-    generateReport(arr);
+    let configParams = {
+      title: "",
+      subTitle: "ESTADO DE RESULTADO",
+      date: "",
+    };
+
+    generateReport(data, configParams);
   };
 
   return (
@@ -58,24 +65,12 @@ function getRenderItems(arr) {
   let newArr = [];
   if (arr?.accounts != undefined) {
     for (let i = 0; i < arr.accounts?.length; i++) {
-      // let currentAccountBalance = parseFloat(arr[i].balance);
-      // console.log(arr[i].controlledAccounts);
-
-      // parseFloat(arr[i].balance);
-      // if (arr[i].controlledAccounts?.length > 0) {
-      //   arr[i].balance = arr[i].controlledAccounts?.reduce(
-      //     (acc, account) => acc + parseFloat(account.balance),
-      //     0
-      //   );
-      // }
-
       newArr.push(
         <ExpandableItem
           key={i}
           title={arr.accounts[i]?.name}
           data={arr.accounts[i]}
           balances={arr?.balances}
-          // currentAccountBalance={currentAccountBalance}
         >
           {arr.accounts[i]?.controlledAccounts?.length > 0 ? (
             getRenderItems({

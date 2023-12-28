@@ -4,39 +4,41 @@ import { ExpandableItem } from "../../components/ExpandableItem";
 import { getGeneralBalance } from "../../api/accounting";
 import { generateReport } from "../../utils/reports/generalBalance";
 import { SearchBar } from "../../components/SearchBar";
-import "./index.css";
 import { getOutletsApi } from "../../api/outlet";
+import { AuthContext } from "../../contexts/AuthContext";
+import "./index.css";
 
 function GeneralBalanceScreen() {
   const [outlets, setOutlets] = React.useState([]);
   const [data, setData] = React.useState({});
-  const [searchParams, setSearchParams] = React.useState();
+  const [searchParams, setSearchParams] = React.useState({
+    outletId: "4a812a14-f46d-4a99-8d88-c1f14ea419f4",
+  });
   const [isLoading, setIsLoading] = React.useState(false);
   const [reqToggle, setReqToggle] = React.useState([]);
+
+  const { auth } = React.useContext(AuthContext);
 
   React.useEffect(() => {
     (async () => {
       try {
         const outlets = await getOutletsApi();
-        setOutlets(
-          outlets.body.filter(
-            (item) => item.outlet_id == "4a812a14-f46d-4a99-8d88-c1f14ea419f4"
-          )
-        );
+        setOutlets(outlets.body);
+        // .filter(
+        //     (item) => item.outlet_id == "4a812a14-f46d-4a99-8d88-c1f14ea419f4"
+        //   )
         const balance = await getGeneralBalance({
           ...searchParams,
-          outletId: "4a812a14-f46d-4a99-8d88-c1f14ea419f4",
+          // outletId: "4a812a14-f46d-4a99-8d88-c1f14ea419f4",
         });
         console.log(balance.body);
 
         let obj = {
           accounts: balance.body?.accounts?.filter(
             (item) =>
-              item.account_catalog_id ==
-                "2f8cee32-92d8-40bb-9dcd-522bbe068285" ||
-              item.account_catalog_id ==
-                "97ce0bad-65e6-4451-a352-d81bc7879a4d" ||
-              item.account_catalog_id == "cb06e761-3471-422c-b5c0-18e05860e487"
+              item.number[0] == "1" ||
+              item.number[0] == "2" ||
+              item.number[0] == "3"
           ),
           balances: balance.body?.accountBalances,
         };
@@ -51,12 +53,14 @@ function GeneralBalanceScreen() {
   }, [reqToggle, searchParams]);
 
   const savepdf = () => {
-    let arr = data.balances.filter(
-      (item) =>
-        item.number[0] == "1" || item.number[0] == "2" || item.number[0] == "3"
-    );
-
-    generateReport(arr);
+    console.log(searchParams);
+    let outletName = outlets.filter(
+      (item) => item.outlet_id == searchParams.outletId
+    )[0]?.name;
+    let conf = {
+      title: outletName,
+    };
+    generateReport(data, conf);
   };
 
   let mainFilters = [

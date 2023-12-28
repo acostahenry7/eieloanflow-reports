@@ -25,3 +25,21 @@ module.exports = {
 //     idle: 10000,
 //   },
 // };
+
+// module.exports = {
+//   HOST: "node77274-devfinance.whelastic.net",
+//   USER: "webadmin",
+//   PASSWORD: "EDJKNOSOj6",
+//   DB: "finance",
+//   dialect: "postgres",
+//   // dialectOptions: {
+//   //   useUTC: false, // for reading from database
+//   // },
+//   //timezone: "-04:00",
+//   pool: {
+//     max: 10,
+//     min: 0,
+//     acquire: 30000,
+//     idle: 10000,
+//   },
+// };
