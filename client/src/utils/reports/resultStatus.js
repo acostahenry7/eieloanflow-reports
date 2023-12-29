@@ -7,35 +7,33 @@ import {
   createDate,
   currencyFormat,
   generateReportSection,
+  spacing,
+  sectionSpacing,
 } from "./report-helpers";
 
 //General Configuration Params
 
-//Text
-let spacing = 15;
-let sectionSpacing = 10;
-
 function generateReport(data, configParams) {
   //General Configuration Params
   //-------Layout--------
-  let headerTop = 80;
-  let top = 180;
-  let left = 200;
-  let right = left + 300;
+  let headerTop = 10;
+  let top = 40;
+  let left = 20;
+  let right = left + 100;
   let granTotalRight = 460;
   let rightTotal = right;
-  let center = 320;
+  let center = 80;
   let itemsPerPage = 44;
 
   //-------File settings---------
   let fileNameDate = new Date().toISOString().split("T")[0];
   let fileName = `balance-general-${fileNameDate}.pdf`;
 
-  const width = 816;
-  const height = 1054;
+  const width = 215.9;
+  const height = 279.4;
   const doc = new jsPDF({
     orientation: "portrait",
-    unit: "px",
+    unit: "mm",
     format: [width, height],
   });
 
@@ -45,9 +43,9 @@ function generateReport(data, configParams) {
   let subTitle = `ESTADO DE RESULTADO`;
   let date = "Diciembre 2023";
 
-  createMainTitle(doc, title, center, 30);
-  createMainSubTitle(doc, subTitle, center, 45);
-  createDate(doc, date, center + 10, 60);
+  createMainTitle(doc, title, center, headerTop);
+  createMainSubTitle(doc, subTitle, center + 8, headerTop + spacing + 0.8);
+  createDate(doc, date, center + 14, headerTop + spacing * 2);
 
   // let ingresos = data.accounts.filter((item) => item.number == "4")[0]
   //   .controlledAccounts;

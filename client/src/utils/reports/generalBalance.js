@@ -125,7 +125,7 @@ function generateReport(data, configParams) {
     pasivos,
     data.balances,
     "Pasivos Circulantes",
-    "2-1",
+    "21",
     true,
     false,
     {
@@ -137,9 +137,8 @@ function generateReport(data, configParams) {
   );
 
   top = topPCirculantes;
-  console.log("top", top);
 
-  let pasivosCirculantes = pasivos.filter((item) => item.number == "2-1")[0]
+  let pasivosCirculantes = pasivos.filter((item) => item.number == "21")[0]
     .controlledAccounts;
 
   let [topPCirculantes2, balancePCirculantes2] = generateReportSection(

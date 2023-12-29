@@ -7,7 +7,7 @@ import "./index.css";
 function DGI606Screen() {
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const generateReport = async () => {
+  const generate606Report = async () => {
     console.log("hi");
     try {
       setIsLoading(true);
@@ -22,7 +22,7 @@ function DGI606Screen() {
     <div className="">
       <TopBar title="606" />
       <div className="screen-content">
-        <button className="btn" onClick={async () => await generateReport()}>
+        <button className="btn" onClick={async () => await generate606Report()}>
           Generar
         </button>
         {isLoading && <ThreeDots />}
