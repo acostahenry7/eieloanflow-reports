@@ -298,93 +298,67 @@ for (i = 0; i < 26; i++) {
   alphabet.push((i + 10).toString(36).toUpperCase());
 }
 
-console.log(alphabet);
-
-let testArr = [
-  {
-    id: "40240604682",
-    tipoId: "",
-    expenseType: "01-GASTOS DE PERSONAL",
-    ncf: "B0200000001",
-    modifiedNcf: "",
-    cYearMonth: "",
-    cDay: "01",
-    payYearMonth: "202301",
-    pDay: "05",
-    billedService: 2500,
-    billedProducts: 0,
-    totalBilled: 2500,
-    billedITBIS: 450,
-    notGivenITBIS: 0,
-    art349ITBIS: 0,
-    atCostITBIS: "",
-    toPayBeforeITBIS: 0,
-    byPurchaseITBIS: 0,
-    isrRetentionType: "",
-    rentRetentionAmount: "",
-    byPurchaseISR: 450,
-    atCosumptionTax: "",
-    otherTaxesOrTasas: "",
-    legalTipAmount: "",
-    paymentType: "01 - EFECTIVO",
-  },
-  {
-    id: "40240604682",
-    tipoId: "",
-    expenseType: "01-GASTOS DE PERSONAL",
-    ncf: "B0200000001",
-    modifiedNcf: "",
-    cYearMonth: "",
-    cDay: "01",
-    payYearMonth: "202301",
-    pDay: "05",
-    billedService: 2500,
-    billedProducts: 0,
-    totalBilled: 2500,
-    billedITBIS: 450,
-    notGivenITBIS: 0,
-    art349ITBIS: 0,
-    atCostITBIS: "",
-    toPayBeforeITBIS: 0,
-    byPurchaseITBIS: 0,
-    isrRetentionType: "",
-    rentRetentionAmount: "",
-    byPurchaseISR: 450,
-    atCosumptionTax: "",
-    otherTaxesOrTasas: "",
-    legalTipAmount: "",
-    paymentType: "01 - EFECTIVO",
-  },
-  {
-    id: "40240604682",
-    tipoId: "",
-    expenseType: "01-GASTOS DE PERSONAL",
-    ncf: "B0200000001",
-    modifiedNcf: "",
-    cYearMonth: "",
-    cDay: "01",
-    payYearMonth: "202301",
-    pDay: "05",
-    billedService: 2500,
-    billedProducts: 0,
-    totalBilled: 2500,
-    billedITBIS: 450,
-    notGivenITBIS: 0,
-    art349ITBIS: 0,
-    atCostITBIS: "",
-    toPayBeforeITBIS: 0,
-    byPurchaseITBIS: 0,
-    isrRetentionType: "",
-    rentRetentionAmount: "",
-    byPurchaseISR: 450,
-    atCosumptionTax: "",
-    otherTaxesOrTasas: "",
-    legalTipAmount: "",
-    paymentType: "01 - EFECTIVO",
-  },
-];
-
 controller.generate606 = async (req, res, queryParams) => {
+  const [accountPayable, meta] = await db.query(`
+  SELECT ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount, 
+	concept, ap.outlet_id, ap.status_type, ap.created_by,
+	extract(YEAR FROM ap.created_date) as created_year, 
+	extract(MONTH FROM ap.created_date) as created_month, 
+	extract(DAY FROM ap.created_date) as created_day, 
+	ap.last_modified_by, ap.last_modified_date, 
+	ap.debit_account, ap.credit_account, ap.ncf,et.name as expense_type, 
+	extract(YEAR FROM max(cp.created_date)) as last_payment_year, 
+	extract(MONTH FROM max(cp.created_date)) as last_payment_month, 
+	extract(DAY FROM max(cp.created_date)) as last_payment_day,
+	max(cp.payment_type) as payment_type
+	FROM account_payable ap
+	LEFT JOIN expenses_type et ON (ap.expenses_type_id = et.expenses_type_id)
+	LEFT JOIN check_payment cp ON (ap.account_payable_id = cp.account_payable_id)
+	WHERE ap.outlet_id='4a812a14-f46d-4a99-8d88-c1f14ea419f4'
+	AND extract(YEAR FROM ap.created_date)  = '2023'
+	AND extract(MONTH FROM ap.created_date)  = '12'
+	GROUP BY ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount, 
+	concept, ap.outlet_id, ap.status_type, ap.created_by,
+	ap.created_date, ap.created_date, ap.created_date, 
+	ap.last_modified_by, ap.last_modified_date, 
+	ap.debit_account, ap.credit_account, ap.ncf,et.name`);
+
+  let rowArr = [
+    ...accountPayable.map((ac) => {
+      return {
+        id: ac.rnc,
+        tipoId: 1,
+        expenseType: ac.expense_type,
+        ncf: ac.ncf,
+        modifiedNcf: "",
+        cYearMonth: `${ac.created_year}${ac.created_month}`,
+        cDay: `${ac.created_day}`,
+        payYearMonth: `${
+          ac.remaining_ammount == 0
+            ? `${ac.last_payment_year}${ac.last_payment_month}`
+            : ""
+        }`,
+        pDay: `${ac.remaining_ammount == 0 ? `${ac.last_payment_day}` : ""}`,
+        billedService: ac.amount_owed,
+        billedProducts: 0,
+        totalBilled: ac.amount_owed,
+        billedITBIS: ac.amount_owed * 0.18,
+        notGivenITBIS: 0,
+        art349ITBIS: 0,
+        atCostITBIS: "",
+        toPayBeforeITBIS: 0,
+        byPurchaseITBIS: 0,
+        isrRetentionType: "",
+        rentRetentionAmount: "",
+        byPurchaseISR: 0,
+        atCosumptionTax: "",
+        otherTaxesOrTasas: "",
+        legalTipAmount: "",
+        paymentType: get606PaymentType(ac.payment_type),
+      };
+    }),
+  ];
+
   let generatedId = nanoid();
   let filePath = path.join(__dirname, `../../client/public/reports`);
   let fileName = `606-${generatedId}.xlsm`;
@@ -398,10 +372,10 @@ controller.generate606 = async (req, res, queryParams) => {
     workbook
       .sheet("Herramienta Formato 606")
       .cell("C6")
-      .value(`${testArr.length}`);
+      .value(`${rowArr.length}`);
 
-    for (let row = 0; row < testArr.length; row++) {
-      let currentRow = Object.values(testArr[row]);
+    for (let row = 0; row < rowArr.length; row++) {
+      let currentRow = Object.values(rowArr[row]);
 
       for (i = 0; i < currentRow.length; i++) {
         console.log(`${alphabet[i + 1]}${12 + row}`);
@@ -419,6 +393,28 @@ controller.generate606 = async (req, res, queryParams) => {
     workbook.toFileAsync(`${filePath}/${fileName}`).then;
     return `http://${req.headers.host}/static/reports/${fileName}`;
   });
+
+  return "ok";
 };
+
+function get606PaymentType(type) {
+  let currentType = "";
+  switch (type) {
+    case "CASH":
+      currentType = "01 - EFECTIVO";
+      break;
+    case "CHECK":
+      currentType = "02 - CHEQUES/TRANSFERENCIAS/DEPÓSITO";
+      break;
+    case "TRANSFER":
+      currentType = "02 - CHEQUES/TRANSFERENCIAS/DEPÓSITO";
+      break;
+    default:
+      currentType = "02 - CHEQUES/TRANSFERENCIAS/DEPÓSITO";
+      break;
+  }
+
+  return currentType;
+}
 
 module.exports = controller;
