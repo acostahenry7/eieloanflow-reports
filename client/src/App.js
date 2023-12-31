@@ -22,6 +22,9 @@ import { ResultStatusScreen } from "./screens/ResultStatusScreen";
 import { CollectorVisitsScreen } from "./screens/CollectorVisitsScreen";
 import { ValidationBalanceScreen } from "./screens/ValidationBalanceScreen";
 import { DGI606Screen } from "./screens/DGI606Screen";
+import { DGI607Screen } from "./screens/DGI607Screen";
+import { GeneralMajor } from "./screens/GeneralMajor";
+import { DetailedGeneralMajor } from "./screens/DetailedGeneralMajor";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -97,6 +100,15 @@ function App() {
                 element={<ValidationBalanceScreen />}
               />
               <Route path="/reports/accouting-606" element={<DGI606Screen />} />
+              <Route path="/reports/accouting-607" element={<DGI607Screen />} />
+              <Route
+                path="/reports/accouting-major-general"
+                element={<GeneralMajor />}
+              />
+              <Route
+                path="/reports/detailed-accouting-major-general"
+                element={<DetailedGeneralMajor />}
+              />
             </Routes>
           </div>
         </Router>

@@ -66,15 +66,40 @@ function SearchBar({
             </div>
           ))}
         {mainFilters
+          .filter((item) => item.type === "date")
+          .map((mf, index) => (
+            <div key={index} className="SearchBar-main-item">
+              <label>{mf.label}</label>
+              <input
+                value={searchForm.values[mf.field]}
+                onChange={(e) => {
+                  // setSearchedText(mf.field + e.target.value);
+                  searchForm.setFieldValue(mf.field, e.target.value);
+                }}
+                type="date"
+                placeholder={mf.placeholder}
+              />
+              {/* <div style={{ fontSize: 12, marginTop: 2, color: "grey" }}>
+                <span>Búsqueda: </span>
+                <b style={{ color: "rgba(0,0,0,0.6)" }}>
+                  {searchParams != undefined ? searchParams[`${mf.field}`] : ""}
+                </b>
+              </div> */}
+            </div>
+          ))}
+        {mainFilters
           .filter((item) => item.type === "select")
           .map((mf, index) => (
             <div key={index} className="SearchBar-main-item">
               <label>{mf.label}</label>
               <select
                 value={searchForm.values[mf.field]}
-                onChange={(e) =>
-                  searchForm.setFieldValue(mf.field, e.target.value)
-                }
+                onChange={(e) => {
+                  if (mf.updateForm == true) {
+                    setSearchParams({ [mf.field]: e.target.value });
+                  }
+                  searchForm.setFieldValue(mf.field, e.target.value);
+                }}
               >
                 {mf.options.map((item) => (
                   <option key={item.value} value={item.value}>
@@ -252,7 +277,9 @@ function getInitialValues(arr) {
         initialValues[item.field + "From"] = "";
         initialValues[item.field + "To"] = "";
         break;
-
+      case "date":
+        initialValues[item.field] = new Date().toISOString().split("T")[0];
+        break;
       default:
         break;
     }

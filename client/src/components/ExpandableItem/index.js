@@ -79,7 +79,7 @@ function LasChild(props) {
         {props.data.number} - {props.data.name}
       </p>
       <CurrencyFormat
-        value={props.balance + parseFloat(props.data.balance)}
+        value={props.balance}
         displayType={"text"}
         thousandSeparator={true}
         prefix={"RD$"}

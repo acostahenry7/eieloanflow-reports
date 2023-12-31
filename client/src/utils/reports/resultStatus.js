@@ -7,9 +7,13 @@ import {
   createDate,
   currencyFormat,
   generateReportSection,
+  generateResultStatusReportSection,
   spacing,
   sectionSpacing,
 } from "./report-helpers";
+import moment from "moment";
+import esLocale from "moment/locale/es";
+moment.locale("fr", [esLocale]);
 
 //General Configuration Params
 
@@ -19,7 +23,7 @@ function generateReport(data, configParams) {
   let headerTop = 10;
   let top = 40;
   let left = 20;
-  let right = left + 100;
+  let right = left + 120;
   let granTotalRight = 460;
   let rightTotal = right;
   let center = 80;
@@ -41,17 +45,20 @@ function generateReport(data, configParams) {
 
   let title = `${configParams.title}`;
   let subTitle = `ESTADO DE RESULTADO`;
-  let date = "Diciembre 2023";
+  let date = `Al ${configParams.date}`;
 
   createMainTitle(doc, title, center, headerTop);
-  createMainSubTitle(doc, subTitle, center + 8, headerTop + spacing + 0.8);
+  createMainSubTitle(doc, subTitle, center + 5, headerTop + spacing + 0.8);
   createDate(doc, date, center + 14, headerTop + spacing * 2);
 
   // let ingresos = data.accounts.filter((item) => item.number == "4")[0]
   //   .controlledAccounts;
 
+  renderTableHeader(doc, left, top, configParams);
+  console.log(data.accounts);
+
   //------------------------Ingresos-------------------------
-  let [topIngresos, balanceIngresos] = generateReportSection(
+  let [topIngresos, balanceIngresos] = generateResultStatusReportSection(
     doc,
     data.accounts,
     data.balances,
@@ -63,13 +70,16 @@ function generateReport(data, configParams) {
       top,
       left,
       right,
+      isResultStatus: true,
     }
   );
 
   top = topIngresos;
 
+  //Ingresos Acumulado
+
   //------------------------Gastos-------------------------
-  let [topGastos, balanceGastos] = generateReportSection(
+  let [topGastos, balanceGastos] = generateResultStatusReportSection(
     doc,
     data.accounts,
     data.balances,
@@ -81,6 +91,7 @@ function generateReport(data, configParams) {
       top,
       left,
       right,
+      isResultStatus: true,
     }
   );
 
@@ -143,6 +154,24 @@ function generateReport(data, configParams) {
   // }
 
   doc.save("reporte-estado-de-resultado.pdf");
+}
+
+function renderTableHeader(doc, pos, top, configParams) {
+  // doc.rect(pos, top - 6, 195, 10);
+  // pos += 3;
+
+  pos += 104;
+  createSubTitle(doc, "DICIEMBRE", pos, top, "center");
+  pos += 30;
+  createSubTitle(
+    doc,
+    `ENERO-${configParams.date
+      .toLocaleString("es-Es", { month: "long" })
+      .toUpperCase()}`,
+    pos,
+    top,
+    "center"
+  );
 }
 
 export { generateReport };

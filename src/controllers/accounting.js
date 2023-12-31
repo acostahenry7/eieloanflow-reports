@@ -3,6 +3,7 @@ const { generateWhereStatement, getDateRangeFilter } = require("../utils");
 const path = require("path");
 const XlsxPopulate = require("xlsx-populate");
 const { nanoid } = require("nanoid");
+var _ = require("lodash");
 
 const controller = {};
 
@@ -14,25 +15,61 @@ controller.getGeneralBalance = async (queryParams) => {
   try {
     const [generalBalance, meta] =
       await db.query(`SELECT ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
-    ac.is_control, ac.status_type, ac.created_by, ac.created_date, ac.last_modified_by, ac.last_modified_date,
-    ac.balance as catalog_balance, 
-    COALESCE(sum(gda.debit) , 0) as debit,
-    COALESCE(sum(gda.credit) , 0)as credit, 
-    COALESCE(sum(gda.credit + gda.debit) ,0)as balance, 
-    ac.outlet_id
-    FROM account_catalog ac
-    LEFT JOIN general_diary_account gda ON (ac.account_catalog_id = gda.account_catalog_id ${
-      queryParams.dateFrom
-        ? `and gda.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
-        : ""
-    })
-    WHERE outlet_id like '${
-      queryParams.outletId || "4a812a14-f46d-4a99-8d88-c1f14ea419f4"
-    }'
-    GROUP BY ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
-    ac.is_control, ac.status_type, ac.created_by, ac.created_date, ac.last_modified_by, ac.last_modified_date,
-    ac.balance, ac.outlet_id
-    ORDER BY number`);
+      ac.is_control, ac.status_type, ac.created_by, ac.created_date, ac.last_modified_by, ac.last_modified_date,
+      ac.balance as catalog_balance, 
+      /*TIPO DE ASIENTO FECHA PREVIA*/
+      COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) <= ${
+        parseInt(queryParams.date?.split("-")[0]) - 1
+      }) , 0) as prev_debit,
+      COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) <= ${
+        parseInt(queryParams.date?.split("-")[0]) - 1
+      }) , 0)as prev_credit, 
+      /*BALANCE PREVIO*/
+      ABS(COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) <= ${
+        parseInt(queryParams.date?.split("-")[0]) - 1
+      }) , 0)-
+      COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) <= ${
+        parseInt(queryParams.date?.split("-")[0]) - 1
+      }) , 0)) as prev_balance,
+      /*TIPO DE ASIENTO A LA FECHA*/
+      COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) = ${
+        queryParams.date?.split("-")[0]
+      } and extract(MONTH from gda.created_date ) <= ${
+        queryParams.date?.split("-")[1]
+      } and extract(DAY from gda.created_date ) <= ${
+        queryParams.date?.split("-")[2]
+      } ) , 0) as debit,
+      COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) = ${
+        queryParams.date?.split("-")[0]
+      } and extract(MONTH from gda.created_date ) <= ${
+        queryParams.date?.split("-")[1]
+      } and extract(DAY from gda.created_date ) <= ${
+        queryParams.date?.split("-")[2]
+      } ) , 0)as credit, 
+      /*BALANCE A LA FECHA*/
+      ABS(COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) = ${
+        queryParams.date?.split("-")[0]
+      } and extract(MONTH from gda.created_date ) <= ${
+        queryParams.date?.split("-")[1]
+      } and extract(MONTH from gda.created_date ) <= ${
+        queryParams.date?.split("-")[2]
+      } ) , 0) - 
+      COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) = ${
+        queryParams.date?.split("-")[0]
+      } and extract(MONTH from gda.created_date ) <= ${
+        queryParams.date?.split("-")[1]
+      } and extract(MONTH from gda.created_date ) <= ${
+        queryParams.date?.split("-")[2]
+      } ) , 0)) as balance,
+      ac.outlet_id
+      FROM account_catalog ac
+      LEFT JOIN general_diary_account gda ON (ac.account_catalog_id = gda.account_catalog_id
+      and gda.created_date::date <='${queryParams.date}')
+      WHERE outlet_id like '${queryParams.outletId}'
+      GROUP BY ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
+      ac.is_control, ac.status_type, ac.created_by, ac.created_date, ac.last_modified_by, ac.last_modified_date,
+      ac.balance, ac.outlet_id
+      ORDER BY number`);
 
     if (data.length == 0) {
       return [];
@@ -112,16 +149,17 @@ controller.getGeneralBalance = async (queryParams) => {
     let accountBalances = [];
 
     for (item of originalData) {
-      // if (item.number == "1102") {
-
       let balance = 0;
+      let prevBalance = 0;
       let isParent =
         originalData.filter(
           (sItem) => sItem.control_account == item.account_catalog_id
         ).length > 0;
 
       if (isParent) balance = parseFloat(item.balance);
+      if (isParent) prevBalance = parseFloat(item.prev_balance);
 
+      // console.log(item.number, getAccountBalance(originalData, item, balance));
       accountBalances.push({
         account_catalog_id: item.account_catalog_id,
         number: item.number,
@@ -129,8 +167,10 @@ controller.getGeneralBalance = async (queryParams) => {
         is_control: item.is_control,
         control_account: item.control_account,
         balance: getAccountBalance(originalData, item, balance),
+        prevBalance: getPrevAccountBalance(originalData, item, prevBalance),
       });
-      //}
+
+      // console.log(accountBalances);
     }
 
     // console.log(accountBalances);
@@ -206,6 +246,32 @@ controller.getValidationBalance = async (queryParams) => {
   }
 };
 
+controller.getMajorGeneral = async (queryParams) => {
+  console.log(queryParams);
+
+  try {
+    const [majorGeneral, meta] = await db.query(
+      `select ac.number, ac.name,gd.description, gda.debit, gda.credit, gda.created_date
+      from general_diary_account gda
+      join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
+      join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
+      where gd.outlet_id='${queryParams.outletId}'
+      ${
+        queryParams.dateFrom
+          ? `and gda.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
+          : ""
+      }
+      order by ac.number`
+    );
+
+    let data = _(majorGeneral).groupBy("number");
+
+    return data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 function getMainAccountsArr(arr) {
   let testAccounts = [];
   for (let i = 0; i < arr.length; i++) {
@@ -265,7 +331,9 @@ function getAccountBalance(accountList, currentAccount, balance) {
   //   ctrl: accounts.length,
   // });
 
-  // console.log(accounts.length);
+  if (accounts.length == 0) {
+    balance = balance + parseFloat(currentAccount.balance);
+  }
 
   for (item of accounts) {
     let controlledAcccounts = accountList.filter(
@@ -292,6 +360,34 @@ function getAccountBalance(accountList, currentAccount, balance) {
   return balance;
 }
 
+function getPrevAccountBalance(accountList, currentAccount, prevBalance) {
+  let accounts = accountList.filter(
+    (item) => item.control_account == currentAccount.account_catalog_id
+  );
+
+  if (accounts.length == 0) {
+    prevBalance = prevBalance + parseFloat(currentAccount.prev_balance);
+  }
+
+  for (item of accounts) {
+    let controlledAcccounts = accountList.filter(
+      (sItem) => sItem.control_account == item.account_catalog_id
+    );
+
+    if (controlledAcccounts.length > 0) {
+      prevBalance += getAccountBalance(
+        accountList,
+        item,
+        parseFloat(item.prev_balance)
+      );
+    } else {
+      prevBalance += parseFloat(item.prev_balance);
+    }
+  }
+
+  return prevBalance;
+}
+
 //--------------------- DGI REPORTS --------------------------
 let alphabet = [];
 for (i = 0; i < 26; i++) {
@@ -306,7 +402,7 @@ controller.generate606 = async (req, res, queryParams) => {
 	extract(MONTH FROM ap.created_date) as created_month, 
 	extract(DAY FROM ap.created_date) as created_day, 
 	ap.last_modified_by, ap.last_modified_date, 
-	ap.debit_account, ap.credit_account, ap.ncf,et.name as expense_type, 
+	ap.debit_account, ap.credit_account, ap.ncf,et.name as expense_type, et.code,
 	extract(YEAR FROM max(cp.created_date)) as last_payment_year, 
 	extract(MONTH FROM max(cp.created_date)) as last_payment_month, 
 	extract(DAY FROM max(cp.created_date)) as last_payment_day,
@@ -321,14 +417,14 @@ controller.generate606 = async (req, res, queryParams) => {
 	concept, ap.outlet_id, ap.status_type, ap.created_by,
 	ap.created_date, ap.created_date, ap.created_date, 
 	ap.last_modified_by, ap.last_modified_date, 
-	ap.debit_account, ap.credit_account, ap.ncf,et.name`);
+	ap.debit_account, ap.credit_account, ap.ncf,et.name, et.code`);
 
   let rowArr = [
     ...accountPayable.map((ac) => {
       return {
         id: ac.rnc,
         tipoId: 1,
-        expenseType: ac.expense_type,
+        expenseType: ac.code ? `${ac.code}-${ac.expense_type}` : "",
         ncf: ac.ncf,
         modifiedNcf: "",
         cYearMonth: `${ac.created_year}${ac.created_month}`,

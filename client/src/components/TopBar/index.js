@@ -5,7 +5,7 @@ function TopBar({ title }) {
   return (
     <div className="TopBar">
       <h3>{title}</h3>
-      <span>icon / </span> <span>{title}</span>
+      <span>Reportes / </span> <span>{title}</span>
     </div>
   );
 }

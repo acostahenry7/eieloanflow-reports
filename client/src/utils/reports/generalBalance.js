@@ -9,6 +9,7 @@ import {
   generateReportSection,
   spacing,
   sectionSpacing,
+  getTextWidth,
 } from "./report-helpers";
 
 function generateReport(data, configParams) {
@@ -17,7 +18,7 @@ function generateReport(data, configParams) {
   let headerTop = 10;
   let top = 40;
   let left = 20;
-  let right = left + 100;
+  let right = left + 140;
   let granTotalRight = 460;
   let rightTotal = right;
   let center = 80;
@@ -39,7 +40,7 @@ function generateReport(data, configParams) {
 
   let title = `${configParams.title}`;
   let subTitle = `BALANCE GENERAL`;
-  let date = "Diciembre 2023";
+  let date = `${configParams.date}`;
 
   createMainTitle(doc, title, center, headerTop);
   createMainSubTitle(doc, subTitle, center + 8, headerTop + spacing + 0.8);
@@ -50,6 +51,8 @@ function generateReport(data, configParams) {
     .controlledAccounts;
 
   createTitle(doc, "Activos", left, top);
+  top += 1;
+  doc.line(left, top, left + getTextWidth("Activos"), top);
   //Activos circulantes
   let [topACirculantes, balanceACirculantes] = generateReportSection(
     doc,
@@ -111,6 +114,18 @@ function generateReport(data, configParams) {
     right,
     top
   );
+  top += 1;
+  doc.line(
+    right,
+    top,
+    right +
+      getTextWidth(
+        `${currencyFormat(
+          balanceACirculantes + balanceACorrientes + balanceAFijos
+        )}`
+      ),
+    top
+  );
 
   //----------------------------Pasivos---------------------------------
   let pasivos = data.accounts.filter((item) => item.number == "2")[0]
@@ -118,6 +133,8 @@ function generateReport(data, configParams) {
 
   top += sectionSpacing;
   createTitle(doc, "Pasivos", left, top);
+  top += 1;
+  doc.line(left, top, left + getTextWidth("Pasivos"), top);
 
   //Pasivos Circulantes
   let [topPCirculantes, balancePCirculantes] = generateReportSection(
@@ -216,12 +233,29 @@ function generateReport(data, configParams) {
     doc,
     `${currencyFormat(grandTotalPasivoCirculante)}`,
     right,
+    top,
+    {
+      align: "right",
+    }
+  );
+  top += 1;
+  doc.line(
+    right - getTextWidth(`${currencyFormat(grandTotalPasivoCirculante)}`),
+    top,
+    right,
     top
   );
 
   top += sectionSpacing;
   createTitle(doc, "Total Pasivos", left, top);
   createTitle(doc, `${currencyFormat(grandTotalPasivoCirculante)}`, right, top);
+  top += 1;
+  doc.line(
+    right,
+    top,
+    right + getTextWidth(`${currencyFormat(grandTotalPasivoCirculante)}`),
+    top
+  );
 
   //----------------------------Capital---------------------------------
   let capital = data.accounts.filter((item) => item.number == "3")[0]
@@ -229,6 +263,8 @@ function generateReport(data, configParams) {
 
   top += sectionSpacing;
   createTitle(doc, "Capital", left, top);
+  top += 1;
+  doc.line(left, top, left + getTextWidth("Capital"), top);
   //Capital
   let [topCapital1, balanceCapital1] = generateReportSection(
     doc,
@@ -287,12 +323,28 @@ function generateReport(data, configParams) {
   let grandTotalCapital = balanceCapital1 + balanceCapital2 + balanceCapital3;
 
   createSubTitle(doc, `Total Capital, Reserva y Superavit`, left, top);
-  createSubTitle(doc, `${currencyFormat(grandTotalCapital)}`, right, top);
+  createSubTitle(doc, `${currencyFormat(grandTotalCapital)}`, right, top, {
+    align: "right",
+  });
+  top += 1;
+  doc.line(
+    right - getTextWidth(`${currencyFormat(grandTotalCapital)}`),
+    top,
+    right,
+    top
+  );
 
   top += sectionSpacing;
 
   createTitle(doc, "Total Capital", left, top);
   createTitle(doc, `${currencyFormat(grandTotalCapital)}`, right, top);
+  top += 1;
+  doc.line(
+    right,
+    top,
+    right + getTextWidth(`${currencyFormat(grandTotalCapital)}`),
+    top
+  );
 
   top += sectionSpacing;
   createTitle(doc, "Total Pasivo y Capital", left, top);
@@ -300,6 +352,16 @@ function generateReport(data, configParams) {
     doc,
     `${currencyFormat(grandTotalPasivoCirculante + grandTotalCapital)}`,
     right,
+    top
+  );
+  top += 1;
+  doc.line(
+    right,
+    top,
+    right +
+      getTextWidth(
+        `${currencyFormat(grandTotalPasivoCirculante + grandTotalCapital)}`
+      ),
     top
   );
 

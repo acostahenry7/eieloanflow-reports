@@ -1,17 +1,17 @@
 import React from "react";
 import { TopBar } from "../../components/TopBar";
-import { generate606Api } from "../../api/accounting";
+//import { generate607Api } from "../../api/accounting";
 import { ThreeDots } from "react-loader-spinner";
 import "./index.css";
 
-function DGI606Screen() {
+function DGI607Screen() {
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const generate606Report = async () => {
+  const generate607Report = async () => {
     console.log("hi");
     try {
       setIsLoading(true);
-      let response = await generate606Api({});
+      let response = {}; //await generate607Api({});
       setIsLoading(false);
 
       console.log(response);
@@ -20,9 +20,9 @@ function DGI606Screen() {
 
   return (
     <div className="">
-      <TopBar title="Formulario 606" />
+      <TopBar title="Formulario 607" />
       <div className="screen-content">
-        <button className="btn" onClick={async () => await generate606Report()}>
+        <button className="btn" onClick={async () => await generate607Report()}>
           Generar
         </button>
         {isLoading && <ThreeDots />}
@@ -31,4 +31,4 @@ function DGI606Screen() {
   );
 }
 
-export { DGI606Screen };
+export { DGI607Screen };

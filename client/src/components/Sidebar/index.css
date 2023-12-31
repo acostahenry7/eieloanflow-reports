@@ -3,7 +3,8 @@
   box-sizing: border-box;
   background-color: #ffffff;
   width: 242px;
-  min-height: 100vh;
+  min-height: 94vh;
+  height: 94vh;
   overflow-x: hidden;
   transition: var(--anim-2-5);
   white-space: nowrap;

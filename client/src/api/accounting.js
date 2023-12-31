@@ -29,6 +29,20 @@ async function getValidationBalance(queryParams) {
   }
 }
 
+async function getMajorGeneral(queryParams) {
+  try {
+    const majorGeneral = await request({
+      method: "GET",
+      path: "/major-general",
+      urlParams: queryParams || {},
+    });
+
+    return majorGeneral;
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function generate606Api(queryParams) {
   try {
     const is606Generated = await request({
@@ -55,4 +69,9 @@ async function generate606Api(queryParams) {
   }
 }
 
-export { getGeneralBalance, getValidationBalance, generate606Api };
+export {
+  getGeneralBalance,
+  getValidationBalance,
+  generate606Api,
+  getMajorGeneral,
+};

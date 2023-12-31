@@ -26,6 +26,7 @@ import { BsFolderCheck } from "react-icons/bs";
 import { MdInsertChart, MdOutlineBalance } from "react-icons/md";
 import { IoDocumentAttachSharp } from "react-icons/io5";
 import { TbReportSearch } from "react-icons/tb";
+import { TbReport } from "react-icons/tb";
 
 function Sidebar() {
   const { isSidebarOpened } = React.useContext(SidebarContext);
@@ -225,17 +226,6 @@ function Sidebar() {
           selected: true,
         },
         {
-          label: "Estado de Resultado",
-          icon: (selected) => (
-            <MdInsertChart
-              className="Sidebar-content-item-icon"
-              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
-            />
-          ),
-          route: "/reports/accounting-result-status",
-          selected: false,
-        },
-        {
           label: "Balanza de comprobación",
           icon: (selected) => (
             <MdOutlineBalance
@@ -247,7 +237,7 @@ function Sidebar() {
           selected: false,
         },
         {
-          label: "606",
+          label: "Formulario 606",
           icon: (selected) => (
             <TbReportSearch
               className="Sidebar-content-item-icon"
@@ -255,6 +245,72 @@ function Sidebar() {
             />
           ),
           route: "/reports/accouting-606",
+          selected: false,
+        },
+        {
+          label: "Formulario 607",
+          icon: (selected) => (
+            <TbReport
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/accouting-607",
+          selected: false,
+        },
+        {
+          label: "Formulario 608",
+          icon: (selected) => (
+            <TbReport
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/accouting-607",
+          selected: false,
+        },
+        {
+          label: "Formulario 623",
+          icon: (selected) => (
+            <TbReport
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/accouting-607",
+          selected: false,
+        },
+        {
+          label: "Mayor General",
+          icon: (selected) => (
+            <TbReport
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/accouting-major-general",
+          selected: false,
+        },
+        {
+          label: "Mayor General Detallado",
+          icon: (selected) => (
+            <TbReport
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/detailed-accouting-major-general",
+          selected: false,
+        },
+        {
+          label: "Estado de Resultado",
+          icon: (selected) => (
+            <MdInsertChart
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/accounting-result-status",
           selected: false,
         },
       ],

@@ -6,13 +6,18 @@ import { generateReport } from "../../utils/reports/generalBalance";
 import { SearchBar } from "../../components/SearchBar";
 import { getOutletsApi } from "../../api/outlet";
 import { AuthContext } from "../../contexts/AuthContext";
+import moment from "moment";
+import esLocale from "moment/locale/es";
+
 import "./index.css";
+moment.locale("fr", [esLocale]);
 
 function GeneralBalanceScreen() {
   const [outlets, setOutlets] = React.useState([]);
   const [data, setData] = React.useState({});
   const [searchParams, setSearchParams] = React.useState({
     outletId: "4a812a14-f46d-4a99-8d88-c1f14ea419f4",
+    date: new Date().toISOString().split("T")[0],
   });
   const [isLoading, setIsLoading] = React.useState(false);
   const [reqToggle, setReqToggle] = React.useState([]);
@@ -22,6 +27,7 @@ function GeneralBalanceScreen() {
   React.useEffect(() => {
     (async () => {
       try {
+        setIsLoading(true);
         const outlets = await getOutletsApi();
         setOutlets(outlets.body);
         // .filter(
@@ -44,21 +50,31 @@ function GeneralBalanceScreen() {
         };
 
         console.log(obj);
+        setIsLoading(false);
 
         setData(obj);
       } catch (error) {
         console.log(error);
+        setIsLoading(false);
       }
     })();
   }, [reqToggle, searchParams]);
 
   const savepdf = () => {
-    console.log(searchParams);
+    console.log(new Date(searchParams.date).toDateString());
+
+    let reportDate = new Date(searchParams.date);
+
     let outletName = outlets.filter(
       (item) => item.outlet_id == searchParams.outletId
     )[0]?.name;
     let conf = {
       title: outletName,
+      date: reportDate.toLocaleString("es-Es", {
+        timeZone: "UTC",
+        month: "long",
+        day: "numeric",
+      }),
     };
     generateReport(data, conf);
   };
@@ -81,15 +97,20 @@ function GeneralBalanceScreen() {
         }),
       ],
     },
+    {
+      label: "A la Fecha De",
+      field: "date",
+      type: "date",
+    },
   ];
 
   let secondaryFilters = [
-    {
-      label: "Fecha",
-      field: "date",
-      placeholder: "Búsqueda por nombre",
-      type: "dateRange",
-    },
+    // {
+    //   label: "Fecha",
+    //   field: "date",
+    //   placeholder: "Búsqueda por nombre",
+    //   type: "dateRange",
+    // },
   ];
 
   return (
