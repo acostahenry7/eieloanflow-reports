@@ -4,6 +4,7 @@ import { Datatable } from "../../Datatable";
 import { getCollectorVisitsApi } from "../../../api/payment";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
+import { generateReport } from "../../../utils/reports/collectorVisits";
 
 function CollectorVisitsCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -25,6 +26,7 @@ function CollectorVisitsCrud() {
 
         setOutlets(outlets.body);
         setData(visits.body);
+        console.log(visits.body);
       } catch (error) {
         console.log(error.message);
       }
@@ -120,6 +122,10 @@ function CollectorVisitsCrud() {
     },
   ];
 
+  const exportPDF = () => {
+    generateReport(data, {});
+  };
+
   const filterData = data.filter((item) => {
     let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}`;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
@@ -135,6 +141,7 @@ function CollectorVisitsCrud() {
         setSearchedText={setSearchedText}
         columns={columns}
         setColumns={setColumns}
+        exportFunction={() => exportPDF()}
       />
       <Datatable columns={columns} data={filterData} isLoading={isLoading} />
     </div>

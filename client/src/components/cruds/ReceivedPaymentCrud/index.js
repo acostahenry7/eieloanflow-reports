@@ -6,6 +6,7 @@ import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import { Margin, usePDF } from "react-to-pdf";
 import { useReactToPrint } from "react-to-print";
+import { generateReport } from "../../../utils/reports/receivedPayments";
 
 function ReceivedPaymentCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -16,42 +17,6 @@ function ReceivedPaymentCrud() {
   const [searchedText, setSearchedText] = React.useState("");
   const [isPrinting, setIsPrinting] = React.useState(false);
 
-  // const { toPDF, targetRef } = usePDF({
-  //   filename: "reporte-pagos-recibidos.pdf",
-  //   page: { margin: Margin.MEDIUM },
-  // });
-
-  const componentPDF = useRef();
-  const promiseResolveRef = useRef(null);
-
-  React.useEffect(() => {
-    if (isPrinting && promiseResolveRef.current) {
-      promiseResolveRef.current();
-    }
-  }, [isPrinting]);
-
-  const generatePDF = useReactToPrint({
-    content: () => componentPDF.current,
-    filename: "reporte-pagos-recibidos",
-    onBeforeGetContent: () => {
-      return new Promise((resolve) => {
-        promiseResolveRef.current = resolve;
-        setIsPrinting(true);
-      });
-    },
-    pageStyle: `@media print {
-      @page {
-        size: A4 landscape;
-        margin: 0;
-      }
-    }`,
-    onAfterPrint: () => {
-      promiseResolveRef.current = null;
-      setIsPrinting(false);
-      //alert("PDF File generated");
-    },
-  });
-
   React.useEffect(() => {
     (async () => {
       try {
@@ -61,7 +26,7 @@ function ReceivedPaymentCrud() {
         if (customers.error == true) {
           throw new Error(customers.body);
         }
-
+        console.log(customers.body);
         setOutlets(outlets.body);
         setData(customers.body);
       } catch (error) {
@@ -272,6 +237,10 @@ function ReceivedPaymentCrud() {
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
 
+  const exportPDF = () => {
+    generateReport(data, {});
+  };
+
   return (
     <div className="crud-container">
       <SearchBar
@@ -282,21 +251,9 @@ function ReceivedPaymentCrud() {
         setSearchedText={setSearchedText}
         columns={columns}
         setColumns={setColumns}
+        exportFunction={() => exportPDF()}
       />
-      <button
-        onClick={() => {
-          setIsPrinting(true);
-          generatePDF();
-        }}
-      >
-        exportar
-      </button>
-      <div
-        ref={componentPDF}
-        //style={{ padding: isPrinting ? 30 : 0, marginBottom: 15 }}
-      >
-        <Datatable columns={columns} data={filterData} isLoading={isLoading} />
-      </div>
+      <Datatable columns={columns} data={filterData} isLoading={isLoading} />
     </div>
   );
 }

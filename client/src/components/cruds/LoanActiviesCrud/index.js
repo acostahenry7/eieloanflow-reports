@@ -7,7 +7,7 @@ import {
   getLoanSituationLabel,
 } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
-import { Margin, usePDF } from "react-to-pdf";
+import { generateReport } from "../../../utils/reports/loanActivities";
 
 function LoanActivitiesCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -16,11 +16,6 @@ function LoanActivitiesCrud() {
   const [reqToggle, setReqToggle] = React.useState([]);
   const [searchParams, setSearchParams] = React.useState([]);
   const [searchedText, setSearchedText] = React.useState("");
-
-  const { toPDF, targetRef } = usePDF({
-    filename: "reporte-pagos-recibidos.pdf",
-    page: { margin: Margin.MEDIUM },
-  });
 
   React.useEffect(() => {
     (async () => {
@@ -39,13 +34,13 @@ function LoanActivitiesCrud() {
           la.action_type = getLoanSituationLabel(la.action_type);
           return la;
         });
-
-        // console.log("PARSED DATA", parseData);
+        setIsLoading(false);
+        console.log(loanActivities.body);
         setData(loanActivities.body);
       } catch (error) {
         console.log(error.message);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     })();
   }, [reqToggle, searchParams]);
 
@@ -321,6 +316,10 @@ function LoanActivitiesCrud() {
     // },
   ];
 
+  const exportPDF = () => {
+    generateReport(data, {});
+  };
+
   const filterData = data.filter((item) => {
     let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}
     createdBy${item.created_by}receiptNumber${item.receipt_number}actionType${item.action_type}employeeName${item.employee_name}`;
@@ -337,11 +336,10 @@ function LoanActivitiesCrud() {
         setSearchedText={setSearchedText}
         columns={columns}
         setColumns={setColumns}
+        exportFunction={() => exportPDF()}
       />
-      <button onClick={toPDF}>exportar</button>
-      <div ref={targetRef}>
-        <Datatable columns={columns} data={filterData} isLoading={isLoading} />
-      </div>
+
+      <Datatable columns={columns} data={filterData} isLoading={isLoading} />
     </div>
   );
 }

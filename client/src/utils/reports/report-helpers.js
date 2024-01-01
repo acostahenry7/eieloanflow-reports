@@ -39,6 +39,18 @@ export function createSubTitle(doc, text, left, top, props) {
   doc.setFont("helvetica", "normal", "normal");
 }
 
+export function createText(doc, text, left, top, props) {
+  let color = baseColor;
+
+  doc.setFontSize(subtitleFontSize);
+  doc.setFont("helvetica", "normal", "bold");
+  doc.setTextColor(color);
+  doc.text(text, left, top, { ...props });
+  doc.setTextColor(baseColor);
+  doc.setFontSize(baseFontSize);
+  doc.setFont("helvetica", "normal", "normal");
+}
+
 export function createMainTitle(doc, text, left, top, props) {
   let color = baseColor;
 

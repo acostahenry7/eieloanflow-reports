@@ -4,7 +4,7 @@ import { Datatable } from "../../Datatable";
 import { getLoanDiscounts } from "../../../api/loan";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
-import { Margin, usePDF } from "react-to-pdf";
+import { generateReport } from "../../../utils/reports/loanDiscount";
 
 function LoanDiscountsCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -13,11 +13,6 @@ function LoanDiscountsCrud() {
   const [reqToggle, setReqToggle] = React.useState([]);
   const [searchParams, setSearchParams] = React.useState([]);
   const [searchedText, setSearchedText] = React.useState("");
-
-  const { toPDF, targetRef } = usePDF({
-    filename: "reporte-pagos-recibidos.pdf",
-    page: { margin: Margin.MEDIUM },
-  });
 
   React.useEffect(() => {
     (async () => {
@@ -228,6 +223,10 @@ function LoanDiscountsCrud() {
     // },
   ];
 
+  const exportPDF = () => {
+    generateReport(data, {});
+  };
+
   const filterData = data.filter((item) => {
     let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}
     createdBy${item.created_by}receiptNumber${item.receipt_number}actionType${item.action_type}employeeName${item.employee_name}`;
@@ -244,19 +243,10 @@ function LoanDiscountsCrud() {
         setSearchedText={setSearchedText}
         columns={columns}
         setColumns={setColumns}
+        exportFunction={() => exportPDF()}
       />
-      <button
-        onClick={async () =>
-          toPDF().then((res) => {
-            console.log("done");
-          })
-        }
-      >
-        exportar
-      </button>
-      <div ref={targetRef}>
-        <Datatable columns={columns} data={filterData} isLoading={isLoading} />
-      </div>
+
+      <Datatable columns={columns} data={filterData} isLoading={isLoading} />
     </div>
   );
 }

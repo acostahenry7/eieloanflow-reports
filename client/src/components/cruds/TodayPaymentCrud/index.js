@@ -4,6 +4,7 @@ import { Datatable } from "../../Datatable";
 import { getTodayPaymentsApi } from "../../../api/payment";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
+import { generateReport } from "../../../utils/reports/todayPayment";
 
 function TodayPaymentCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -23,6 +24,7 @@ function TodayPaymentCrud() {
           throw new Error(customers.body);
         }
 
+        console.log(customers.body);
         setOutlets(outlets.body);
         setData(customers.body);
       } catch (error) {
@@ -147,6 +149,10 @@ function TodayPaymentCrud() {
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
 
+  const exportPDF = () => {
+    generateReport(data, {});
+  };
+
   return (
     <div className="crud-container">
       <SearchBar
@@ -157,6 +163,7 @@ function TodayPaymentCrud() {
         setSearchedText={setSearchedText}
         columns={columns}
         setColumns={setColumns}
+        exportFunction={() => exportPDF()}
       />
       <Datatable columns={columns} data={filterData} isLoading={isLoading} />
     </div>

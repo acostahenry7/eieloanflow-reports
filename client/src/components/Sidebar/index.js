@@ -190,17 +190,17 @@ function Sidebar() {
           route: "/reports/loan-discounts",
           selected: false,
         },
-        {
-          label: "Solicitudes de préstamos",
-          icon: (selected) => (
-            <IoDocumentAttachSharp
-              className="Sidebar-content-item-icon"
-              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
-            />
-          ),
-          route: "/reports/loan-request",
-          selected: false,
-        },
+        // {
+        //   label: "Solicitudes de préstamos",
+        //   icon: (selected) => (
+        //     <IoDocumentAttachSharp
+        //       className="Sidebar-content-item-icon"
+        //       color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+        //     />
+        //   ),
+        //   route: "/reports/loan-request",
+        //   selected: false,
+        // },
       ],
     },
     {

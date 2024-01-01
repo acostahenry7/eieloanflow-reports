@@ -4,6 +4,7 @@ import { Datatable } from "../../Datatable";
 import { getPaymentProyectionApi } from "../../../api/payment";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
+import { generateReport } from "../../../utils/reports/paymentProyection";
 
 function PaymentProyectionCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -23,6 +24,7 @@ function PaymentProyectionCrud() {
           throw new Error(customers.body);
         }
 
+        console.log(customers.body);
         setOutlets(outlets.body);
         setData(customers.body);
       } catch (error) {
@@ -143,6 +145,10 @@ function PaymentProyectionCrud() {
     },
   ];
 
+  const exportPDF = () => {
+    generateReport(data, {});
+  };
+
   const filterData = data.filter((item) => {
     let searchText = `customerName${item.employee_name}indetification${item.identification}loanNumber${item.loan_number_id}`;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
@@ -158,6 +164,7 @@ function PaymentProyectionCrud() {
         setSearchedText={setSearchedText}
         columns={columns}
         setColumns={setColumns}
+        exportFunction={() => exportPDF()}
       />
       <Datatable columns={columns} data={filterData} isLoading={isLoading} />
     </div>

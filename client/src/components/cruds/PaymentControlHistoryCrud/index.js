@@ -4,6 +4,7 @@ import { Datatable } from "../../Datatable";
 import { getHistoryPaymentControl } from "../../../api/payment";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
+import { generateReport } from "../../../utils/reports/paymentControlHistory";
 
 function PaymentControlHistoryCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -22,7 +23,7 @@ function PaymentControlHistoryCrud() {
         if (customers.error == true) {
           throw new Error(customers.body);
         }
-
+        console.log(customers.body);
         setOutlets(outlets.body);
         setData(customers.body);
       } catch (error) {
@@ -150,6 +151,10 @@ function PaymentControlHistoryCrud() {
     },
   ];
 
+  const exportPDF = () => {
+    generateReport(data, {});
+  };
+
   const filterData = data.filter((item) => {
     let searchText = `customerName${item.employee_name}indetification${item.identification}loanNumber${item.loan_number_id}`;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
@@ -165,6 +170,7 @@ function PaymentControlHistoryCrud() {
         setSearchedText={setSearchedText}
         columns={columns}
         setColumns={setColumns}
+        exportFunction={() => exportPDF()}
       />
       <Datatable columns={columns} data={filterData} isLoading={isLoading} />
     </div>

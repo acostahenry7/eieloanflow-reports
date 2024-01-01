@@ -5,6 +5,7 @@ import { HiOutlineRefresh } from "react-icons/hi";
 import { AiOutlineUnorderedList } from "react-icons/ai";
 import { useFormik } from "formik";
 import Popover from "@mui/material/Popover";
+import { TiExport } from "react-icons/ti";
 
 function SearchBar({
   mainFilters,
@@ -15,6 +16,7 @@ function SearchBar({
   setSearchedText,
   columns,
   setColumns,
+  exportFunction,
 }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [showOtherfilters, setShowOtherFilters] = React.useState(false);
@@ -258,6 +260,20 @@ function SearchBar({
             ))}
           </ul>
         </Popover>
+        <button
+          title="Exportar"
+          style={{
+            marginLeft: 12,
+            backgroundColor: "#4cb2f1",
+            display: "flex",
+            alignItems: "center",
+          }}
+          className="SearchBar-actions-icon button"
+          onClick={() => exportFunction()}
+        >
+          <TiExport size={20} style={{ marginTop: -5, marginRight: 8 }} />
+          <span>Exportar</span>
+        </button>
       </div>
     </div>
   );

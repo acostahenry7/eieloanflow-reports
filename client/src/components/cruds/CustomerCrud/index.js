@@ -5,6 +5,7 @@ import { getArrearCustomersApi } from "../../../api/customer";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import { tableUIHelper } from "../../../utils/ui-helpers";
+import { generateReport } from "../../../utils/reports/arrearCustomers";
 
 function CustomerCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -23,7 +24,7 @@ function CustomerCrud() {
         if (customers.error == true) {
           throw new Error(customers.body);
         }
-
+        console.log(customers.body);
         setOutlets(outlets.body);
         setData(customers.body);
       } catch (error) {
@@ -223,6 +224,10 @@ function CustomerCrud() {
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
 
+  const exportPDF = () => {
+    generateReport(data, {});
+  };
+
   return (
     <div className="crud-container">
       <SearchBar
@@ -234,6 +239,7 @@ function CustomerCrud() {
         setSearchedText={setSearchedText}
         columns={columns}
         setColumns={setColumns}
+        exportFunction={() => exportPDF()}
       />
       <Datatable columns={columns} data={filterData} isLoading={isLoading} />
     </div>
