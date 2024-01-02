@@ -112,10 +112,8 @@ function ResultStatusScreen() {
           secondaryFilters={secondaryFilters}
           setSearchParams={setSearchParams}
           setRequestToggle={setReqToggle}
+          exportFunction={() => savepdf()}
         />
-        <button className="btn" onClick={() => savepdf()}>
-          Exportar
-        </button>
         {getRenderItems(data)}
       </div>
     </div>

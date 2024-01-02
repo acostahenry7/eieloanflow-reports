@@ -16,6 +16,9 @@ import {
   TbCalendarDollar,
   TbClockDollar,
   TbList,
+  TbDatabaseDollar,
+  TbReportSearch,
+  TbReport,
 } from "react-icons/tb";
 import {
   FaFileInvoiceDollar,
@@ -25,8 +28,6 @@ import {
 import { BsFolderCheck } from "react-icons/bs";
 import { MdInsertChart, MdOutlineBalance } from "react-icons/md";
 import { IoDocumentAttachSharp } from "react-icons/io5";
-import { TbReportSearch } from "react-icons/tb";
-import { TbReport } from "react-icons/tb";
 
 function Sidebar() {
   const { isSidebarOpened } = React.useContext(SidebarContext);
@@ -144,6 +145,17 @@ function Sidebar() {
           route: "/reports/payment-visits",
           selected: false,
         },
+        {
+          label: "Mora Pagada",
+          icon: (selected) => (
+            <TbDatabaseDollar
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/paid-mora",
+          selected: false,
+        },
       ],
     },
     {
@@ -236,50 +248,51 @@ function Sidebar() {
           route: "/reports/accouting-validation-balance",
           selected: false,
         },
-        {
-          label: "Formulario 606",
-          icon: (selected) => (
-            <TbReportSearch
-              className="Sidebar-content-item-icon"
-              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
-            />
-          ),
-          route: "/reports/accouting-606",
-          selected: false,
-        },
-        {
-          label: "Formulario 607",
-          icon: (selected) => (
-            <TbReport
-              className="Sidebar-content-item-icon"
-              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
-            />
-          ),
-          route: "/reports/accouting-607",
-          selected: false,
-        },
-        {
-          label: "Formulario 608",
-          icon: (selected) => (
-            <TbReport
-              className="Sidebar-content-item-icon"
-              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
-            />
-          ),
-          route: "/reports/accouting-607",
-          selected: false,
-        },
-        {
-          label: "Formulario 623",
-          icon: (selected) => (
-            <TbReport
-              className="Sidebar-content-item-icon"
-              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
-            />
-          ),
-          route: "/reports/accouting-607",
-          selected: false,
-        },
+        //60X
+        // {
+        //   label: "Formulario 606",
+        //   icon: (selected) => (
+        //     <TbReportSearch
+        //       className="Sidebar-content-item-icon"
+        //       color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+        //     />
+        //   ),
+        //   route: "/reports/accouting-606",
+        //   selected: false,
+        // },
+        // {
+        //   label: "Formulario 607",
+        //   icon: (selected) => (
+        //     <TbReport
+        //       className="Sidebar-content-item-icon"
+        //       color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+        //     />
+        //   ),
+        //   route: "/reports/accouting-607",
+        //   selected: false,
+        // },
+        // {
+        //   label: "Formulario 608",
+        //   icon: (selected) => (
+        //     <TbReport
+        //       className="Sidebar-content-item-icon"
+        //       color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+        //     />
+        //   ),
+        //   route: "/reports/accouting-607",
+        //   selected: false,
+        // },
+        // {
+        //   label: "Formulario 623",
+        //   icon: (selected) => (
+        //     <TbReport
+        //       className="Sidebar-content-item-icon"
+        //       color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+        //     />
+        //   ),
+        //   route: "/reports/accouting-607",
+        //   selected: false,
+        // },
         {
           label: "Mayor General",
           icon: (selected) => (

@@ -10,6 +10,7 @@ function Datatable({
   onChangePage,
   onChangePageSize,
   totalRows,
+  marginTopPagination,
 }) {
   const styles = {
     boxShadow: "0 0 10px grey",
@@ -71,7 +72,7 @@ function Datatable({
 
     pagination: {
       style: {
-        marginTop: 100,
+        marginTop: marginTopPagination,
         borderRadius: 20,
         // boxShadow: "0px 0px 10px var(--container-shadow-color)",
       },

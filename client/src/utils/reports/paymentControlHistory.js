@@ -12,19 +12,19 @@ import {
   getTextWidth,
 } from "./report-helpers";
 
-let colsWidth = [70, 90, 130, 155, 185, 230];
+let colsWidth = [70, 90, 130, 155, 185, 220];
 
 function generateReport(data, configParams) {
   //General Configuration Params
   //-------Layout--------
-  let headerTop = 10;
+  let headerTop = 20;
   let top = 40;
   let left = 15;
   let right = left + 140;
   let granTotalRight = 460;
   let rightTotal = right;
   let center = 80;
-  let itemsPerPage = 14;
+  let itemsPerPage = 7;
 
   //-------File settings---------
   let fileNameDate = new Date().toISOString().split("T")[0];
@@ -44,9 +44,9 @@ function generateReport(data, configParams) {
   let subTitle = `HISTORICO CONTROL DE COBROS`;
   let date = `${configParams.date}`;
 
-  createMainTitle(doc, title, center, headerTop);
-  createMainSubTitle(doc, subTitle, center + 8, headerTop + spacing + 0.8);
-  createDate(doc, date, center + 14, headerTop + spacing * 2);
+  createMainTitle(doc, title, left, headerTop - 5);
+  createMainSubTitle(doc, subTitle, left, headerTop);
+  createDate(doc, date, right + 77, headerTop);
 
   let counter = 0;
   renderTableHeader(doc, left, top - 10);
@@ -88,7 +88,7 @@ function generateReport(data, configParams) {
     createSubTitle(
       doc,
       `${new Date(item.commitment_date).toLocaleString("es-Es").split(",")[0]}`,
-      left + colsWidth[5] + 12,
+      left + colsWidth[5] + 22,
       top + commentSpacing,
       {
         align: "right",
@@ -107,6 +107,14 @@ function generateReport(data, configParams) {
     // doc.text(`${item.defeated_amount}`, left + 210, top);
     top += spacing;
     counter++;
+
+    if (top == width - 40) {
+      doc.addPage();
+      top = 40;
+      renderTableHeader(doc, left, top - 10);
+      counter = 0;
+    }
+
     if (counter == itemsPerPage) {
       doc.addPage();
       top = 40;
@@ -127,7 +135,7 @@ function renderTableHeader(doc, pos, top) {
   createSubTitle(doc, "Fecha\nComentario", pos + colsWidth[2], top - 2);
   createSubTitle(doc, "Comentario", pos + colsWidth[3], top);
   createSubTitle(doc, "Tipo\nComentario", pos + colsWidth[4], top - 2);
-  createSubTitle(doc, "Fecha\nCompromiso", pos + colsWidth[5], top);
+  createSubTitle(doc, "Fecha\nCompromiso", pos + colsWidth[5], top - 2);
 
   // pos += colsWidth[2];
   // createSubTitle(doc, "Créditos", pos, top, "center");

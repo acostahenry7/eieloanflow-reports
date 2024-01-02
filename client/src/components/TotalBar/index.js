@@ -30,6 +30,7 @@ function TotalBar({ data, loadingStatus }) {
               prefix={""}
             />
           </li>
+
           <li className="list-item">
             <CurrencyFormat
               value={data

@@ -8,6 +8,7 @@ import { Margin, usePDF } from "react-to-pdf";
 import "./index.css";
 import { tableUIHelper } from "../../../utils/ui-helpers";
 import CurrencyFormat from "react-currency-format";
+import { currencyFormat } from "../../../utils/reports/report-helpers";
 import { TotalBar } from "../../TotalBar";
 
 function RegisterCloseCrud() {
@@ -78,7 +79,7 @@ function RegisterCloseCrud() {
     {
       name: "Total apertura",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => row.register.amount,
+      selector: (row) => currencyFormat(row.register.amount),
       sortable: true,
       reorder: true,
       omit: false,
@@ -86,7 +87,7 @@ function RegisterCloseCrud() {
     {
       name: "Total de efectivo",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => row.register.total_cash,
+      selector: (row) => currencyFormat(row.register.total_cash),
       sortable: true,
       reorder: true,
       omit: false,
@@ -95,7 +96,7 @@ function RegisterCloseCrud() {
     {
       name: "Total de cheques",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => row.register.total_check,
+      selector: (row) => currencyFormat(row.register.total_check),
       sortable: true,
       reorder: true,
       omit: false,
@@ -103,7 +104,7 @@ function RegisterCloseCrud() {
     {
       name: "Total de transferencia",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => row.register.total_transfer,
+      selector: (row) => currencyFormat(row.register.total_transfer),
       sortable: true,
       reorder: true,
       omit: false,
@@ -111,7 +112,7 @@ function RegisterCloseCrud() {
     {
       name: "Total de descuento",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => row.register.total_discount,
+      selector: (row) => currencyFormat(row.register.total_discount),
       sortable: true,
       reorder: true,
       omit: false,
@@ -119,7 +120,7 @@ function RegisterCloseCrud() {
     {
       name: "Total pagado",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => row.register.total_pay,
+      selector: (row) => currencyFormat(row.register.total_pay),
       sortable: true,
       reorder: true,
       omit: false,
@@ -251,14 +252,67 @@ function RegisterCloseCrud() {
                     backgroundColor: "#e1eff6",
                   }}
                 >
-                  <Datatable columns={innerColumns} data={data.child} />
+                  <Datatable
+                    columns={innerColumns}
+                    data={data.child}
+                    marginTopPagination={18}
+                  />
+                  {filterData.length > 0 && (
+                    <div
+                      style={{
+                        display: isLoading ? "none" : "flex",
+                        alignItems: "center",
+                        marginTop: "-46px",
+                        paddingLeft: 8,
+                        // justifyContent: "space-between",
+                        width: "100%",
+                      }}
+                    >
+                      <div>Total</div>
+                      <div style={{ zIndex: 3 }} className="list-container">
+                        <ul
+                          style={{
+                            display: "flex",
+                            // width: "100%",
+                            // paddingLeft: 200,
+                            // boxSizing: "border-box",
+                            // width: "70%",
+                            // justifyContent: "flex-start",
+                          }}
+                        >
+                          <li
+                            style={{
+                              fontWeight: "bold",
+                              fontSize: 12,
+                              marginLeft: "175px",
+                            }}
+                          >
+                            <CurrencyFormat
+                              value={data.child
+                                ?.reduce(
+                                  (acc, item) => acc + parseFloat(item.pay),
+                                  0
+                                )
+                                .toFixed(2)}
+                              displayType={"text"}
+                              thousandSeparator={true}
+                              prefix={"RD$"}
+                            />
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             },
             fixedHeader: true,
           }}
+          marginTopPagination={100}
         />
-        <TotalBar data={filterData} loadingStatus={isLoading} />
+        {filterData.length > 0 && (
+          <TotalBar data={filterData} loadingStatus={isLoading} />
+        )}
       </div>
     </div>
   );

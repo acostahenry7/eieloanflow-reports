@@ -4,7 +4,6 @@ import { Datatable } from "../../Datatable";
 import { getValidationBalance } from "../../../api/accounting";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
-import { Margin, usePDF } from "react-to-pdf";
 import CurrencyFormat from "react-currency-format";
 
 function ValidationBalanceCrud() {
@@ -14,11 +13,6 @@ function ValidationBalanceCrud() {
   const [reqToggle, setReqToggle] = React.useState([]);
   const [searchParams, setSearchParams] = React.useState([]);
   const [searchedText, setSearchedText] = React.useState("");
-
-  const { toPDF, targetRef } = usePDF({
-    filename: "reporte-pagos-recibidos.pdf",
-    page: { margin: Margin.MEDIUM },
-  });
 
   React.useEffect(() => {
     (async () => {
@@ -244,11 +238,10 @@ function ValidationBalanceCrud() {
         setSearchedText={setSearchedText}
         columns={columns}
         setColumns={setColumns}
+        exportFunction={() => {}}
       />
-      <button onClick={toPDF}>exportar</button>
-      <div ref={targetRef}>
-        <Datatable columns={columns} data={filterData} isLoading={isLoading} />
-      </div>
+
+      <Datatable columns={columns} data={filterData} isLoading={isLoading} />
     </div>
   );
 }

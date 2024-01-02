@@ -84,6 +84,20 @@ async function getCollectorVisitsApi(queryParams) {
   }
 }
 
+async function getPaidMora(queryParams) {
+  try {
+    const paidMora = await request({
+      method: "GET",
+      path: "/payment/paid-mora",
+      urlParams: queryParams || {},
+    });
+
+    return paidMora;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export {
   getTodayPaymentsApi,
   getCanceledPaymentsApi,
@@ -91,4 +105,5 @@ export {
   getPaymentProyectionApi,
   getHistoryPaymentControl,
   getCollectorVisitsApi,
+  getPaidMora,
 };

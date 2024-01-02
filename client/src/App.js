@@ -25,6 +25,7 @@ import { DGI606Screen } from "./screens/DGI606Screen";
 import { DGI607Screen } from "./screens/DGI607Screen";
 import { GeneralMajor } from "./screens/GeneralMajor";
 import { DetailedGeneralMajor } from "./screens/DetailedGeneralMajor";
+import { PaidMoraScreen } from "./screens/PaidMoraScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -67,6 +68,7 @@ function App() {
                 path="/reports/payment-control-history"
                 element={<PaymentControlHistoryScreen />}
               />
+              <Route path="/reports/paid-mora" element={<PaidMoraScreen />} />
               <Route
                 path="/reports/loan-detail"
                 element={<LoanDetailScreen />}

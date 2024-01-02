@@ -64,7 +64,7 @@ controller.getLoanDetails = async (req) => {
           COALESCE(SUM(a.capital) filter(where a.paid = 'false'), 0)  as pending_capital,
           COALESCE(SUM(a.interest) filter(where a.paid = 'false'), 0)  as pending_interest,
           COALESCE(SUM(a.mora) filter(where a.paid = 'false'), 0) pending_mora,
-          COALESCE(SUM(a.mora) filter(where a.status_type = 'DEFEATED'), 0) arrear_mora,
+          COALESCE(lc.amount,0) as charges,
           COALESCE(COUNT(a.amortization_id) filter(where a.paid = 'false'), 0) pending_dues,
           COALESCE(COUNT(a.amortization_id) filter(where a.status_type = 'DEFEATED'), 0) arrear_dues
           FROM amortization a
@@ -72,10 +72,11 @@ controller.getLoanDetails = async (req) => {
         JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
         JOIN customer c ON (la.customer_id = c.customer_id)
         JOIN late_payment lp ON (l.late_payment_id = lp.late_payment_id)
+        LEFT JOIN loan_charge lc ON (l.loan_id = lc.loan_id)
         WHERE a.loan_id = '${req.params.id}'
         GROUP BY  c.first_name, c.last_name , c.identification, l.loan_number_id, l.interest_rate_type, 
     l.amount_approved, l.number_of_installments,l.frequency_of_payment, lp.name, l.status_type,
-    l.amount_of_free, la.loan_type, l.loan_situation, l.outlet_id, lp.amount`);
+    l.amount_of_free, la.loan_type, l.loan_situation, l.outlet_id, lp.amount, lc.amount`);
 
     if (data.length == 0) {
       console.log(data);

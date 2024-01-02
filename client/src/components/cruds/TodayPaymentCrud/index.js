@@ -11,8 +11,11 @@ function TodayPaymentCrud() {
   const [data, setData] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [reqToggle, setReqToggle] = React.useState([]);
-  const [searchParams, setSearchParams] = React.useState([]);
   const [searchedText, setSearchedText] = React.useState("");
+  const [searchParams, setSearchParams] = React.useState({
+    dateFrom: new Date().toISOString().split("T")[0],
+    dateTo: new Date().toISOString().split("T")[0],
+  });
 
   React.useEffect(() => {
     (async () => {
@@ -150,7 +153,21 @@ function TodayPaymentCrud() {
   });
 
   const exportPDF = () => {
-    generateReport(data, {});
+    let reportDate = new Date(searchParams.dateTo);
+
+    let outletName = outlets.filter(
+      (item) => item.outlet_id == searchParams.outletId
+    )[0]?.name;
+    let conf = {
+      title: outletName || "Todas las sucursales",
+      date: reportDate.toLocaleString("es-Es", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+    };
+    generateReport(filterData, conf);
   };
 
   return (

@@ -43,7 +43,7 @@ function GeneralMajor() {
           .toUTCString()
           .slice(5, 16)}`,
       };
-      //generateReport(response.body, reportConfig);
+      generateReport(response.body, reportConfig);
       setIsLoading(false);
 
       console.log(response);
@@ -91,13 +91,9 @@ function GeneralMajor() {
           secondaryFilters={secondaryFilters}
           setSearchParams={setSearchParams}
           setRequestToggle={setReqToggle}
+          exportFunction={async () => await generateMajorGeneral()}
         />
-        <button
-          className="btn"
-          onClick={async () => await generateMajorGeneral()}
-        >
-          Generar
-        </button>
+
         {isLoading && <ThreeDots />}
       </div>
     </div>

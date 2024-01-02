@@ -125,16 +125,20 @@ controller.getPaymentProyection = async (queryParams) => {
       await db.query(`SELECT l.loan_number_id, z.name as zone, e.first_name || ' ' || e.last_name as employee_name,
       COALESCE(SUM(a.total_paid + a.total_paid_mora) filter(where a.paid='true'),0) as paid_amount,
       COALESCE(SUM(a.amount_of_fee + a.mora) filter(where a.paid='false'),0) as pending_amount,
-      TRUNC(COALESCE((SUM(a.total_paid + a.total_paid_mora) filter(where a.paid='true')/SUM(a.amount_of_fee + a.mora)),0) * 100, 2) - 8.5 as payment_proyection,
-      TRUNC(COALESCE((SUM(a.total_paid + a.total_paid_mora) filter(where a.paid='true')/SUM(a.amount_of_fee + a.mora)),0) * 100, 2) as efficiency
+      TRUNC(COALESCE((SUM(a.total_paid + a.total_paid_mora) filter(where a.paid='true')/SUM(a.amount_of_fee + a.total_paid_mora)),0) * 100, 2)- 3.67 as payment_proyection,
+      TRUNC(COALESCE((SUM(a.total_paid + a.total_paid_mora) filter(where a.paid='true')/SUM(a.amount_of_fee + a.total_paid_mora)),0) * 100, 2) as efficiency
       FROM loan l
       JOIN loan_payment_address lpa ON (l.loan_payment_address_id = lpa.loan_payment_address_id)
       JOIN zone z ON (lpa.municipality_id = z.municipality_id)
       JOIN employee_zone ez ON (z.zone_id = ez.zone_id)
       JOIN employee e ON (ez.employee_id = e.employee_id)
       JOIN amortization a ON (l.loan_id = a.loan_id)
+      JOIN payment_detail pd ON (a.amortization_id = pd.amortization_id)
+      JOIN payment p ON (pd.payment_id = p.payment_id)
+      WHERE l.outlet_id like '${queryParams.outletId}%'
       GROUP BY l.loan_number_id, z.name, e.first_name, e.last_name, l.status_type
-      HAVING l.status_type NOT IN ('PAID', 'DELETE')`);
+      HAVING l.status_type NOT IN ('PAID', 'DELETE')
+      AND max(p.created_date)::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`);
 
     if (data.length == 0) {
       return [];
@@ -190,6 +194,31 @@ controller.getCollectorVisits = async (queryParams) => {
     return data;
   } catch (error) {
     throw new Error(error.message);
+  }
+};
+
+controller.getPaidMora = async (queryParams) => {
+  try {
+    const [paidMora, meta] = await db.query(
+      `select c.first_name || ' ' || c.last_name as customer_name, c.identification,
+        max(p.created_date) payment_date, l.loan_number_id, sum(a.total_paid_mora) paid_mora,
+        sum(a.discount_mora) as discount_mora
+        from amortization a
+        join loan l on (a.loan_id = l.loan_id)
+        join loan_application la on (l.loan_application_id = la.loan_application_id)
+        join customer c on (la.customer_id = c.customer_id)
+        join payment_detail pd on (a.amortization_id = pd.amortization_id)
+        join payment p on (pd.payment_id = p.payment_id)
+        where total_paid_mora > 0
+        and a.outlet_id like '${queryParams.outletId}%'
+        and p.created_date::date BETWEEN '${queryParams.dateFrom}' and '${queryParams.dateTo}'
+        and l.status_type not in ('DELETE')
+        group by l.loan_number_id, c.first_name, c.last_name, c.identification`
+    );
+
+    return paidMora;
+  } catch (error) {
+    console.log(error);
   }
 };
 

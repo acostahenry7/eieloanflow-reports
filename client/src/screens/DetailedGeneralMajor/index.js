@@ -106,13 +106,9 @@ function DetailedGeneralMajor() {
           secondaryFilters={secondaryFilters}
           setSearchParams={setSearchParams}
           setRequestToggle={setReqToggle}
+          exportFunction={async () => await generateMajorGeneral()}
         />
-        <button
-          className="btn"
-          onClick={async () => await generateMajorGeneral()}
-        >
-          Generar
-        </button>
+
         {isLoading && <ThreeDots />}
       </div>
     </div>

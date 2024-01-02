@@ -23,10 +23,12 @@ function SearchBar({
   const searchForm = useFormik({
     initialValues: getInitialValues([...mainFilters, ...secondaryFilters]),
     validateOnChange: false,
+    enableReinitialize: true,
     onSubmit: async (values, { resetForm }) => {
       setSearchParams({});
       console.log(values);
       setSearchParams(values);
+      setRequestToggle((state) => !state);
     },
   });
 
@@ -218,8 +220,14 @@ function SearchBar({
           title="Refresh and clear filters"
           className="SearchBar-actions-icon"
           onClick={() => {
+            // window.location.reload();
             searchForm.resetForm();
-            setSearchParams({});
+            setSearchParams({
+              outletId: "857b8b3b-d603-4474-9b35-4a90277d9bc0",
+              dateFrom: new Date().toISOString().split("T")[0],
+              dateTo: new Date().toISOString().split("T")[0],
+            });
+            setSearchedText("");
             setRequestToggle((state) => !state);
           }}
         />
@@ -290,8 +298,12 @@ function getInitialValues(arr) {
         initialValues[item.field] = item.options[0]?.value;
         break;
       case "dateRange":
-        initialValues[item.field + "From"] = "";
-        initialValues[item.field + "To"] = "";
+        initialValues[item.field + "From"] = new Date()
+          .toISOString()
+          .split("T")[0];
+        initialValues[item.field + "To"] = new Date()
+          .toISOString()
+          .split("T")[0];
         break;
       case "date":
         initialValues[item.field] = new Date().toISOString().split("T")[0];

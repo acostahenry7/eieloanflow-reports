@@ -8,7 +8,9 @@ import {
   getLoanTypeLabel,
 } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
+import { ThreeDots } from "react-loader-spinner";
 import "./index.css";
+import { currencyFormat } from "../../../utils/reports/report-helpers";
 
 function LoanDetailCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -326,10 +328,13 @@ function getDetailedData() {}
 
 function LoanDetailSummary({ data }) {
   const [detail, setDetail] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   React.useEffect(() => {
     (async () => {
+      setIsLoading(true);
       const res = await getLoanDetail(data.loan_id);
+      setIsLoading(false);
       console.log(res);
       setDetail(res.body[0]);
     })();
@@ -343,7 +348,7 @@ function LoanDetailSummary({ data }) {
     "Tipo de tasa",
     "Monto aprobado",
     "Número de cuotas",
-    "Porcentaje",
+    "Tasa Mora",
     "Frecuencia de pago",
     "Tipo de mora",
     "Estado",
@@ -365,7 +370,7 @@ function LoanDetailSummary({ data }) {
     "Capital pendiente",
     "Interés pendiente",
     "Mora pendiente",
-    "Mora en atraso",
+    "Gastos",
     "Cuotas pendientes",
     "Cuotas en atraso",
     "Sucursal",
@@ -373,10 +378,17 @@ function LoanDetailSummary({ data }) {
 
   return (
     <div className="LoanDetailSummary-container">
-      {Object.entries(detail).map((item, index) => (
+      {isLoading && <ThreeDots width={36} color="#166fd7" />}
+      {Object.entries(detail)?.map((item, index) => (
         <div className="LoanDetailSummary-item">
           <p>{fields[index] || "key"} :</p>
-          <p> {item[1]}</p>
+          <p>
+            {" "}
+            {currencyFormat(item[1]).toLocaleLowerCase().includes("nan")
+              ? item[1]
+              : currencyFormat(item[1])}
+            {fields[index].toLowerCase().includes("tasa") && "%"}
+          </p>
         </div>
       ))}
     </div>

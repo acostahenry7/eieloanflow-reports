@@ -12,12 +12,12 @@ import {
   getTextWidth,
 } from "./report-helpers";
 
-let colsWidth = [80, 110, 160, 195, 225];
+let colsWidth = [80, 115, 180, 210, 235];
 
 function generateReport(data, configParams) {
   //General Configuration Params
   //-------Layout--------
-  let headerTop = 10;
+  let headerTop = 20;
   let top = 40;
   let left = 15;
   let right = left + 140;
@@ -44,9 +44,9 @@ function generateReport(data, configParams) {
   let subTitle = `VISITAS A CLIENTES`;
   let date = `${configParams.date}`;
 
-  createMainTitle(doc, title, center, headerTop);
-  createMainSubTitle(doc, subTitle, center + 8, headerTop + spacing + 0.8);
-  createDate(doc, date, center + 14, headerTop + spacing * 2);
+  createMainTitle(doc, title, left, headerTop - 5);
+  createMainSubTitle(doc, subTitle, left, headerTop);
+  createDate(doc, date, right + 77, headerTop);
 
   let counter = 0;
   renderTableHeader(doc, left, top - 10);
@@ -65,7 +65,9 @@ function generateReport(data, configParams) {
     );
     doc.text(`${item.employee}`, left + colsWidth[1], top);
     doc.text(`${item.actual_location}`, left + colsWidth[2], top);
-    doc.text(`${item.commentary}`, left + colsWidth[3], top);
+    doc.text(`${item.commentary}`, left + colsWidth[3] + 20, top, {
+      align: "right",
+    });
 
     // doc.text(`${item.arrear_percentaje}%`, left + 155, top);
     // doc.text(
