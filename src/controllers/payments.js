@@ -200,9 +200,12 @@ controller.getCollectorVisits = async (queryParams) => {
 controller.getPaidMora = async (queryParams) => {
   try {
     const [paidMora, meta] = await db.query(
-      `select c.first_name || ' ' || c.last_name as customer_name, c.identification,
-        max(p.created_date) payment_date, l.loan_number_id, sum(a.total_paid_mora) paid_mora,
-        sum(a.discount_mora) as discount_mora
+      `SELECT first_name || ' ' || last_name as customer_name,loan_number_id,
+        identification, sum(total_paid_mora) total_paid_mora, sum(discount_mora) as discount_mora,
+        abs(sum(pay_mora)) as paid_mora
+        --max(payment_date)
+        FROM(select distinct(a.amortization_id), a.total_paid_mora,a.discount_mora, l.loan_number_id,
+           c.first_name, c.last_name, c.identification, pd.pay_mora
         from amortization a
         join loan l on (a.loan_id = l.loan_id)
         join loan_application la on (l.loan_application_id = la.loan_application_id)
@@ -211,9 +214,12 @@ controller.getPaidMora = async (queryParams) => {
         join payment p on (pd.payment_id = p.payment_id)
         where total_paid_mora > 0
         and a.outlet_id like '${queryParams.outletId}%'
-        and p.created_date::date BETWEEN '${queryParams.dateFrom}' and '${queryParams.dateTo}'
         and l.status_type not in ('DELETE')
-        group by l.loan_number_id, c.first_name, c.last_name, c.identification`
+        group by a.amortization_id, l.loan_number_id, c.first_name, c.last_name, c.identification,
+               pd.pay_mora
+        having max(p.created_date)::date BETWEEN '${queryParams.dateFrom}' and '${queryParams.dateTo}'
+        order by l.loan_number_id) as T1
+        GROUP BY loan_number_id, T1.first_name, T1.last_name, T1.identification`
     );
 
     return paidMora;

@@ -10,7 +10,6 @@ const controller = {};
 controller.getGeneralBalance = async (queryParams) => {
   let data = {};
   console.log(queryParams);
-  //'4a812a14-f46d-4a99-8d88-c1f14ea419f4'
 
   try {
     const [generalBalance, meta] =
@@ -77,7 +76,6 @@ controller.getGeneralBalance = async (queryParams) => {
 
     let originalData = generalBalance;
 
-    // generalBalance.map((item, index) => {
     //   if (item.control_account === null && item.is_control === true) {
     //     accounts.push({
     //       ...item,
@@ -159,7 +157,6 @@ controller.getGeneralBalance = async (queryParams) => {
       if (isParent) balance = parseFloat(item.balance);
       if (isParent) prevBalance = parseFloat(item.prev_balance);
 
-      // console.log(item.number, getAccountBalance(originalData, item, balance));
       accountBalances.push({
         account_catalog_id: item.account_catalog_id,
         number: item.number,
@@ -169,26 +166,7 @@ controller.getGeneralBalance = async (queryParams) => {
         balance: getAccountBalance(originalData, item, balance),
         prevBalance: getPrevAccountBalance(originalData, item, prevBalance),
       });
-
-      // console.log(accountBalances);
     }
-
-    // console.log(accountBalances);
-
-    // let ctrlAccounts = 0;
-    // console.log(
-    //   (function countControlAccounts(arr) {
-    //     // console.log("TESTING OUT", arr);
-    //     for (let i = 0; i < arr.length; i++) {
-    //       if (arr[i]?.controlledAccounts?.length > 0) {
-    //         ctrlAccounts += arr[i].controlledAccounts.length;
-    //         countControlAccounts(arr[i].controlledAccounts);
-    //       }
-    //     }
-
-    //     return ctrlAccounts;
-    //   })(accounts)
-    // );
 
     return { accounts, accountBalances };
   } catch (error) {
@@ -410,7 +388,7 @@ controller.generate606 = async (req, res, queryParams) => {
 	FROM account_payable ap
 	LEFT JOIN expenses_type et ON (ap.expenses_type_id = et.expenses_type_id)
 	LEFT JOIN check_payment cp ON (ap.account_payable_id = cp.account_payable_id)
-	WHERE ap.outlet_id='4a812a14-f46d-4a99-8d88-c1f14ea419f4'
+	WHERE ap.outlet_id like'${queryParams.outletId}'
 	AND extract(YEAR FROM ap.created_date)  = '2023'
 	AND extract(MONTH FROM ap.created_date)  = '12'
 	GROUP BY ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount, 

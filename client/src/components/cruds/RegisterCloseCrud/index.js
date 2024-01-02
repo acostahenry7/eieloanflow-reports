@@ -249,7 +249,7 @@ function RegisterCloseCrud() {
                     boxShadow: "inset 1px 4px 3px rgba(0,0,0,0.2)",
                     padding: 20,
                     borderRadius: 2,
-                    backgroundColor: "#e1eff6",
+                    backgroundColor: "#f7fbff",
                   }}
                 >
                   <Datatable

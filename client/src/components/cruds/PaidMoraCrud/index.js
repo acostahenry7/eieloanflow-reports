@@ -88,7 +88,8 @@ function PaidMoraCrud() {
     {
       name: "Fecha Mora Acumulada",
       width: "400px",
-      selector: (row) => new Date(row.payment_date).toLocaleString("en-US"),
+      selector: (row) =>
+        new Date(searchParams.dateFrom).toLocaleString("en-US"),
       sortable: true,
       reorder: true,
       omit: false,
