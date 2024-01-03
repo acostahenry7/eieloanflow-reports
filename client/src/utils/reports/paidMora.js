@@ -60,15 +60,11 @@ function generateReport(data, configParams) {
       .join(" ")}`;
     doc.text(`${customerName}`, left, top);
     createSubTitle(doc, `${item.loan_number_id}`, left + colsWidth[0], top);
-    doc.text(
-      `${new Date(item.payment_date).toLocaleString("es-Es").split(",")[0]}`,
-      left + colsWidth[1],
-      top
-    );
-    createSubTitle(doc, `${item.paid_mora}`, left + colsWidth[2] + 13, top, {
+
+    createSubTitle(doc, `${item.paid_mora}`, left + colsWidth[1] + 13, top, {
       align: "right",
     });
-    doc.text(`${item.discount_mora}`, left + colsWidth[3] + 13, top, {
+    doc.text(`${item.discount_mora}`, left + colsWidth[2] + 13, top, {
       align: "right",
     });
 
@@ -108,15 +104,9 @@ function renderTableHeader(doc, pos, top) {
   // pos += 3;
   createSubTitle(doc, "Cliente", pos + 1, top);
   createSubTitle(doc, "Préstamo", pos + colsWidth[0], top);
-  createSubTitle(
-    doc,
-    "Fecha\nMora Acum.",
-    pos + colsWidth[1],
-    top - 2,
-    "center"
-  );
-  createSubTitle(doc, "Mora\nPagada", pos + colsWidth[2], top - 2);
-  createSubTitle(doc, "Descuento\nMora", pos + colsWidth[3], top - 2);
+
+  createSubTitle(doc, "Mora\nPagada", pos + colsWidth[1], top - 2);
+  createSubTitle(doc, "Descuento\nMora", pos + colsWidth[2], top - 2);
   //   createSubTitle(doc, "Fecha", pos + colsWidth[4], top);
 
   // pos += colsWidth[2];
@@ -134,7 +124,7 @@ function renderTotalFooter(doc, pos, top, data, label) {
     currencyFormat(
       data.reduce((acc, item) => acc + parseFloat(item.paid_mora), 0)
     ),
-    pos + colsWidth[2] - 14,
+    pos + colsWidth[1] - 6,
     top
   );
   createSubTitle(
@@ -142,7 +132,7 @@ function renderTotalFooter(doc, pos, top, data, label) {
     currencyFormat(
       data.reduce((acc, item) => acc + parseFloat(item.discount_mora), 0)
     ),
-    pos + colsWidth[3] + 14,
+    pos + colsWidth[2] + 14,
     top,
     {
       align: "right",

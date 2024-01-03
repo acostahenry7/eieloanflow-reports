@@ -54,7 +54,7 @@ async function generate606Api(queryParams) {
     return setTimeout(() => {
       window.location.assign(is606Generated.body);
       return is606Generated;
-    }, 1000);
+    }, 3000);
 
     // setTimeout(async () => {
     //   fetch(`${config.server.url}/606?fileName=${is606Generated.body}`)

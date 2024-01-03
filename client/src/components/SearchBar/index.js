@@ -19,7 +19,9 @@ function SearchBar({
   exportFunction,
 }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [showOtherfilters, setShowOtherFilters] = React.useState(false);
+  const [showOtherfilters, setShowOtherFilters] = React.useState(
+    secondaryFilters.length > 0 ? true : false
+  );
   const searchForm = useFormik({
     initialValues: getInitialValues([...mainFilters, ...secondaryFilters]),
     validateOnChange: false,
