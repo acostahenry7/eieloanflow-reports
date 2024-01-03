@@ -8,7 +8,6 @@ import "./index.css";
 
 function DGI606Screen() {
   const [searchParams, setSearchParams] = React.useState({
-    outletId: "4a812a14-f46d-4a99-8d88-c1f14ea419f4",
     date: new Date().toISOString().split("T")[0],
   });
   const [reqToggle, setReqToggle] = React.useState([]);
@@ -30,8 +29,48 @@ function DGI606Screen() {
     })();
   }, [reqToggle, searchParams]);
 
-  let lastYears = [];
-  for (let i = 0; i < 10; i++) {}
+  const [lastYears, setLastYears] = React.useState([]);
+  const [lastMonths, setLastMonths] = React.useState([]);
+  let months = [
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
+  ];
+  React.useEffect(() => {
+    (() => {
+      let currentYear = parseInt(
+        new Date().toISOString().split("T")[0].split("-")[0]
+      );
+
+      let arr = [];
+      let arr2 = [];
+      for (let i = 0; i < 10; i++) {
+        arr.push({
+          label: currentYear,
+          value: currentYear,
+        });
+
+        currentYear -= 1;
+      }
+      for (let i = 0; i < 12; i++) {
+        arr2.push({
+          label: `${months[i]}`,
+          value: i <= 9 ? `0${i + 1}` : `${i + 1}`,
+        });
+      }
+      setLastYears(arr);
+      setLastMonths(arr2);
+    })();
+  }, []);
 
   const generate606Report = async () => {
     console.log("hi");
@@ -66,7 +105,13 @@ function DGI606Screen() {
       label: "Año",
       field: "dateYear",
       type: "select",
-      options: [],
+      options: lastYears,
+    },
+    {
+      label: "Año",
+      field: "dateMonth",
+      type: "select",
+      options: lastMonths,
     },
     // {
     //   label: "A la Fecha De",

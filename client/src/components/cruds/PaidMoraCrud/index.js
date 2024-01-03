@@ -63,37 +63,22 @@ function PaidMoraCrud() {
     },
     {
       name: "Préstamo",
-      width: "120px",
+      width: "524px",
       selector: (row) => row.loan_number_id,
       sortable: true,
       reorder: true,
       omit: false,
     },
-    // {
-    //   name: "Recibo",
-    //   width: "140px",
-    //   selector: (row) => row.receipt_number,
-    //   sortable: true,
-    //   reorder: true,
-    //   omit: false,
-    // },
 
     // {
-    //   name: "Empleado",
-    //   selector: (row) => row.employee_name,
+    //   name: "Fecha Mora Acumulada",
+    //   width: "400px",
+    //   selector: (row) =>
+    //     new Date(searchParams.dateFrom).toLocaleString("en-US"),
     //   sortable: true,
     //   reorder: true,
     //   omit: false,
     // },
-    {
-      name: "Fecha Mora Acumulada",
-      width: "400px",
-      selector: (row) =>
-        new Date(searchParams.dateFrom).toLocaleString("en-US"),
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
     {
       name: "Mora Pagada",
       width: "300px",

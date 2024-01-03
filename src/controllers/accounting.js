@@ -373,6 +373,7 @@ for (i = 0; i < 26; i++) {
 }
 
 controller.generate606 = async (req, res, queryParams) => {
+  console.log(queryParams);
   const [accountPayable, meta] = await db.query(`
   SELECT ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount, 
 	concept, ap.outlet_id, ap.status_type, ap.created_by,
@@ -388,9 +389,9 @@ controller.generate606 = async (req, res, queryParams) => {
 	FROM account_payable ap
 	LEFT JOIN expenses_type et ON (ap.expenses_type_id = et.expenses_type_id)
 	LEFT JOIN check_payment cp ON (ap.account_payable_id = cp.account_payable_id)
-	WHERE ap.outlet_id like'${queryParams.outletId}'
-	AND extract(YEAR FROM ap.created_date)  = '2023'
-	AND extract(MONTH FROM ap.created_date)  = '12'
+	WHERE ap.outlet_id like'${queryParams.outletId}%'
+	AND extract(YEAR FROM ap.created_date)  = '${queryParams.dateYear}'
+	AND extract(MONTH FROM ap.created_date)  = '${queryParams.dateMonth}'
 	GROUP BY ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount, 
 	concept, ap.outlet_id, ap.status_type, ap.created_by,
 	ap.created_date, ap.created_date, ap.created_date, 
@@ -405,7 +406,9 @@ controller.generate606 = async (req, res, queryParams) => {
         expenseType: ac.code ? `${ac.code}-${ac.expense_type}` : "",
         ncf: ac.ncf,
         modifiedNcf: "",
-        cYearMonth: `${ac.created_year}${ac.created_month}`,
+        cYearMonth: `${ac.created_year}${
+          ac.created_month <= 9 ? `0${ac.created_month}` : `${ac.created_month}`
+        }`,
         cDay: `${ac.created_day}`,
         payYearMonth: `${
           ac.remaining_ammount == 0
