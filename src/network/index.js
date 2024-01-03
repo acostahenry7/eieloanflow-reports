@@ -140,6 +140,19 @@ module.exports = (app) => {
       });
   });
 
+  router.get("/api/payment/receipt-detail", (req, res) => {
+    console.log(req.query);
+
+    paymentCtrl
+      .getDetailReceipt(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   //Loans
   router.get("/api/loan", (req, res) => {
     loanCtrl
@@ -236,6 +249,24 @@ module.exports = (app) => {
   });
 
   router.get("/api/606", (req, res) => {
+    console.log(req.query);
+    res.download(
+      path.join(__dirname, `../../client/public/reports/${req.query.fileName}`)
+    );
+  });
+
+  router.post("/api/607", (req, res) => {
+    accountingCtrl
+      .generate607(req, res, req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  router.get("/api/607", (req, res) => {
     console.log(req.query);
     res.download(
       path.join(__dirname, `../../client/public/reports/${req.query.fileName}`)

@@ -228,4 +228,35 @@ controller.getPaidMora = async (queryParams) => {
   }
 };
 
+controller.getDetailReceipt = async (queryParams) => {
+  try {
+    const [receipts, meta] =
+      await db.query(`select r.receipt_number, pn.ncf_number,c.identification, pn.created_date, 
+		c.first_name || ' ' || c.last_name as customer_name, sum(a.amount_of_fee) as total_amount,
+		sum(a.capital) as capital, sum(a.interest) as interest, sum(a.mora) as mora,
+		CASE WHEN p.payment_type = 'CASH' THEN p.pay ELSE 0 END as total_cash,
+		CASE WHEN p.payment_type = 'TRANSFER' OR p.payment_type = 'CHECK' THEN p.pay ELSE 0 END as total_check_transfer,
+    p.payment_type
+		from process_ncf pn
+		right join payment p on (pn.payment_id = p.payment_id)
+		join payment_detail pd on (p.payment_id = pd.payment_id)
+		join amortization a on (pd.amortization_id = a.amortization_id)
+		join receipt r on (p.payment_id = r.payment_id)
+		join customer c on (p.customer_id = c.customer_id)
+		where pn.outlet_id like '${queryParams.outletId}%'
+		and pn.created_date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'
+		group by r.receipt_number, pn.ncf_number,c.identification, pn.created_date, 
+		c.first_name, c.last_name, p.pay, p.payment_type`);
+
+    if (receipts.length == 0) {
+      return [];
+    }
+
+    return receipts;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+};
+
 module.exports = controller;

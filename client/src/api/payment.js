@@ -98,6 +98,20 @@ async function getPaidMora(queryParams) {
   }
 }
 
+async function getReceiptDetail(queryParams) {
+  try {
+    const receipts = await request({
+      method: "GET",
+      path: "/payment/receipt-detail",
+      urlParams: queryParams || {},
+    });
+
+    return receipts;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export {
   getTodayPaymentsApi,
   getCanceledPaymentsApi,
@@ -106,4 +120,5 @@ export {
   getHistoryPaymentControl,
   getCollectorVisitsApi,
   getPaidMora,
+  getReceiptDetail,
 };

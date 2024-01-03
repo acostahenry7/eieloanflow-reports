@@ -55,15 +55,24 @@ async function generate606Api(queryParams) {
       window.location.assign(is606Generated.body);
       return is606Generated;
     }, 3000);
+  } catch (error) {
+    throw error;
+  }
+}
 
-    // setTimeout(async () => {
-    //   fetch(`${config.server.url}/606?fileName=${is606Generated.body}`)
-    //     .then((res) => res.blob())
-    //     .then((blob) => {
-    //       var file = window.URL.createObjectURL(blob);
-    //       window.location.assign(file);
-    //     });
-    // }, 2000);
+async function generate607Api(queryParams) {
+  try {
+    const is607Generated = await request({
+      method: "POST",
+      path: "/607",
+      urlParams: queryParams || {},
+    });
+
+    return setTimeout(() => {
+      console.log(is607Generated);
+      window.location.assign(is607Generated.body);
+      return is607Generated;
+    }, 3000);
   } catch (error) {
     throw error;
   }
@@ -73,5 +82,6 @@ export {
   getGeneralBalance,
   getValidationBalance,
   generate606Api,
+  generate607Api,
   getMajorGeneral,
 };

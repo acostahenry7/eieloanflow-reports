@@ -27,7 +27,7 @@ import {
 } from "react-icons/fa6";
 import { BsFolderCheck } from "react-icons/bs";
 import { MdInsertChart, MdOutlineBalance } from "react-icons/md";
-import { IoDocumentAttachSharp } from "react-icons/io5";
+import { IoReceiptOutline } from "react-icons/io5";
 
 function Sidebar() {
   const { isSidebarOpened } = React.useContext(SidebarContext);
@@ -154,6 +154,17 @@ function Sidebar() {
             />
           ),
           route: "/reports/paid-mora",
+          selected: false,
+        },
+        {
+          label: "Recibos de Ingreso",
+          icon: (selected) => (
+            <IoReceiptOutline
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/receipt-detail",
           selected: false,
         },
       ],

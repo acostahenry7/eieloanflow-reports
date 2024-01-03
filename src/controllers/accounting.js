@@ -474,6 +474,111 @@ controller.generate606 = async (req, res, queryParams) => {
   return "ok";
 };
 
+controller.generate607 = async (req, res, queryParams) => {
+  console.log(queryParams);
+
+  const [outlet] = await db.query(
+    `select rnc from outlet where outlet_id like '${queryParams.outletId}%'`
+  );
+
+  const [receipts, meta] = await db.query(`
+  select r.receipt_number, pn.ncf_number,c.identification, pn.created_date, 
+		c.first_name || ' ' || c.last_name as customer_name, sum(a.amount_of_fee) as total_amount,
+		sum(a.capital) as capital, sum(a.interest) as interest, sum(a.mora) as mora,
+		CASE WHEN p.payment_type = 'CASH' THEN p.pay ELSE 0 END as total_cash,
+		CASE WHEN p.payment_type = 'TRANSFER' OR p.payment_type = 'CHECK' THEN p.pay ELSE 0 END as total_check_transfer,
+    p.payment_type
+		from process_ncf pn
+		join payment p on (pn.payment_id = p.payment_id)
+		join payment_detail pd on (p.payment_id = pd.payment_id)
+		join amortization a on (pd.amortization_id = a.amortization_id)
+		join receipt r on (p.payment_id = r.payment_id)
+		join customer c on (p.customer_id = c.customer_id)
+		where pn.outlet_id like '${queryParams.outletId}%'
+    AND extract(YEAR FROM pn.created_date)  = '${queryParams.dateYear}'
+	  AND extract(MONTH FROM pn.created_date)  = '${queryParams.dateMonth}'
+		group by r.receipt_number, pn.ncf_number,c.identification, pn.created_date, 
+		c.first_name, c.last_name, p.pay, p.payment_type`);
+
+  let rowArr = [
+    ...receipts.map((r) => {
+      return {
+        id: r.identification?.split("-").join(""),
+        tipoId: 2,
+        ncf: r.ncf_number,
+        modifiedNCF: "",
+        incomeType: "02 - Ingresos Financieros",
+        ncfDate:
+          r.created_date?.toISOString().split("T")[0].split("-").join("") || "",
+        retentionDate: "",
+        billedAmount: parseFloat(r.interest) + parseFloat(r.mora),
+        billdedITBIS: "",
+        expenseType: r.code ? `${r.code}-${r.expense_type}` : "",
+        modifiedNcf: "",
+        retainedITBIS: "",
+        perceivedITBIS: "",
+        retentionByThirdSale: "",
+        perceivedISR: "",
+        consumptionSelectiveTax: "",
+        otherTaxes: "",
+        legalTip: "",
+        totalCash: r.total_cash,
+        totalCheck: r.total_check_transfer,
+        creditSale: "",
+        gitBonus: "",
+        permuta: "",
+        otherSalesTypes: "",
+      };
+    }),
+  ];
+
+  let generatedId = nanoid();
+  let filePath = path.join(__dirname, `../../client/public/reports`);
+  let fileName = `607-${generatedId}.xlsm`;
+
+  return XlsxPopulate.fromFileAsync(
+    path.join(__dirname, "../Formato-de-Envio-607.xlsm")
+  )
+    .then((workbook) => {
+      //Fill preconf-ingo
+      workbook
+        .sheet("Herramienta Formato 607")
+        .cell("C4")
+        .value(`${outlet[0].rnc}`);
+      workbook
+        .sheet("Herramienta Formato 607")
+        .cell("C5")
+        .value(`${queryParams.dateYear}${queryParams.dateMonth}`);
+      workbook
+        .sheet("Herramienta Formato 607")
+        .cell("C6")
+        .value(`${rowArr.length}`);
+
+      for (let row = 0; row < rowArr.length; row++) {
+        let currentRow = Object.values(rowArr[row]);
+
+        for (i = 0; i < currentRow.length; i++) {
+          console.log(`${alphabet[i + 1]}${12 + row}`);
+          workbook
+            .sheet("Herramienta Formato 607")
+            .cell(`${alphabet[i + 1]}${12 + row}`)
+            .value(currentRow[i]);
+        }
+      }
+      console.log(new Date().toLocaleDateString().trim());
+
+      console.log(`http://${req.headers.host}/static/reports/${fileName}`);
+
+      // Write to file.
+      workbook.toFileAsync(`${filePath}/${fileName}`).then;
+      return `http://${req.headers.host}/static/reports/${fileName}`;
+    })
+    .catch((err) => {
+      console.log(err);
+      return;
+    });
+};
+
 function get606PaymentType(type) {
   let currentType = "";
   switch (type) {

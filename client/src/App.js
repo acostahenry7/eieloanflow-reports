@@ -26,6 +26,7 @@ import { DGI607Screen } from "./screens/DGI607Screen";
 import { GeneralMajor } from "./screens/GeneralMajor";
 import { DetailedGeneralMajor } from "./screens/DetailedGeneralMajor";
 import { PaidMoraScreen } from "./screens/PaidMoraScreen";
+import { ReceiptsDetailScreen } from "./screens/ReceiptsDetailScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -69,6 +70,10 @@ function App() {
                 element={<PaymentControlHistoryScreen />}
               />
               <Route path="/reports/paid-mora" element={<PaidMoraScreen />} />
+              <Route
+                path="/reports/receipt-detail"
+                element={<ReceiptsDetailScreen />}
+              />
               <Route
                 path="/reports/loan-detail"
                 element={<LoanDetailScreen />}
