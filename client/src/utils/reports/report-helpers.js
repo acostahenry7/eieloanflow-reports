@@ -15,6 +15,9 @@ let titleFontSize = baseFontSize + 2;
 export const spacing = 5;
 export const sectionSpacing = 10;
 
+//Persistet Data
+export let totalPeriod = 0;
+
 export function createTitle(doc, text, left, top, props) {
   let color = baseColor;
 
@@ -87,11 +90,14 @@ export function createDate(doc, text, left, top, props) {
   doc.setFont("helvetica", "normal", "normal");
 }
 
-export function currencyFormat(number) {
-  return new Intl.NumberFormat("es-DO", {
-    style: "currency",
-    currency: "DOP",
-  }).format(number);
+export function currencyFormat(number, showCurrencySign) {
+  let options = { style: "currency", currency: "DOP" };
+
+  if (showCurrencySign == false) {
+    options = {};
+  }
+
+  return new Intl.NumberFormat("es-DO", options).format(number);
 }
 
 export function generateReportSection(
@@ -146,7 +152,16 @@ export function generateReportSection(
       alwaysVisibleAccounts.filter(
         (account) => account == sectionData[i].number
       ).length > 0;
-    console.log("IS VISIBLE ACCOUNT", isVisible);
+
+    if (sectionData[i].number == "3601") {
+      top += spacing;
+      doc.text(`RESULTADO DEL PERIODO`, left, top);
+      doc.text(`${currencyFormat(totalPeriod)}`, right, top, {
+        align: "right",
+      });
+      totalBalance += totalPeriod;
+    }
+
     if (balance > 0 || isVisible == true) {
       top += spacing;
       doc.text(`${sectionData[i].name}`, left, top);
@@ -266,6 +281,7 @@ export function generateResultStatusReportSection(
     );
   }
 
+  totalPeriod = totalBalance;
   return [top, totalBalance, totalPrevBalance];
 }
 

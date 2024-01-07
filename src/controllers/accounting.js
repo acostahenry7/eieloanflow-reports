@@ -11,12 +11,20 @@ controller.getGeneralBalance = async (queryParams) => {
   let data = {};
   console.log(queryParams);
 
+  let lastMonth =
+    queryParams.date?.split("-")[1] == "01"
+      ? "12"
+      : (parseInt(queryParams.date?.split("-")[1]) - 1).toString();
+  let lastYear =
+    queryParams.date?.split("-")[1] == "01"
+      ? (parseInt(queryParams.date?.split("-")[0]) - 1).toString()
+      : queryParams.date?.split("-")[0];
+
   try {
     const [generalBalance, meta] =
       await db.query(`SELECT ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
       ac.is_control, ac.status_type, ac.created_by, ac.created_date, ac.last_modified_by, ac.last_modified_date,
       ac.balance as catalog_balance,
-      /*TIPO DE ASIENTO MES*/
       COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) = ${
         queryParams.date?.split("-")[0]
       } and extract(MONTH from gda.created_date) = ${
@@ -186,46 +194,96 @@ controller.getGeneralBalance = async (queryParams) => {
 controller.getValidationBalance = async (queryParams) => {
   let data = {};
 
+  console.log(queryParams);
+
   try {
-    const [data, meta] = await db.query(`SELECT distinct(ac.number), ac.name,
-    COALESCE(SUM(gda.debit)
-       filter (where extract(month from gda.created_date) = 08 and extract(year from gda.created_date) = 2023),0) as prev_debit,
-    COALESCE(SUM(gda.credit)
-       filter (where extract(month from gda.created_date) = 08 and extract(year from gda.created_date) = 2023),0) as prev_credit,
-    COALESCE(SUM(gda.debit)
-       filter (where extract(month from gda.created_date) = 09 and extract(year from gda.created_date) = 2023),0) as actual_debit,
-    COALESCE(SUM(gda.credit)
-       filter (where extract(month from gda.created_date) = 09 and extract(year from gda.created_date) = 2023),0) as actual_credit
-    FROM general_diary_account gda
-    JOIN general_diary gd ON (gda.general_diary_id = gd.general_diary_id)
-    RIGHT OUTER JOIN account_catalog ac ON (gda.account_catalog_id = ac.account_catalog_id)
-    WHERE ac.outlet_id = '4a812a14-f46d-4a99-8d88-c1f14ea419f4'
-    GROUP BY ac.number, ac.name
-    ORDER BY ac.number`);
+    const [data, meta] =
+      await db.query(`SELECT ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
+    ac.is_control, ac.status_type, ac.created_by, ac.created_date, ac.last_modified_by, ac.last_modified_date,
+    ac.balance as catalog_balance,
+    /*TIPO DE ASIENTO  ANTERIOR*/
+    COALESCE(sum(gda.debit) filter(where gda.created_date::date <= cast(date_trunc('month', '${
+      queryParams.date
+    }'::date) - interval '1 day' as date))  , 0) as prev_debit,
+    COALESCE(sum(gda.credit) filter(where gda.created_date::date <= cast(date_trunc('month', '${
+      queryParams.date
+    }'::date) - interval '1 day' as date))  , 0)as prev_credit,
+    /*BALANCE ANTERIOR*/
+    ABS(COALESCE(sum(gda.debit) filter(where gda.created_date::date <= cast(date_trunc('month', '${
+      queryParams.date
+    }'::date) - interval '1 day' as date))  , 0)-
+    COALESCE(sum(gda.credit) filter(where gda.created_date::date <= cast(date_trunc('month', '${
+      queryParams.date
+    }'::date) - interval '1 day' as date))  , 0)) as prev_balance,
+    /*TIPO DE ASIENTO MES*/
+    COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) = '${
+      queryParams.date.split("-")[0]
+    }' and extract(MONTH from gda.created_date) = '${
+        queryParams.date.split("-")[1]
+      }')  , 0) as month_debit,
+    COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) = '${
+      queryParams.date.split("-")[0]
+    }' and extract(MONTH from gda.created_date) = '${
+        queryParams.date.split("-")[1]
+      }') , 0)as month_credit,
+    /*BALANCE MES*/
+    COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) = '${
+      queryParams.date.split("-")[0]
+    }' and extract(MONTH from gda.created_date)= '${
+        queryParams.date.split("-")[1]
+      }') , 0)-
+    COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) = '${
+      queryParams.date.split("-")[0]
+    }' and extract(MONTH from gda.created_date) = '${
+        queryParams.date.split("-")[1]
+      }') , 0) as month_balance,
+    /*TIPO DE ASIENTO A LA FECHA*/
+    COALESCE(sum(gda.debit) filter( where gda.created_date::date <= '${
+      queryParams.date
+    }'::date ) , 0) as debit,
+    COALESCE(sum(gda.credit) filter( where gda.created_date::date <= '${
+      queryParams.date
+    }'::date ) , 0)as credit,
+    /*BALANCE A LA FECHA*/
+    ABS(COALESCE(sum(gda.debit) filter( where gda.created_date::date <= '${
+      queryParams.date
+    }'::date ) , 0) -  
+    COALESCE(sum(gda.credit) filter( where gda.created_date::date <= '${
+      queryParams.date
+    }'::date ) , 0)) as balance,
+    ac.outlet_id
+    FROM account_catalog ac
+    LEFT JOIN general_diary_account gda ON (ac.account_catalog_id = gda.account_catalog_id
+    and gda.created_date::date <='${queryParams.date}')
+    WHERE outlet_id like '${queryParams.outletId}'
+    GROUP BY ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
+    ac.is_control, ac.status_type, ac.created_by, ac.created_date, ac.last_modified_by, ac.last_modified_date,
+    ac.balance, ac.outlet_id
+    ORDER BY number`);
 
     if (data.length == 0) {
       return [];
     }
 
-    const parseData = data.map((item) => {
-      item.prev_credit = parseFloat(item.prev_credit) * -1;
-      item.actual_credit = parseFloat(item.actual_credit) * -1;
+    // const parseData = data.map((item) => {
+    //   item.prev_credit = parseFloat(item.prev_credit) * -1;
+    //   item.actual_credit = parseFloat(item.actual_credit) * -1;
 
-      let totalDebit =
-        parseFloat(item.prev_debit) + parseFloat(item.actual_debit);
-      let totalCredit =
-        parseFloat(item.prev_credit) + parseFloat(item.actual_credit);
+    //   let totalDebit =
+    //     parseFloat(item.prev_debit) + parseFloat(item.actual_debit);
+    //   let totalCredit =
+    //     parseFloat(item.prev_credit) + parseFloat(item.actual_credit);
 
-      let sum = totalDebit + totalCredit;
+    //   let sum = totalDebit + totalCredit;
 
-      return {
-        ...item,
-        sum_debit: sum > 0 ? sum : 0,
-        sum_credit: sum < 0 ? sum : 0,
-      };
-    });
+    //   return {
+    //     ...item,
+    //     sum_debit: sum > 0 ? sum : 0,
+    //     sum_credit: sum < 0 ? sum : 0,
+    //   };
+    // });
 
-    return parseData;
+    return data;
   } catch (error) {
     console.log(error);
     throw new Error(error.message);

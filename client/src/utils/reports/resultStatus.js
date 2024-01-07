@@ -102,7 +102,7 @@ function generateReport(data, configParams) {
   top += sectionSpacing + 5;
 
   console.log(balanceGastos);
-  createTitle(doc, "Total del periodo", left, top);
+  createTitle(doc, "Resultado del periodo", left, top);
   createTitle(
     doc,
     currencyFormat(prevBalanceIngresos - prevBalanceGastos),

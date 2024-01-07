@@ -5,14 +5,18 @@ import { getValidationBalance } from "../../../api/accounting";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import CurrencyFormat from "react-currency-format";
+import { generateReport } from "../../../utils/reports/validationBalance";
 
 function ValidationBalanceCrud() {
   const [outlets, setOutlets] = React.useState([]);
   const [data, setData] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [reqToggle, setReqToggle] = React.useState([]);
-  const [searchParams, setSearchParams] = React.useState([]);
   const [searchedText, setSearchedText] = React.useState("");
+  const [searchParams, setSearchParams] = React.useState({
+    outletId: "4a812a14-f46d-4a99-8d88-c1f14ea419f4",
+    date: new Date().toISOString().split("T")[0],
+  });
 
   React.useEffect(() => {
     (async () => {
@@ -122,13 +126,13 @@ function ValidationBalanceCrud() {
           }}
         >
           <CurrencyFormat
-            value={parseFloat(row.actual_debit).toFixed(2)}
+            value={parseFloat(row.month_debit).toFixed(2)}
             displayType={"text"}
             thousandSeparator={true}
             prefix={"RD$ "}
           />
           <CurrencyFormat
-            value={parseFloat(row.actual_credit).toFixed(2)}
+            value={parseFloat(row.month_credit).toFixed(2)}
             displayType={"text"}
             thousandSeparator={true}
             prefix={"RD$ "}
@@ -166,13 +170,13 @@ function ValidationBalanceCrud() {
           }}
         >
           <CurrencyFormat
-            value={row.sum_debit.toFixed(2)}
+            value={parseFloat(row.debit).toFixed(2)}
             displayType={"text"}
             thousandSeparator={true}
             prefix={"RD$ "}
           />
           <CurrencyFormat
-            value={parseFloat(row.sum_credit).toFixed(2)}
+            value={parseFloat(row.credit).toFixed(2)}
             displayType={"text"}
             thousandSeparator={true}
             prefix={"RD$ "}
@@ -208,9 +212,9 @@ function ValidationBalanceCrud() {
           value: "",
         },
         ...outlets
-          .filter(
-            (item) => item.outlet_id == "4a812a14-f46d-4a99-8d88-c1f14ea419f4"
-          )
+          // .filter(
+          //   (item) => item.outlet_id == "4a812a14-f46d-4a99-8d88-c1f14ea419f4"
+          // )
           .map((item) => {
             return {
               label: item.name,
@@ -218,6 +222,11 @@ function ValidationBalanceCrud() {
             };
           }),
       ],
+    },
+    {
+      label: "A la Fecha De",
+      field: "date",
+      type: "date",
     },
   ];
 
@@ -227,6 +236,31 @@ function ValidationBalanceCrud() {
     let searchText = `number${item.number}name${item.name}`;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
+
+  const savepdf = () => {
+    // let arr = data.balances.filter(
+    //   (item) =>
+    //     item.number[0] == "4" || item.number[0] == "5" || item.number[0] == "6"
+    // );
+    let reportDate = new Date(searchParams.date);
+    let outletName = outlets.filter(
+      (item) => item.outlet_id == searchParams.outletId
+    )[0]?.name;
+
+    let configParams = {
+      title: outletName || "Todas las sucursales",
+      subTitle: "BALANCE DE COMPROBACION",
+      date: reportDate.toLocaleString("es-Es", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+      fixedDate: reportDate,
+    };
+
+    generateReport(filterData, configParams);
+  };
 
   return (
     <div className="crud-container">
@@ -238,7 +272,7 @@ function ValidationBalanceCrud() {
         setSearchedText={setSearchedText}
         columns={columns}
         setColumns={setColumns}
-        exportFunction={() => {}}
+        exportFunction={() => savepdf()}
       />
 
       <Datatable columns={columns} data={filterData} isLoading={isLoading} />

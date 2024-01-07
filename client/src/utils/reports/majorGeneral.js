@@ -43,7 +43,7 @@ function generateReport(data, configParams) {
 
   let title = `${configParams.title}`;
   let subTitle = `MAYOR GENERAL`;
-  let date = `${configParams.date || "Diciembre 2023"}`;
+  let date = `${configParams.date || ""}`;
 
   createMainTitle(doc, title, right, headerTop);
   createMainSubTitle(doc, subTitle, right, headerTop + 5);
