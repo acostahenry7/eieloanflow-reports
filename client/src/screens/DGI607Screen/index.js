@@ -108,7 +108,7 @@ function DGI607Screen() {
       options: lastYears,
     },
     {
-      label: "Año",
+      label: "Mes",
       field: "dateMonth",
       type: "select",
       options: lastMonths,

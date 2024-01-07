@@ -10,6 +10,7 @@ import { tableUIHelper } from "../../../utils/ui-helpers";
 import CurrencyFormat from "react-currency-format";
 import { currencyFormat } from "../../../utils/reports/report-helpers";
 import { TotalBar } from "../../TotalBar";
+import { generateReport } from "../../../utils/reports/resgisterClose";
 
 function RegisterCloseCrud() {
   const [outlets, setOutlets] = React.useState([]);

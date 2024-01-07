@@ -191,16 +191,20 @@ controller.getRegisterClose = async (queryParams) => {
   try {
     const [data, meta] =
       await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, p.pay, 
-      r.amount, p.register_id, r.total_cash, r.total_check, r.total_transfer, r.total_discount, r.total_pay, 
-      e.first_name || ' ' || e.last_name as employee_name, r.created_date opening_date, r.last_modified_date, p.created_date, p.payment_type
+      r.amount, p.register_id, r.total_cash, r.total_check, r.total_transfer, r.total_discount, r.total_pay, r.total_registered as difference, 
+      e.first_name || ' ' || e.last_name as employee_name, r.created_date opening_date, r.last_modified_date, p.created_date, p.payment_type,
+      case
+	  	when r.total_registered  + 10 > r.total_pay - r.total_check then r.total_pay - r.total_registered - r.total_check
+	  	else total_registered 
+	  	end as  difference
       FROM payment p
       JOIN loan l ON (p.loan_id = l.loan_id)
       JOIN customer c ON (p.customer_id = c.customer_id)
       JOIN register r ON (p.register_id = r.register_id)
       JOIN jhi_user u ON (r.user_id = u.user_id)
       JOIN employee e ON (u.employee_id = e.employee_id)
-      WHERE l.status_type NOT IN ('PAID', 'DELETE')
-      AND l.outlet_id like '${queryParams.outletId || ""}%'
+      WHERE l.status_type NOT IN ('DELETE')
+      AND p.outlet_id like '${queryParams.outletId || ""}%'
       ${
         queryParams.dateFrom && queryParams.dateTo
           ? `AND r.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
