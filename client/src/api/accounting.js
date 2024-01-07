@@ -51,10 +51,7 @@ async function generate606Api(queryParams) {
       urlParams: queryParams || {},
     });
 
-    return setTimeout(() => {
-      window.location.assign(is606Generated.body);
-      return is606Generated;
-    }, 3000);
+    window.location.assign(is606Generated.body);
   } catch (error) {
     throw error;
   }
@@ -68,11 +65,8 @@ async function generate607Api(queryParams) {
       urlParams: queryParams || {},
     });
 
-    return setTimeout(() => {
-      console.log(is607Generated);
-      window.location.assign(is607Generated.body);
-      return is607Generated;
-    }, 3000);
+    window.location.assign(is607Generated.body);
+    return is607Generated;
   } catch (error) {
     throw error;
   }

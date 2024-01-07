@@ -60,6 +60,7 @@ function ResultStatusScreen() {
       subTitle: "ESTADO DE RESULTADO",
       date: reportDate.toLocaleString("es-Es", {
         timeZone: "UTC",
+        year: "numeric",
         month: "long",
         day: "numeric",
       }),

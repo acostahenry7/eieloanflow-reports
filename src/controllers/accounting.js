@@ -15,20 +15,28 @@ controller.getGeneralBalance = async (queryParams) => {
     const [generalBalance, meta] =
       await db.query(`SELECT ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
       ac.is_control, ac.status_type, ac.created_by, ac.created_date, ac.last_modified_by, ac.last_modified_date,
-      ac.balance as catalog_balance, 
-      /*TIPO DE ASIENTO FECHA PREVIA*/
-      COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) <= ${
-        parseInt(queryParams.date?.split("-")[0]) - 1
-      }) , 0) as prev_debit,
-      COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) <= ${
-        parseInt(queryParams.date?.split("-")[0]) - 1
-      }) , 0)as prev_credit, 
-      /*BALANCE PREVIO*/
-      ABS(COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) <= ${
-        parseInt(queryParams.date?.split("-")[0]) - 1
+      ac.balance as catalog_balance,
+      /*TIPO DE ASIENTO MES*/
+      COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) = ${
+        queryParams.date?.split("-")[0]
+      } and extract(MONTH from gda.created_date) = ${
+        queryParams.date?.split("-")[1]
+      })  , 0) as prev_debit,
+      COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) = ${
+        queryParams.date?.split("-")[0]
+      } and extract(MONTH from gda.created_date) = ${
+        queryParams.date?.split("-")[1]
+      }) , 0)as prev_credit,
+      /*BALANCE MES*/
+      ABS(COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) = ${
+        queryParams.date?.split("-")[0]
+      } and extract(MONTH from gda.created_date)= ${
+        queryParams.date?.split("-")[1]
       }) , 0)-
-      COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) <= ${
-        parseInt(queryParams.date?.split("-")[0]) - 1
+      COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) = ${
+        queryParams.date?.split("-")[0]
+      } and extract(MONTH from gda.created_date) = ${
+        queryParams.date?.split("-")[1]
       }) , 0)) as prev_balance,
       /*TIPO DE ASIENTO A LA FECHA*/
       COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) = ${
@@ -44,20 +52,20 @@ controller.getGeneralBalance = async (queryParams) => {
         queryParams.date?.split("-")[1]
       } and extract(DAY from gda.created_date ) <= ${
         queryParams.date?.split("-")[2]
-      } ) , 0)as credit, 
+      } ) , 0)as credit,
       /*BALANCE A LA FECHA*/
       ABS(COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) = ${
         queryParams.date?.split("-")[0]
       } and extract(MONTH from gda.created_date ) <= ${
         queryParams.date?.split("-")[1]
-      } and extract(MONTH from gda.created_date ) <= ${
+      } and extract(DAY from gda.created_date ) <= ${
         queryParams.date?.split("-")[2]
-      } ) , 0) - 
+      } ) , 0) -
       COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) = ${
         queryParams.date?.split("-")[0]
       } and extract(MONTH from gda.created_date ) <= ${
         queryParams.date?.split("-")[1]
-      } and extract(MONTH from gda.created_date ) <= ${
+      } and extract(DAY from gda.created_date ) <= ${
         queryParams.date?.split("-")[2]
       } ) , 0)) as balance,
       ac.outlet_id
@@ -442,7 +450,7 @@ controller.generate606 = async (req, res, queryParams) => {
 
   return XlsxPopulate.fromFileAsync(
     path.join(__dirname, "../Formato-de-Envio-606.xlsm")
-  ).then((workbook) => {
+  ).then(async (workbook) => {
     //Fill preconf-ingo
     workbook.sheet("Herramienta Formato 606").cell("C4").value("40240604682");
     workbook.sheet("Herramienta Formato 606").cell("C5").value("202301");
@@ -467,7 +475,7 @@ controller.generate606 = async (req, res, queryParams) => {
     console.log(`http://${req.headers.host}/static/reports/${fileName}`);
 
     // Write to file.
-    workbook.toFileAsync(`${filePath}/${fileName}`).then;
+    await workbook.toFileAsync(`${filePath}/${fileName}`);
     return `http://${req.headers.host}/static/reports/${fileName}`;
   });
 
@@ -539,7 +547,7 @@ controller.generate607 = async (req, res, queryParams) => {
   return XlsxPopulate.fromFileAsync(
     path.join(__dirname, "../Formato-de-Envio-607.xlsm")
   )
-    .then((workbook) => {
+    .then(async (workbook) => {
       //Fill preconf-ingo
       workbook
         .sheet("Herramienta Formato 607")
@@ -570,7 +578,8 @@ controller.generate607 = async (req, res, queryParams) => {
       console.log(`http://${req.headers.host}/static/reports/${fileName}`);
 
       // Write to file.
-      workbook.toFileAsync(`${filePath}/${fileName}`).then;
+      await workbook.toFileAsync(`${filePath}/${fileName}`);
+      console.log("SENDING RESPONSE TO CLIENT 607");
       return `http://${req.headers.host}/static/reports/${fileName}`;
     })
     .catch((err) => {

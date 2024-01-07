@@ -108,6 +108,7 @@ export function generateReportSection(
   let sectionData = mainList.filter((item) => item.number == parentNum)[0]
     .controlledAccounts;
 
+  let alwaysVisibleAccounts = ["34", "3601", "37", "32"];
   if (notShowAccounts?.length > 0) {
     let tempArr = [];
     sectionData.forEach((item) => {
@@ -141,7 +142,12 @@ export function generateReportSection(
       totalBalance += balance;
     }
 
-    if (balance > 0) {
+    let isVisible =
+      alwaysVisibleAccounts.filter(
+        (account) => account == sectionData[i].number
+      ).length > 0;
+    console.log("IS VISIBLE ACCOUNT", isVisible);
+    if (balance > 0 || isVisible == true) {
       top += spacing;
       doc.text(`${sectionData[i].name}`, left, top);
       doc.text(`${currencyFormat(balance)}`, right, top, {
@@ -182,8 +188,6 @@ export function generateResultStatusReportSection(
   let sectionData = mainList.filter((item) => item.number == parentNum)[0]
     .controlledAccounts;
 
-  console.log(sectionData);
-
   if (notShowAccounts?.length > 0) {
     let tempArr = [];
     sectionData.forEach((item) => {
@@ -213,12 +217,10 @@ export function generateResultStatusReportSection(
       (item) => item.account_catalog_id == sectionData[i].account_catalog_id
     )[0].prevBalance;
 
-    console.log(prevBalance);
-
     totalBalance += balance;
     totalPrevBalance += prevBalance;
 
-    if (balance > 0 || prevBalance > 0) {
+    if (balance >= 0 || prevBalance > 0) {
       top += spacing;
       doc.text(`${sectionData[i].name}`, left, top);
       doc.text(`${currencyFormat(balance)}`, right + 46, top, {
@@ -226,11 +228,15 @@ export function generateResultStatusReportSection(
       });
 
       if (options.isResultStatus) {
-        console.log(prevBalance);
         doc.text(`${currencyFormat(prevBalance)}`, right + 4, top, {
           align: "right",
         });
       }
+    }
+
+    if (i == 31) {
+      doc.addPage();
+      top = 20;
     }
   }
 
@@ -260,7 +266,7 @@ export function generateResultStatusReportSection(
     );
   }
 
-  return [top, totalBalance];
+  return [top, totalBalance, totalPrevBalance];
 }
 
 export function getTextWidth(text) {
