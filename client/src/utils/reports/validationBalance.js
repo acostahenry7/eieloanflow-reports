@@ -127,7 +127,6 @@ function generateReport(data, configParams) {
     counter++;
     if (counter == itemsPerPage && index < data.length - 1) {
       doc.addPage();
-      left += 3;
       top = 40;
 
       createSubTitle(
@@ -150,6 +149,104 @@ function generateReport(data, configParams) {
       );
       renderTableHeader(doc, left, top - 10);
       counter = 0;
+    }
+
+    if (index == data.length - 1) {
+      doc.addPage();
+
+      top = 40;
+      createSubTitle(
+        doc,
+        "Balance Anterior (RD$)",
+        left + colsWidth[2] - 19,
+        headerTop + 12
+      );
+      createSubTitle(
+        doc,
+        "Balance Actual (RD$)",
+        left + colsWidth[4] - 18,
+        headerTop + 12
+      );
+      createSubTitle(
+        doc,
+        "Acumulado (RD$)",
+        left + colsWidth[5] + 12,
+        headerTop + 12
+      );
+      renderTableHeader(doc, left, top - 10);
+      createSubTitle(doc, `Totales`, left, top);
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce((acc, item) => acc + parseFloat(item.prev_debit), 0),
+          false
+        )}`,
+        left + colsWidth[1] + 15,
+        top,
+        {
+          align: "right",
+        }
+      );
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce((acc, item) => acc + parseFloat(item.prev_credit), 0),
+          false
+        )}`,
+        left + colsWidth[2] + 15,
+        top,
+        {
+          align: "right",
+        }
+      );
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce((acc, item) => acc + parseFloat(item.month_debit), 0),
+          false
+        )}`,
+        left + colsWidth[3] + 15,
+        top,
+        {
+          align: "right",
+        }
+      );
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce((acc, item) => acc + parseFloat(item.month_credit), 0),
+          false
+        )}`,
+        left + colsWidth[4] + 15,
+        top,
+        {
+          align: "right",
+        }
+      );
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce((acc, item) => acc + parseFloat(item.debit), 0),
+          false
+        )}`,
+        left + colsWidth[5] + 15,
+        top,
+        {
+          align: "right",
+        }
+      );
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce((acc, item) => acc + parseFloat(item.credit), 0),
+          false
+        )}`,
+        left + colsWidth[6] + 15,
+        top,
+        {
+          align: "right",
+        }
+      );
     }
   });
 

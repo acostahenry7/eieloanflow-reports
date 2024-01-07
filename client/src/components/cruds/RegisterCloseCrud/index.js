@@ -182,6 +182,24 @@ function RegisterCloseCrud() {
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
 
+  const exportPDF = () => {
+    let reportDate = new Date(searchParams.dateTo);
+
+    let outletName = outlets.filter(
+      (item) => item.outlet_id == searchParams.outletId
+    )[0]?.name;
+    let conf = {
+      title: outletName || "Todas las sucursales",
+      date: reportDate.toLocaleString("es-Es", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+    };
+    generateReport(filterData, conf);
+  };
+
   return (
     <div className="crud-container">
       <SearchBar
@@ -192,6 +210,7 @@ function RegisterCloseCrud() {
         setSearchedText={setSearchedText}
         columns={columns}
         setColumns={setColumns}
+        exportFunction={() => exportPDF()}
       />
       {/* <button onClick={toPDF}>exportar</button> */}
       <div ref={targetRef}>
