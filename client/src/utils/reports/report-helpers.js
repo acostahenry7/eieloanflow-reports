@@ -235,7 +235,7 @@ export function generateResultStatusReportSection(
     totalBalance += balance;
     totalPrevBalance += prevBalance;
 
-    if (balance >= 0 || prevBalance > 0) {
+    if (balance > 0 || prevBalance > 0) {
       top += spacing;
       doc.text(`${sectionData[i].name}`, left, top);
       doc.text(`${currencyFormat(balance)}`, right + 46, top, {

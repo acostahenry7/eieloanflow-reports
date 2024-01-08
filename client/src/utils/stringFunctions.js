@@ -44,7 +44,9 @@ function getLoanSituationLabel(loanSituation) {
     case "CREATED":
       label = "Creado";
       break;
-
+    case "PAID":
+      label = "Pagado";
+      break;
     default:
       break;
   }

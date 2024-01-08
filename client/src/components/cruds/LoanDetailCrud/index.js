@@ -11,15 +11,19 @@ import { getOutletsApi } from "../../../api/outlet";
 import { ThreeDots } from "react-loader-spinner";
 import "./index.css";
 import { currencyFormat } from "../../../utils/reports/report-helpers";
+import { generateReport } from "../../../utils/reports/loanDetail";
 
 function LoanDetailCrud() {
   const [outlets, setOutlets] = React.useState([]);
   const [data, setData] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [reqToggle, setReqToggle] = React.useState([]);
-  const [searchParams, setSearchParams] = React.useState([]);
   const [searchedText, setSearchedText] = React.useState("");
   const [currentLoanId, setCurrentLoanId] = React.useState("");
+  const [searchParams, setSearchParams] = React.useState({
+    dateFrom: new Date().toISOString().split("T")[0],
+    dateTo: new Date().toISOString().split("T")[0],
+  });
 
   React.useEffect(() => {
     (async () => {
@@ -295,6 +299,24 @@ function LoanDetailCrud() {
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
 
+  const exportPDF = () => {
+    let reportDate = new Date(searchParams.dateTo);
+
+    let outletName = outlets.filter(
+      (item) => item.outlet_id == searchParams.outletId
+    )[0]?.name;
+    let conf = {
+      title: outletName || "Todas las sucursales",
+      date: reportDate.toLocaleString("es-Es", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+    };
+    generateReport(filterData, conf);
+  };
+
   return (
     <div className="crud-container">
       <SearchBar
@@ -306,6 +328,7 @@ function LoanDetailCrud() {
         setSearchedText={setSearchedText}
         columns={columns}
         setColumns={setColumns}
+        exportFunction={() => exportPDF()}
       />
       <Datatable
         columns={columns}

@@ -58,7 +58,9 @@ function generateReport(data, configParams) {
       .filter((item) => item != undefined)
       .join(" ")}`;
     doc.text(`${employeeName}`, left, top);
-    doc.text(`${item.child.length}`, left + colsWidth[0], top);
+    doc.text(`${item.child.length}`, left + colsWidth[0] + 23, top, {
+      align: "right",
+    });
     doc.text(
       `${currencyFormat(item.register.amount, false)}`,
       left + colsWidth[1] + 13,
