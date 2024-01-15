@@ -379,7 +379,7 @@ function LoanDetailSummary({ data }) {
     "Tipo de préstamo",
     "Capital pagado",
     "Interés pagado",
-    "Descuento de interés",
+    "Descuento de interés Mensual",
     "Descuenot de mora",
     "Mora",
     "Mora pagada",
@@ -387,6 +387,7 @@ function LoanDetailSummary({ data }) {
     "Total en atraso",
     "Cuotas pagadas",
     "Total",
+    "Tasa Interés",
     "Interés",
     "Monto de cuota",
     "Monto pendiente",
@@ -407,8 +408,13 @@ function LoanDetailSummary({ data }) {
           <p>{fields[index] || "key"} :</p>
           <p>
             {" "}
-            {currencyFormat(item[1]).toLocaleLowerCase().includes("nan")
-              ? item[1]
+            {currencyFormat(item[1]).toLocaleLowerCase().includes("nan") ||
+            fields[index].toLowerCase().includes("cuotas") ||
+            fields[index].toLowerCase().includes("tasa") ||
+            fields[index].toLowerCase().includes("préstamo")
+              ? fields[index].toLowerCase().includes("tasa interés")
+                ? item[1].toFixed(1)
+                : item[1]
               : currencyFormat(item[1])}
             {fields[index].toLowerCase().includes("tasa") && "%"}
           </p>

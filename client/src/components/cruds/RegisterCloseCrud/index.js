@@ -111,7 +111,7 @@ function RegisterCloseCrud() {
       omit: false,
     },
     {
-      name: "Total de descuento",
+      name: "Descuento",
       width: tableUIHelper.columns.width.amount,
       selector: (row) => currencyFormat(row.register.total_discount),
       sortable: true,

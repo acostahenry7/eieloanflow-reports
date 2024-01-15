@@ -128,6 +128,14 @@ function generateReport(data, configParams) {
       top,
       { align: "right" }
     );
+    createSubTitle(doc, "Descuento: ", left + 100, top);
+    createSubTitle(
+      doc,
+      currencyFormat(item.register.total_discount, false),
+      left + 143,
+      top,
+      { align: "right" }
+    );
     top += sectionSpacing;
     //-----------------INNER TRANSACTION-----------------
     renderInnerTableHeader(doc, left, top);

@@ -83,6 +83,9 @@ function SearchBar({
                   searchForm.setFieldValue(mf.field, e.target.value);
                 }}
                 type="date"
+                name="begin"
+                min="1997-01-01"
+                max="2030-12-31"
                 placeholder={mf.placeholder}
               />
               {/* <div style={{ fontSize: 12, marginTop: 2, color: "grey" }}>
@@ -180,7 +183,11 @@ function SearchBar({
                       );
                     }}
                     type="date"
-                    placeholder={sf.placeholder}
+                    name="begin"
+                    min="01-01-1997"
+                    max="31-12-2030"
+                    placeholder="dd-mm-yyyy"
+                    // placeholder={sf.placeholder}
                   />
                 </div>
                 <div
