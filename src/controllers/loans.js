@@ -24,6 +24,7 @@ controller.getLoans = async (queryParams) => {
 	  AND l.status_type like '${queryParams.loanStatus || ""}%'
 	  AND la.loan_type like '${queryParams.loanType || ""}%'
 	  AND l.loan_situation like '${queryParams.loanSituation || ""}%'
+    AND l.status_type NOT LIKE 'DELETE'
     GROUP BY  c.first_name, c.last_name , c.identification, l.loan_number_id, l.interest_rate_type, 
 l.amount_approved, l.number_of_installments,l.frequency_of_payment, lp.name, l.status_type,
 l.amount_of_free, la.loan_type, l.loan_situation, l.outlet_id, loan_id,o.name, l.total_amount`
@@ -45,7 +46,7 @@ l.amount_of_free, la.loan_type, l.loan_situation, l.outlet_id, loan_id,o.name, l
 controller.getLoanDetails = async (req) => {
   try {
     const [data, meta] =
-      await db.query(` SELECT distinct(l.loan_number_id), c.first_name || ' ' || c.last_name as customer_name, c.identification, l.interest_rate_type, 
+      await db.query(` SELECT distinct(l.loan_number_id), min(a.payment_date) as creation_date, c.first_name || ' ' || c.last_name as customer_name, c.identification, l.interest_rate_type, 
       l.amount_approved, count(a.amortization_id) as number_of_installments, lp.amount, l.frequency_of_payment,  lp.name, l.status_type,
       l.loan_situation, la.loan_type,
             COALESCE(SUM(a.capital) filter(where a.paid = 'true'),0)  paid_capital,
@@ -59,7 +60,7 @@ controller.getLoanDetails = async (req) => {
             COALESCE(COUNT(a.amortization_id) filter(where a.paid = 'true'), 0) paid_dues,
             COALESCE(SUM(a.amount_of_fee), 0)  as total_amount,
         case 
-        when l.frequency_of_payment = 'DAILY' THEN ((sum(a.amount_of_fee)/l.amount_approved) ^ (1/(count(a.amortization_id)/30)::float) - 1)*100  
+        when l.frequency_of_payment = 'DAILY' THEN ((sum(a.amount_of_fee)/l.amount_approved) ^ (1/(count(a.amortization_id)/30::float)::float) - 1)*100  
         when l.frequency_of_payment = 'INTER_DAY'THEN ((sum(a.amount_of_fee)/l.amount_approved) ^ (1/(count(a.amortization_id)/15)::float) - 1)*100  
         when l.frequency_of_payment = 'WEEKLY' THEN ((sum(a.amount_of_fee)/l.amount_approved) ^ (1/(count(a.amortization_id)/4)::float) - 1)*100  
         when l.frequency_of_payment = 'BIWEEKLY' THEN ((sum(a.amount_of_fee)/l.amount_approved) ^ (1/(count(a.amortization_id)/2)::float) - 1)*100  

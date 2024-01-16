@@ -366,6 +366,7 @@ function LoanDetailSummary({ data }) {
   console.log(detail);
   const fields = [
     "Préstamo",
+    "Fecha de Creación",
     "Nombre Cliente",
     "Cédula",
     "Tipo de tasa",
@@ -379,8 +380,8 @@ function LoanDetailSummary({ data }) {
     "Tipo de préstamo",
     "Capital pagado",
     "Interés pagado",
-    "Descuento de interés Mensual",
-    "Descuenot de mora",
+    "Descuento de interés",
+    "Descuento de mora",
     "Mora",
     "Mora pagada",
     "Total pagado",
@@ -414,6 +415,8 @@ function LoanDetailSummary({ data }) {
             fields[index].toLowerCase().includes("préstamo")
               ? fields[index].toLowerCase().includes("tasa interés")
                 ? item[1].toFixed(1)
+                : fields[index].toLowerCase().includes("fecha")
+                ? new Date(item[1]).toLocaleString("es-Es").split(",")[0]
                 : item[1]
               : currencyFormat(item[1])}
             {fields[index].toLowerCase().includes("tasa") && "%"}

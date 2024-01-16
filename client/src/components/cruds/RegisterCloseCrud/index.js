@@ -17,8 +17,11 @@ function RegisterCloseCrud() {
   const [data, setData] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [reqToggle, setReqToggle] = React.useState([]);
-  const [searchParams, setSearchParams] = React.useState([]);
   const [searchedText, setSearchedText] = React.useState("");
+  const [searchParams, setSearchParams] = React.useState({
+    dateFrom: new Date().toISOString().split("T")[0],
+    dateTo: new Date().toISOString().split("T")[0],
+  });
 
   const { toPDF, targetRef } = usePDF({
     filename: "reporte-pagos-recibidos.pdf",
@@ -129,7 +132,13 @@ function RegisterCloseCrud() {
     {
       name: "Fecha de apertura",
       selector: (row) =>
-        new Date(row.register.opening_date).toLocaleString("en-US"),
+        new Date(row.register.opening_date)
+          .toLocaleString("es-ES", {
+            day: "2-digit",
+            month: "numeric",
+            year: "numeric",
+          })
+          .split(",")[0],
       sortable: true,
       reorder: true,
       omit: false,
@@ -247,7 +256,8 @@ function RegisterCloseCrud() {
                 },
                 {
                   name: "Tipo de pago",
-                  selector: (row) => row.payment_type,
+                  selector: (row) =>
+                    row.payment_type == "CASH" ? "Efectivo" : "Transferencia",
                   sortable: true,
                   reorder: true,
                   omit: false,
@@ -256,7 +266,9 @@ function RegisterCloseCrud() {
                 {
                   name: "Fecha",
                   selector: (row) =>
-                    new Date(row.created_date).toLocaleString("en-US"),
+                    new Date(row.created_date)
+                      .toLocaleString("es-ES")
+                      .split(",")[0],
                   sortable: true,
                   reorder: true,
                   omit: false,
