@@ -20,6 +20,11 @@ controller.getTodayPayments = async (queryParams) => {
           queryParams.dateFrom ? ", a.payment_date" : ""
         }
         HAVING l.status_type not in ('DELETE', 'PAID')
+        ${
+          queryParams.pendingDue
+            ? `AND MIN(a.quota_number) filter(where a.paid = 'false') = ${queryParams.pendingDue}`
+            : ""
+        }
         ${generateWhereStatement(queryParams)}
         ${
           queryParams.dateFrom
@@ -29,7 +34,9 @@ controller.getTodayPayments = async (queryParams) => {
                 queryParams.dateTo
               )
             : ""
-        }`);
+        }
+        
+        `);
 
     if (data.length == 0) {
       return [];
@@ -153,19 +160,29 @@ controller.getHistoryPaymentControl = async (queryParams) => {
   console.log(queryParams);
   try {
     const [data, meta] =
-      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, r.receipt_number, 
-      e.first_name || ' ' || e.last_name as employee_name, p.status_type, pcc.comment_type,
-      pcc.created_date as comment_date, pcc.comment, pcc.letters_sent_type as letter_type, pcc.commitment_date
-      FROM payment p
-      JOIN payment_control_comment pcc ON (p.loan_id = pcc.loan_id)
-      JOIN customer_loan cl ON (p.loan_id = cl.loan_id)
+      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id,
+      l.loan_situation, e.first_name || ' ' || e.last_name as employee_name, pcc.status_type, pcc.comment_type,
+      pcc.created_date as comment_date, pcc.comment, pcc.letters_sent_type as letter_type, pcc.commitment_date,
+      max(z.name) as zone, max(z.zone_id) as zone_id
+      FROM payment_control_comment pcc
+      JOIN customer_loan cl ON (pcc.loan_id = cl.loan_id)
       JOIN customer c ON (cl.customer_id = c.customer_id)
-      JOIN loan l ON (p.loan_id = l.loan_id)
-      JOIN receipt r ON (r.payment_id = p.payment_id)
-      JOIN jhi_user ju ON (p.created_by = ju.login)
+      JOIN loan l ON (pcc.loan_id = l.loan_id)
+      JOIN loan_payment_address lpa ON (l.loan_payment_address_id = lpa.loan_payment_address_id)
+            LEFT JOIN zone_neighbor_hood znh ON (lpa.section_id = znh.section_id)
+            LEFT JOIN zone z ON (znh.zone_id = z.zone_id)
+      JOIN jhi_user ju ON (pcc.created_by = ju.login)
       JOIN employee e ON (ju.employee_id = e.employee_id)
-      AND l.status_type not in ('DELETE', 'PAID')
-      ${generateWhereStatement(queryParams)}`);
+      WHERE l.status_type not in ('DELETE', 'PAID')
+      ${generateWhereStatement(queryParams)}
+      
+      AND pcc.created_date BETWEEN '${queryParams.dateFrom}' AND '${
+        queryParams.dateTo
+      }'
+      GROUP BY c.first_name, c.last_name, c.identification, l.loan_number_id, 
+      e.first_name, e.last_name, pcc.status_type, pcc.comment_type, pcc.created_date, pcc.comment, 
+      pcc.letters_sent_type, pcc.commitment_date, l.loan_situation
+      HAVING max(z.name) like '${queryParams.zoneId || ""}%'`);
 
     if (data.length == 0) {
       return [];

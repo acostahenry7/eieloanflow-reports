@@ -4,6 +4,28 @@ var _ = require("lodash");
 
 const controller = {};
 
+controller.getLoanApplication = async (queryParams) => {
+  try {
+    const [loanApplication] =
+      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, loan_application_id, la.loan_type, 
+      la.created_date, la.loan_application_type, o.name as outlet_name, by_office, la.status_type
+      FROM loan_application la
+      JOIN customer c ON (la.customer_id = c.customer_id)
+      JOIN outlet o On (la.outlet_id = o.outlet_id)
+      WHERE la.status_type NOT LIKE 'DELETE'
+      AND la.outlet_id LIKE '${queryParams.outletId || "%"}'
+      AND la.created_date BETWEEN '${queryParams.dateFrom}' AND '${
+        queryParams.dateTo
+      }'
+      AND la.status_type LIKE '${queryParams.status || "%"}'
+      AND la.loan_type LIKE '${queryParams.loanType || "%"}'`);
+
+    return loanApplication;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 controller.getLoans = async (queryParams) => {
   try {
     const [data, meta] = await db.query(
@@ -234,5 +256,4 @@ controller.getRegisterClose = async (queryParams) => {
     throw new Error(error.message);
   }
 };
-
 module.exports = controller;

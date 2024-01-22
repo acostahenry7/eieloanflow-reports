@@ -230,13 +230,13 @@ function SearchBar({
           className="SearchBar-actions-icon"
           onClick={() => {
             // window.location.reload();
-            searchForm.resetForm();
-            setSearchParams({
-              outletId: "857b8b3b-d603-4474-9b35-4a90277d9bc0",
-              dateFrom: new Date().toISOString().split("T")[0],
-              dateTo: new Date().toISOString().split("T")[0],
-            });
-            setSearchedText("");
+            // searchForm.resetForm();
+            // setSearchParams({
+            //   outletId: "857b8b3b-d603-4474-9b35-4a90277d9bc0",
+            //   dateFrom: new Date().toISOString().split("T")[0],
+            //   dateTo: new Date().toISOString().split("T")[0],
+            // });
+            // setSearchedText("");
             setRequestToggle((state) => !state);
           }}
         />
@@ -304,7 +304,7 @@ function getInitialValues(arr) {
         initialValues[item.field] = "";
         break;
       case "select":
-        initialValues[item.field] = item.options[0]?.value;
+        initialValues[item.field] = item.currentValue || item.options[0]?.value;
         break;
       case "dateRange":
         initialValues[item.field + "From"] = new Date()

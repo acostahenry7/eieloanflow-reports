@@ -5,6 +5,7 @@ const response = require("./response");
 const authCtrl = require("../controllers/auth");
 const customerCtrl = require("../controllers/customers");
 const outletCtrl = require("../controllers/outlets");
+const zoneCtrl = require("../controllers/zones");
 const paymentCtrl = require("../controllers/payments");
 const loanCtrl = require("../controllers/loans");
 const accountingCtrl = require("../controllers/accounting");
@@ -26,6 +27,19 @@ module.exports = (app) => {
   router.get("/api/outlet", (req, res) => {
     outletCtrl
       .getOutlets()
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  //Zones
+  router.get("/api/zone", (req, res) => {
+    console.log("LOAN QUERYS", req.query);
+    zoneCtrl
+      .getZones(req.query)
       .then((msg) => {
         response.success(req, res, msg, 200);
       })
@@ -154,6 +168,17 @@ module.exports = (app) => {
   });
 
   //Loans
+  router.get("/api/loan-application", (req, res) => {
+    loanCtrl
+      .getLoanApplication(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   router.get("/api/loan", (req, res) => {
     loanCtrl
       .getLoans(req.query)

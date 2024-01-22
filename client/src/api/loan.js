@@ -1,5 +1,19 @@
 import { request } from "../utils/request";
 
+async function getLoanApplication(queryParams) {
+  try {
+    const loanApplication = await request({
+      method: "GET",
+      path: "/loan-application",
+      urlParams: { ...queryParams } || {},
+    });
+
+    return loanApplication;
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function getLoans(queryParams, loanId) {
   try {
     const loans = await request({
@@ -71,6 +85,7 @@ async function getRegisterClose(queryParams) {
 }
 
 export {
+  getLoanApplication,
   getLoans,
   getLoanActivities,
   getLoanDiscounts,

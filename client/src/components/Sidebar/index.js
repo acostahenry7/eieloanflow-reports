@@ -28,6 +28,8 @@ import {
 import { BsFolderCheck } from "react-icons/bs";
 import { MdInsertChart, MdOutlineBalance } from "react-icons/md";
 import { IoReceiptOutline } from "react-icons/io5";
+import { RiFileExcel2Line } from "react-icons/ri";
+import { HiOutlineDocumentText } from "react-icons/hi2";
 
 function Sidebar() {
   const { isSidebarOpened } = React.useContext(SidebarContext);
@@ -181,6 +183,17 @@ function Sidebar() {
       selected: false,
       subItems: [
         {
+          label: "Solicitudes de préstamos",
+          icon: (selected) => (
+            <HiOutlineDocumentText
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/loan-application",
+          selected: false,
+        },
+        {
           label: "Detalle de préstamo",
           icon: (selected) => (
             <FaFileInvoiceDollar
@@ -211,6 +224,17 @@ function Sidebar() {
             />
           ),
           route: "/reports/loan-discounts",
+          selected: false,
+        },
+        {
+          label: "Datacrédito",
+          icon: (selected) => (
+            <RiFileExcel2Line
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/datacredit",
           selected: false,
         },
         // {
@@ -263,7 +287,7 @@ function Sidebar() {
         {
           label: "Formulario 606",
           icon: (selected) => (
-            <TbReportSearch
+            <RiFileExcel2Line
               className="Sidebar-content-item-icon"
               color={`${selected === true ? "var(--main-color)" : "#888888"}`}
             />
@@ -274,7 +298,7 @@ function Sidebar() {
         {
           label: "Formulario 607",
           icon: (selected) => (
-            <TbReport
+            <RiFileExcel2Line
               className="Sidebar-content-item-icon"
               color={`${selected === true ? "var(--main-color)" : "#888888"}`}
             />

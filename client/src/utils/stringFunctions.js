@@ -47,6 +47,12 @@ function getLoanSituationLabel(loanSituation) {
     case "PAID":
       label = "Pagado";
       break;
+    case "LOAN":
+      label = "Préstamo";
+      break;
+    case "QUICK_LOAN":
+      label = "Préstamo Rápido";
+      break;
     default:
       break;
   }

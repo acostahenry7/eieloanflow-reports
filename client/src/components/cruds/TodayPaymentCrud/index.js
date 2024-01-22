@@ -140,6 +140,12 @@ function TodayPaymentCrud() {
 
   const secondaryFilters = [
     {
+      label: "No. de cuotas",
+      field: "pendingDue",
+      placeholder: "1",
+      type: "text",
+    },
+    {
       label: "Fecha",
       field: "date",
       placeholder: "Búsqueda por nombre",
@@ -148,7 +154,7 @@ function TodayPaymentCrud() {
   ];
 
   const filterData = data.filter((item) => {
-    let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}`;
+    let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}pendingDue${item.pending_due}`;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
 

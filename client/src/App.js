@@ -27,6 +27,7 @@ import { GeneralMajor } from "./screens/GeneralMajor";
 import { DetailedGeneralMajor } from "./screens/DetailedGeneralMajor";
 import { PaidMoraScreen } from "./screens/PaidMoraScreen";
 import { ReceiptsDetailScreen } from "./screens/ReceiptsDetailScreen";
+import { LoanApplicationScreen } from "./screens/LoanApplicationScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -73,6 +74,10 @@ function App() {
               <Route
                 path="/reports/receipt-detail"
                 element={<ReceiptsDetailScreen />}
+              />
+              <Route
+                path="/reports/loan-application"
+                element={<LoanApplicationScreen />}
               />
               <Route
                 path="/reports/loan-detail"
