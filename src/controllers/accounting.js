@@ -7,6 +7,23 @@ var _ = require("lodash");
 
 const controller = {};
 
+controller.accountCatalog = async (queryParams) => {
+  console.log(queryParams);
+
+  try {
+    const [data, meta] = await db.query(
+      `select number, name
+      from account_catalog
+      where outlet_id like'${queryParams.outletId || "%"}'
+      order by number`
+    );
+
+    return data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 controller.getGeneralBalance = async (queryParams) => {
   let data = {};
   console.log(queryParams);

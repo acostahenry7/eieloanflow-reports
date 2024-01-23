@@ -1,11 +1,25 @@
 import { request } from "../utils/request";
 import { config } from "../utils/consts";
 
+async function getAccountCatalog(queryParams) {
+  try {
+    const gaccountCatalog = await request({
+      method: "GET",
+      path: "/account-catalog",
+      urlParams: queryParams || {},
+    });
+
+    return gaccountCatalog;
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function getGeneralBalance(queryParams) {
   try {
     const generalBalance = await request({
       method: "GET",
-      path: "/general-balance",
+      path: "/account-catalog",
       urlParams: queryParams || {},
     });
 
@@ -73,6 +87,7 @@ async function generate607Api(queryParams) {
 }
 
 export {
+  getAccountCatalog,
   getGeneralBalance,
   getValidationBalance,
   generate606Api,

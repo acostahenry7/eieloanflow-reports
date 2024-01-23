@@ -262,6 +262,17 @@ function Sidebar() {
       selected: false,
       subItems: [
         {
+          label: "Catálogo de cuentas",
+          icon: (selected) => (
+            <FaChartBar
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/accounting-catalog",
+          selected: true,
+        },
+        {
           label: "Balance General",
           icon: (selected) => (
             <FaChartBar
