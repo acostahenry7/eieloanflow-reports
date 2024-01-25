@@ -1,6 +1,9 @@
 const db = require("../models");
+const path = require("path");
+const XlsxPopulate = require("xlsx-populate");
 const { generateWhereStatement, getDateRangeFilter } = require("../utils");
 var _ = require("lodash");
+const { nanoid } = require("nanoid");
 
 const controller = {};
 
@@ -256,4 +259,117 @@ controller.getRegisterClose = async (queryParams) => {
     throw new Error(error.message);
   }
 };
+
+controller.generateDatacredit = async (req, res, queryParams) => {
+  let alphabet = [];
+  for (i = 0; i < 26; i++) {
+    alphabet.push((i + 10).toString(36).toUpperCase());
+  }
+
+  console.log(queryParams);
+  const [loans, meta] = await db.query(`
+  SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, c.street || ' ' || c.street2 as customer_address,
+c.phone, c.mobile, l.loan_number_id, l.created_date::date, l.amount_approved, l.amount_of_free, l.loan_situation, la.loan_type, l.status_type,
+l.amount_approved::int - sum(a.capital) filter(where a.paid = 'true') as current_balance,
+sum(a.capital) filter(where a.status_type ='DEFEATED') as arrear_balance,
+max(a.payment_date) filter(where a.paid='false') as expiration_date,
+max(a.payment_date) filter(where a.paid = 'true') as last_payment_date
+FROM loan l
+JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
+JOIN customer c ON (la.customer_id = c.customer_id)
+JOIN amortization a ON (l.loan_id = a.loan_id)
+WHERE a.payment_date::date BETWEEN '${queryParams.dateFrom}' AND '${
+    queryParams.dateTo
+  }'
+AND l.outlet_id like '${queryParams.outletId || "%"}'
+GROUP BY c.first_name, c.last_name, c.identification, c.street, c.street2, l.status_type,
+c.phone, c.mobile, l.loan_number_id, l.created_date::date, l.amount_approved, l.amount_of_free, l.loan_situation, la.loan_type`);
+
+  let rowArr = [
+    ...loans.map((l) => {
+      return {
+        customerName: l.customer_name,
+        identification: l.identification?.split("-").join(""),
+        address: l.customer_address,
+        phone: l.phone,
+        mobile: l.mobile,
+        loanNumber: l.loan_number_id,
+        createdDate: l.created_date,
+        approvedAmount: l.amount_approved,
+        amountOfFee: l.amount_of_free,
+        status: getLoanSituation(l.loan_situation),
+        currentBalance: l.current_balance,
+        arrearBalance: l.arrear_balance,
+        expirationDate: l.expiration_date?.toISOString().split("T")[0] || "",
+        lastPaymentDate: l.last_payment_date?.toISOString().split("T")[0] || "",
+        loanType: l.loan_type.toLowerCase().includes("pyme") ? "M" : "N",
+      };
+    }),
+  ];
+
+  let generatedId = nanoid();
+  let filePath = path.join(__dirname, `../../client/public/reports`);
+  let fileName = `datacredito-${generatedId}.xlsx`;
+
+  return XlsxPopulate.fromFileAsync(
+    path.join(__dirname, "../Formato-de-Envio-datacredito.xlsx")
+  )
+    .then(async (workbook) => {
+      //Fill preconf-ingo
+      // workbook
+      //   .sheet("Herramienta Formato 607")
+      //   .cell("C4")
+      //   .value(`${outlet[0].rnc}`);
+      // workbook
+      //   .sheet("Herramienta Formato 607")
+      //   .cell("C5")
+      //   .value(`${queryParams.dateYear}${queryParams.dateMonth}`);
+      // workbook
+      //   .sheet("Herramienta Formato 607")
+      //   .cell("C6")
+      //   .value(`${rowArr.length}`);
+
+      for (let row = 0; row < rowArr.length; row++) {
+        let currentRow = Object.values(rowArr[row]);
+
+        for (i = 0; i < currentRow.length; i++) {
+          // console.log(`${alphabet[i + 1]}${12 + row}`);
+          workbook
+            .sheet("Data_Credito")
+            .cell(`${alphabet[i]}${14 + row}`)
+            .value(currentRow[i]);
+        }
+      }
+
+      //console.log(`http://${req.headers.host}/static/reports/${fileName}`);
+
+      // Write to file.
+      await workbook.toFileAsync(`${filePath}/${fileName}`);
+      console.log("SENDING RESPONSE TO CLIENT DATACREDITO");
+      return `http://${req.headers.host}/static/reports/${fileName}`;
+    })
+    .catch((err) => {
+      console.log(err);
+      return;
+    });
+};
+
+function getLoanSituation(situation) {
+  let result = "";
+  switch (situation) {
+    case "ARREARS":
+      result = "A";
+      break;
+    case "NORMAL":
+      result = "N";
+      break;
+    case "SEIZED":
+      result = "C";
+      break;
+    default:
+      break;
+  }
+  return result;
+}
+
 module.exports = controller;

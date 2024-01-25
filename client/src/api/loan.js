@@ -84,6 +84,21 @@ async function getRegisterClose(queryParams) {
   }
 }
 
+async function generateDatacredit(queryParams) {
+  try {
+    const isDatacreditGenerated = await request({
+      method: "POST",
+      path: "/data-credit",
+      urlParams: queryParams || {},
+    });
+
+    window.location.assign(isDatacreditGenerated.body);
+    return isDatacreditGenerated;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export {
   getLoanApplication,
   getLoans,
@@ -91,4 +106,5 @@ export {
   getLoanDiscounts,
   getRegisterClose,
   getLoanDetail,
+  generateDatacredit,
 };

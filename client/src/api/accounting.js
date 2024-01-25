@@ -19,7 +19,7 @@ async function getGeneralBalance(queryParams) {
   try {
     const generalBalance = await request({
       method: "GET",
-      path: "/account-catalog",
+      path: "/general-balance",
       urlParams: queryParams || {},
     });
 

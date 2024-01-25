@@ -29,6 +29,7 @@ import { PaidMoraScreen } from "./screens/PaidMoraScreen";
 import { ReceiptsDetailScreen } from "./screens/ReceiptsDetailScreen";
 import { LoanApplicationScreen } from "./screens/LoanApplicationScreen";
 import { AccountCatalogSCreen } from "./screens/AccountCatalogScreen";
+import { DatacreditScreen } from "./screens/DatacreditScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -95,6 +96,10 @@ function App() {
               <Route
                 path="/reports/loan-discounts"
                 element={<LoanDiscountsScreen />}
+              />
+              <Route
+                path="/reports/datacredit"
+                element={<DatacreditScreen />}
               />
               <Route
                 path="/reports/accounting-catalog"

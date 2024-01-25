@@ -309,6 +309,24 @@ module.exports = (app) => {
     );
   });
 
+  router.post("/api/data-credit", (req, res) => {
+    loanCtrl
+      .generateDatacredit(req, res, req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  router.get("/api/data-credit", (req, res) => {
+    console.log(req.query);
+    res.download(
+      path.join(__dirname, `../../client/public/reports/${req.query.fileName}`)
+    );
+  });
+
   router.get("/api/major-general", (req, res) => {
     accountingCtrl
       .getMajorGeneral(req.query)
