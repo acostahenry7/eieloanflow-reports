@@ -260,6 +260,42 @@ controller.getRegisterClose = async (queryParams) => {
   }
 };
 
+controller.getDatacreditLoans = async (queryParams) => {
+  try {
+    const [data, meta] =
+      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, c.street || ' ' || c.street2 as customer_address,
+      c.phone, c.mobile, l.loan_number_id, l.created_date::date, l.amount_approved, l.amount_of_free, l.loan_situation, la.loan_type, l.status_type,
+      l.amount_approved::int - sum(a.capital) filter(where a.paid = 'true') as current_balance,
+      sum(a.capital) filter(where a.status_type ='DEFEATED') as arrear_balance,
+      max(a.payment_date) filter(where a.paid='false') as expiration_date,
+      max(a.payment_date) filter(where a.paid = 'true') as last_payment_date
+      FROM loan l
+      JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
+      JOIN customer c ON (la.customer_id = c.customer_id)
+      JOIN amortization a ON (l.loan_id = a.loan_id)
+      WHERE a.payment_date::date BETWEEN '${queryParams.dateFrom}' AND '${
+        queryParams.dateTo
+      }'
+      AND l.outlet_id like '${queryParams.outletId || "%"}'
+      AND l.status_type like '${queryParams.loanStatus || ""}%'
+	  AND la.loan_type like '${queryParams.loanType || ""}%'
+	  AND l.loan_situation like '${queryParams.loanSituation || ""}%'
+      GROUP BY c.first_name, c.last_name, c.identification, c.street, c.street2, l.status_type,
+      c.phone, c.mobile, l.loan_number_id, l.created_date::date, l.amount_approved, l.amount_of_free, l.loan_situation, la.loan_type`);
+
+    if (data.length == 0) {
+      console.log(data);
+      return [];
+    }
+
+    // console.log("##################", _.groupBy(data, "register_id"));
+    return data;
+  } catch (error) {
+    console.log(error);
+    throw new Error(error.message);
+  }
+};
+
 controller.generateDatacredit = async (req, res, queryParams) => {
   let alphabet = [];
   for (i = 0; i < 26; i++) {
@@ -282,6 +318,9 @@ WHERE a.payment_date::date BETWEEN '${queryParams.dateFrom}' AND '${
     queryParams.dateTo
   }'
 AND l.outlet_id like '${queryParams.outletId || "%"}'
+AND l.status_type like '${queryParams.loanStatus || ""}%'
+	  AND la.loan_type like '${queryParams.loanType || ""}%'
+	  AND l.loan_situation like '${queryParams.loanSituation || ""}%'
 GROUP BY c.first_name, c.last_name, c.identification, c.street, c.street2, l.status_type,
 c.phone, c.mobile, l.loan_number_id, l.created_date::date, l.amount_approved, l.amount_of_free, l.loan_situation, la.loan_type`);
 

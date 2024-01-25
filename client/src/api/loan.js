@@ -84,6 +84,20 @@ async function getRegisterClose(queryParams) {
   }
 }
 
+async function getDatacreditLoans(queryParams) {
+  try {
+    const loans = await request({
+      method: "GET",
+      path: "/datacredit-loan",
+      urlParams: queryParams || {},
+    });
+
+    return loans;
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function generateDatacredit(queryParams) {
   try {
     const isDatacreditGenerated = await request({
@@ -107,4 +121,5 @@ export {
   getRegisterClose,
   getLoanDetail,
   generateDatacredit,
+  getDatacreditLoans,
 };

@@ -1,7 +1,12 @@
 import React from "react";
 import { SearchBar } from "../../SearchBar";
 import { Datatable } from "../../Datatable";
-import { generateDatacredit, getLoanDetail, getLoans } from "../../../api/loan";
+import {
+  generateDatacredit,
+  getDatacreditLoans,
+  getLoanDetail,
+  getLoans,
+} from "../../../api/loan";
 import {
   formatClientName,
   getLoanSituationLabel,
@@ -30,7 +35,7 @@ function DatacreditCrud() {
       try {
         setIsLoading(true);
         const outlets = await getOutletsApi();
-        const customers = await getLoans(searchParams, currentLoanId);
+        const customers = await getDatacreditLoans(searchParams);
         if (customers.error == true) {
           throw new Error(customers.body);
         }
@@ -42,7 +47,7 @@ function DatacreditCrud() {
       }
       setIsLoading(false);
     })();
-  }, [reqToggle, searchParams, currentLoanId]);
+  }, [reqToggle, searchParams]);
 
   // React.useEffect(() => {
   //   (async () => {
@@ -79,17 +84,32 @@ function DatacreditCrud() {
       omit: false,
     },
     {
-      name: "Sucursal",
-      width: "140px",
-      selector: (row) => row.outlet_name,
+      name: "Direccion",
+      width: "240px",
+      selector: (row) => row.customer_address,
       sortable: true,
       reorder: true,
       omit: false,
     },
-
     {
-      name: "Tipo de préstamo",
-      selector: (row) => getLoanTypeLabel(row.loan_type),
+      name: "Telefono 1",
+      width: "140px",
+      selector: (row) => row.phone,
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+    {
+      name: "Teléfono 2",
+      width: "140px",
+      selector: (row) => row.mobile,
+      sortable: true,
+      reorder: true,
+      omit: true,
+    },
+    {
+      name: "Fecha apertura",
+      selector: (row) => new Date(row.created_date).toLocaleDateString("es-ES"),
       sortable: true,
       reorder: true,
       omit: false,
@@ -97,20 +117,6 @@ function DatacreditCrud() {
     {
       name: "Monto aprobado",
       selector: (row) => row.amount_approved,
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
-    {
-      name: "Total",
-      selector: (row) => row.total_amount,
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
-    {
-      name: "Cantidad de cuotas",
-      selector: (row) => row.number_of_installments,
       sortable: true,
       reorder: true,
       omit: false,
@@ -133,6 +139,13 @@ function DatacreditCrud() {
     {
       name: "Situación",
       selector: (row) => getLoanSituationLabel(row.loan_situation),
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+    {
+      name: "Tipo de préstamo",
+      selector: (row) => getLoanTypeLabel(row.loan_type),
       sortable: true,
       reorder: true,
       omit: false,

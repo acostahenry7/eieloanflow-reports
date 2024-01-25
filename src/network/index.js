@@ -309,6 +309,17 @@ module.exports = (app) => {
     );
   });
 
+  router.get("/api/datacredit-loan", (req, res) => {
+    loanCtrl
+      .getDatacreditLoans(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   router.post("/api/data-credit", (req, res) => {
     loanCtrl
       .generateDatacredit(req, res, req.query)
