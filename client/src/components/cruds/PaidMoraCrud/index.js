@@ -200,6 +200,7 @@ function PaidMoraCrud() {
             <ul
               style={{
                 display: "flex",
+                marginLeft: "240px",
                 // width: "100%",
                 // paddingLeft: 200,
                 // boxSizing: "border-box",
@@ -228,7 +229,7 @@ function PaidMoraCrud() {
                 style={{
                   fontWeight: "bold",
                   fontSize: 12,
-                  marginLeft: "206px",
+                  marginLeft: "216px",
                 }}
               >
                 <CurrencyFormat

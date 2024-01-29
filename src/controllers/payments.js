@@ -22,7 +22,7 @@ controller.getTodayPayments = async (queryParams) => {
         HAVING l.status_type not in ('DELETE', 'PAID')
         ${
           queryParams.pendingDue
-            ? `AND MIN(a.quota_number) filter(where a.paid = 'false') = ${queryParams.pendingDue}`
+            ? `AND MIN(a.quota_number) filter(where a.paid = 'false') <= ${queryParams.pendingDue}`
             : ""
         }
         ${generateWhereStatement(queryParams)}
@@ -233,7 +233,7 @@ controller.getPaidMora = async (queryParams) => {
         and a.outlet_id like '${queryParams.outletId}%'
         and l.status_type not in ('DELETE')
         group by a.amortization_id, l.loan_number_id, c.first_name, c.last_name, c.identification,
-               pd.pay_mora
+               pd.pay_mora, a.total_paid_mora, a.discount_mora
         having max(p.created_date)::date BETWEEN '${queryParams.dateFrom}' and '${queryParams.dateTo}'
         order by l.loan_number_id) as T1
         GROUP BY loan_number_id, T1.first_name, T1.last_name, T1.identification`

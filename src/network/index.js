@@ -238,6 +238,28 @@ module.exports = (app) => {
       });
   });
 
+  router.get("/api/loan-movement", (req, res) => {
+    loanCtrl
+      .getLoanMovement(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  router.get("/api/amortization-table", (req, res) => {
+    loanCtrl
+      .getAmortizationTable(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   //Accounting
   router.get("/api/account-catalog", (req, res) => {
     accountingCtrl

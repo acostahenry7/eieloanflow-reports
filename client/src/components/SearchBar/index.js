@@ -57,7 +57,9 @@ function SearchBar({
               <input
                 value={searchForm.values[mf.field]}
                 onChange={(e) => {
-                  setSearchedText(mf.field + e.target.value);
+                  if (!mf.isNotDynamic) {
+                    setSearchedText(mf.field + e.target.value);
+                  }
                   searchForm.setFieldValue(mf.field, e.target.value);
                 }}
                 type="search"
@@ -132,7 +134,9 @@ function SearchBar({
               <input
                 value={searchForm.values[sf.field]}
                 onChange={(e) => {
-                  setSearchedText(sf.field + e.target.value);
+                  if (!sf.isNotDynamic) {
+                    setSearchedText(sf.field + e.target.value);
+                  }
                   searchForm.setFieldValue(sf.field, e.target.value);
                 }}
                 type="search"

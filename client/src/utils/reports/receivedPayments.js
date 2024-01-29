@@ -11,8 +11,9 @@ import {
   sectionSpacing,
   getTextWidth,
 } from "./report-helpers";
+import { getLoanSituationLabel } from "../stringFunctions";
 
-let colsWidth = [85, 105, 135, 160, 183, 203, 221, 265];
+let colsWidth = [75, 94, 120, 155, 183, 203, 221, 265];
 
 function generateReport(data, configParams) {
   //General Configuration Params
@@ -61,37 +62,70 @@ function generateReport(data, configParams) {
     createSubTitle(doc, `${item.loan_number_id}`, left + colsWidth[0], top);
     doc.text(`${item.receipt_number}`, left + colsWidth[1], top);
     doc.text(`${item.created_by}`, left + colsWidth[2], top);
+    switch (item.payment_type) {
+      case "CASH":
+        item.payment_type = "Efectivo";
+        break;
+      case "CHECK":
+        item.payment_type = "Cheque";
+        break;
+      case "TRANSFER":
+        item.payment_type = "Transferencia";
+        break;
+      default:
+        item.payment_type = "Efectivo";
+        break;
+    }
     doc.text(`${item.payment_type}`, left + colsWidth[3], top);
     doc.text(
       `${new Date(item.created_date).toLocaleString("es-Es").split(",")[0]}`,
-      left + colsWidth[4] + 10,
+      left + colsWidth[4] + 12,
       top,
       {
         align: "right",
       }
     );
-    doc.text(
-      `${
-        item.paid_dues
-          ?.split(",")
-          .map((i) => parseInt(i))
-          .sort(function (a, b) {
-            return a - b;
-          })[0] || 0
-      }-->${
-        item.paid_dues
-          ?.split(",")
-          .map((i) => parseInt(i))
-          .sort(function (a, b) {
-            return a - b;
-          })[item.paid_dues?.split(",").length - 1] || 0
-      }`,
-      left + colsWidth[5] + 10,
-      top,
-      {
-        align: "right",
-      }
-    );
+    if (item.paid_dues?.split(",").length > 1) {
+      doc.text(
+        `${
+          item.paid_dues
+            ?.split(",")
+            .map((i) => parseInt(i))
+            .sort(function (a, b) {
+              return a - b;
+            })[0] || 0
+        }-->${
+          item.paid_dues
+            ?.split(",")
+            .map((i) => parseInt(i))
+            .sort(function (a, b) {
+              return a - b;
+            })[item.paid_dues?.split(",").length - 1] || 0
+        }`,
+        left + colsWidth[5] + 10,
+        top,
+        {
+          align: "right",
+        }
+      );
+    } else {
+      doc.text(
+        `${
+          item.paid_dues
+            ?.split(",")
+            .map((i) => parseInt(i))
+            .sort(function (a, b) {
+              return a - b;
+            })[0] || 0
+        }`,
+        left + colsWidth[5] + 10,
+        top,
+        {
+          align: "right",
+        }
+      );
+    }
+
     // doc.text(`${item.discount}`, left + colsWidth[7], top, {
     //   align: "right",
     // });
@@ -120,8 +154,8 @@ function renderTableHeader(doc, pos, top) {
   // pos += 3;
   createSubTitle(doc, "Cliente", pos + 1, top);
   createSubTitle(doc, "Préstamo", pos + colsWidth[0], top);
-  createSubTitle(doc, "Teléfono", pos + colsWidth[1], top, "center");
-  createSubTitle(doc, "Monto\nAprobado", pos + colsWidth[2], top - 2);
+  createSubTitle(doc, "Recibo", pos + colsWidth[1], top, "center");
+  createSubTitle(doc, "Cajero", pos + colsWidth[2], top);
   createSubTitle(doc, "Monto\nCuota", pos + colsWidth[3], top - 2);
   createSubTitle(doc, "Fecha\nPago", pos + colsWidth[4], top - 2);
   createSubTitle(doc, "Cuotas\nPagadas", pos + colsWidth[5], top - 2);

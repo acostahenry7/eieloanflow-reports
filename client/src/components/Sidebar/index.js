@@ -19,17 +19,20 @@ import {
   TbDatabaseDollar,
   TbReportSearch,
   TbReport,
+  TbTableDown,
 } from "react-icons/tb";
 import {
   FaFileInvoiceDollar,
   FaHandHoldingDollar,
   FaMotorcycle,
+  FaMoneyBillTransfer,
 } from "react-icons/fa6";
 import { BsFolderCheck } from "react-icons/bs";
 import { MdInsertChart, MdOutlineBalance } from "react-icons/md";
 import { IoReceiptOutline } from "react-icons/io5";
 import { RiFileExcel2Line } from "react-icons/ri";
 import { HiOutlineDocumentText } from "react-icons/hi2";
+import { GiPayMoney } from "react-icons/gi";
 
 function Sidebar() {
   const { isSidebarOpened } = React.useContext(SidebarContext);
@@ -237,6 +240,28 @@ function Sidebar() {
           route: "/reports/datacredit",
           selected: false,
         },
+        {
+          label: "Movimiento en el préstamo",
+          icon: (selected) => (
+            <FaMoneyBillTransfer
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/loan-movement",
+          selected: false,
+        },
+        {
+          label: "Tabla de amortización",
+          icon: (selected) => (
+            <TbTableDown
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/loan-amortization",
+          selected: false,
+        },
         // {
         //   label: "Solicitudes de préstamos",
         //   icon: (selected) => (
@@ -282,6 +307,17 @@ function Sidebar() {
           ),
           route: "/reports/accounting-general-balance",
           selected: true,
+        },
+        {
+          label: "Cuentas por pagar",
+          icon: (selected) => (
+            <GiPayMoney
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/accounting-account-payable",
+          selected: false,
         },
         {
           label: "Balanza de comprobación",

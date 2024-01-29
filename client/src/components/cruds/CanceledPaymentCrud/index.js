@@ -80,7 +80,7 @@ function CanceledPaymentCrud() {
     {
       name: "Fecha cancelación",
       selector: (row) =>
-        new Date(row.last_modified_date).toLocaleString("en-US"),
+        new Date(row.last_modified_date).toLocaleString("es-DO"),
       sortable: true,
       reorder: true,
       omit: false,

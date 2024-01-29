@@ -85,7 +85,7 @@ function TodayPaymentCrud() {
     },
     {
       name: "Fecha de pago",
-      selector: (row) => new Date(row.payment_date).toLocaleString("en-US"),
+      selector: (row) => new Date(row.payment_date).toLocaleString("es-DO"),
       sortable: true,
       reorder: true,
       omit: false,
@@ -142,6 +142,7 @@ function TodayPaymentCrud() {
     {
       label: "No. de cuotas",
       field: "pendingDue",
+      isNotDynamic: true,
       placeholder: "1",
       type: "text",
     },

@@ -10,10 +10,26 @@ const controller = {};
 controller.getLoanApplication = async (queryParams) => {
   try {
     const [loanApplication] =
-      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, loan_application_id, la.loan_type, 
-      la.created_date, la.loan_application_type, o.name as outlet_name, by_office, la.status_type
+      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, c.birth_date, c.sex, c.nationality,
+      c.phone, c.mobile, c_pv.name province, c_mn.name municipality, c_sct.name section, c.street, c.street2, c.year_living,
+      c.month_living, la.loan_application_id, la.loan_type, la.created_date, la.requested_amount, la.loan_application_type, 
+      o.name as outlet_name, la.by_office, la.reference, la.status_type, lwp.company_name as work_place_company, 
+      tc.name as work_place_company_type, lwp.job_time as work_place_journey, lwp.year_job as work_place_years, 
+      lwp.month_job as work_place_months, occ.name as ocupation, lwp.monthly_income, wp_pv.name work_place_province, 
+      wp_mn.name work_place_municipality, wp_sct.name as work_place_section, lwp.work_place_street, lwp.work_place_street2, 
+      lwp.work_place_phone, lwp.other_income work_place_other_income
       FROM loan_application la
+      LEFT JOIN loan l ON (la.loan_application_id = l.loan_application_id)
+      LEFT JOIN loan_work_place lwp ON (l.loan_application_id = lwp.loan_work_place_id)
+      LEFT JOIN type_company tc ON (lwp.type_company_id = tc.type_company_id)
+      LEFT JOIN occupation occ ON (lwp.occupation_id = occ.occupation_id)
+      LEFT JOIN province wp_pv ON (lwp.work_place_province_id = wp_pv.province_id)
+      LEFT JOIN municipality wp_mn ON (lwp.work_place_municipality_id = wp_mn.municipality_id)
+      LEFT JOIN section wp_sct ON (lwp.work_place_section_id = wp_sct.section_id)
       JOIN customer c ON (la.customer_id = c.customer_id)
+      LEFT JOIN province c_pv ON (c.province_id  = c_pv.province_id)
+      LEFT JOIN municipality c_mn ON (c.municipality_id  = c_mn.municipality_id)
+      LEFT JOIN section c_sct ON (c.section_id = c_sct.section_id)
       JOIN outlet o On (la.outlet_id = o.outlet_id)
       WHERE la.status_type NOT LIKE 'DELETE'
       AND la.outlet_id LIKE '${queryParams.outletId || "%"}'
@@ -34,7 +50,7 @@ controller.getLoans = async (queryParams) => {
     const [data, meta] = await db.query(
       `SELECT distinct(l.loan_number_id), l.loan_id, c.first_name || ' ' || c.last_name as customer_name, c.identification,  l.interest_rate_type, 
       l.amount_approved, l.number_of_installments, l.frequency_of_payment, l.status_type, lp.name, l.status_type,
-      l.loan_situation, la.loan_type, l.amount_of_free, o.name as outlet_name, l.total_amount
+      l.loan_situation, la.loan_type, l.amount_of_free, o.name as outlet_name, l.total_amount, l.created_date
       FROM public.loan l
       LEFT JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
       LEFT JOIN customer c ON (la.customer_id = c.customer_id)
@@ -49,10 +65,14 @@ controller.getLoans = async (queryParams) => {
 	  AND l.status_type like '${queryParams.loanStatus || ""}%'
 	  AND la.loan_type like '${queryParams.loanType || ""}%'
 	  AND l.loan_situation like '${queryParams.loanSituation || ""}%'
+    AND l.created_date::date BETWEEN '${queryParams.dateFrom}' AND '${
+        queryParams.dateTo
+      }'
     AND l.status_type NOT LIKE 'DELETE'
     GROUP BY  c.first_name, c.last_name , c.identification, l.loan_number_id, l.interest_rate_type, 
-l.amount_approved, l.number_of_installments,l.frequency_of_payment, lp.name, l.status_type,
-l.amount_of_free, la.loan_type, l.loan_situation, l.outlet_id, loan_id,o.name, l.total_amount`
+    l.amount_approved, l.number_of_installments,l.frequency_of_payment, lp.name, l.status_type,
+    l.amount_of_free, la.loan_type, l.loan_situation, l.outlet_id, loan_id,o.name, l.total_amount, l.created_date
+    ORDER BY l.created_date DESC`
     );
 
     if (data.length == 0) {
@@ -73,7 +93,7 @@ controller.getLoanDetails = async (req) => {
     const [data, meta] =
       await db.query(` SELECT distinct(l.loan_number_id), min(a.payment_date) as creation_date, c.first_name || ' ' || c.last_name as customer_name, c.identification, l.interest_rate_type, 
       l.amount_approved, count(a.amortization_id) as number_of_installments, lp.amount, l.frequency_of_payment,  lp.name, l.status_type,
-      l.loan_situation, la.loan_type,
+      l.loan_situation, la.loan_type,l.created_date,
             COALESCE(SUM(a.capital) filter(where a.paid = 'true'),0)  paid_capital,
             COALESCE(SUM(a.interest) filter(where a.paid = 'true'), 0)  as paid_interest,
             COALESCE(SUM(a.discount_interest), 0) discount_interest,
@@ -110,8 +130,9 @@ controller.getLoanDetails = async (req) => {
           WHERE a.loan_id = '${req.params.id}'
       AND a.status_type NOT LIKE 'DELETE'
           GROUP BY  c.first_name, c.last_name , c.identification, l.loan_number_id, l.interest_rate_type, 
-      l.amount_approved,l.frequency_of_payment, lp.name, l.status_type,
-      la.loan_type, l.loan_situation, l.outlet_id, lp.amount,ir.percent`);
+      l.amount_approved,l.frequency_of_payment, lp.name, l.status_type, l.created_date,
+      la.loan_type, l.loan_situation, l.outlet_id, lp.amount,ir.percent
+      ORDER BY l.created_date DESC`);
 
     if (data.length == 0) {
       console.log(data);
@@ -228,6 +249,7 @@ controller.getRegisterClose = async (queryParams) => {
       await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, p.pay, 
       r.amount, p.register_id, r.total_cash, r.total_check, r.total_transfer, r.total_discount, r.total_pay, r.total_registered as difference, 
       e.first_name || ' ' || e.last_name as employee_name, r.created_date opening_date, r.last_modified_date, p.created_date, p.payment_type,
+      e.commission_debt_collector_percentage as collector_percentage,
       case
 	  	when r.total_registered  + 10 > r.total_pay - r.total_check then r.total_pay - r.total_registered - r.total_check
 	  	else total_registered 
@@ -257,6 +279,35 @@ controller.getRegisterClose = async (queryParams) => {
   } catch (error) {
     console.log(error);
     throw new Error(error.message);
+  }
+};
+
+controller.getLoanMovement = async (queryParams) => {
+  try {
+    const [data, meta] = await db.query(`
+    SELECT l.loan_number_id, la.loan_type, l.status_type, l.loan_situation,
+    c.first_name || ' ' || c.last_name as customer_name, p.pay, p.created_date,
+    string_agg(a.quota_number::varchar, ', ' order by a.quota_number) as quota_number,
+    string_agg(a.status_type::varchar, ',' order by a.quota_number) as quota_status,p.payment_type,
+    string_agg(pd.pay::varchar, ', ' order by a.quota_number) as quota_paid_amounts
+    FROM payment p
+    JOIN payment_detail pd ON (p.payment_id = pd.payment_id)
+    LEFT JOIN loan l ON (p.loan_id = l.loan_id)
+    LEFT JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
+    LEFT JOIN customer c ON (la.customer_id = c.customer_id)
+    INNER JOIN amortization a ON (pd.amortization_id = a.amortization_id AND a.status_type <> 'DELETE')
+    WHERE l.status_type <> 'DELETE'
+    AND p.outlet_id like '${queryParams.outletId || ""}%'
+    AND p.created_date::date between '${queryParams.dateFrom}' and '${
+      queryParams.dateTo
+    }'
+    GROUP BY l.loan_number_id, c.first_name, c.last_name, p.pay, p.created_date,
+    la.loan_type, l.status_type, l.loan_situation, p.outlet_id, p.payment_type
+    ORDER BY p.created_date
+    `);
+    return _.groupBy(data, "loan_number_id");
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -391,6 +442,38 @@ c.phone, c.mobile, l.loan_number_id, l.created_date::date, l.amount_approved, l.
       console.log(err);
       return;
     });
+};
+
+controller.getAmortizationTable = async (queryParams) => {
+  try {
+    if (!queryParams.loanNumber) {
+      throw new Error("Se necesita número de présatmo");
+    }
+
+    let [amortizationTable] = await db.query(`
+      SELECT l.loan_number_id, c.first_name || ' ' || c.last_name as customer_name, quota_number, payment_date, balance_of_capital, interest, 
+      amount_of_fee, capital, mora, total_paid_mora,discount_mora, discount_interest, total_paid, 
+      amount_of_fee + mora - (discount_interest+discount_mora) - total_paid as pending, a.status_type
+      FROM amortization a
+      JOIN loan l ON (a.loan_id = l.loan_id)
+      JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
+      JOIN customer c ON (la.customer_id = c.customer_id)
+      WHERE a.outlet_id like '${queryParams.outletId || "%"}'
+      AND a.status_type NOT LIKE 'DELETE'
+      AND l.loan_id in (SELECT loan_id FROM loan WHERE loan_number_id = '${
+        queryParams.loanNumber || "%"
+      }')
+      ORDER BY l.loan_number_id desc, quota_number
+      `);
+    console.log(amortizationTable);
+    return amortizationTable;
+  } catch (error) {
+    console.log(error);
+    if (error.message == "Se necesita número de présatmo") {
+      return [];
+    }
+    throw error;
+  }
 };
 
 function getLoanSituation(situation) {

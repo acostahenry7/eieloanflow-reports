@@ -47,6 +47,15 @@ function getLoanSituationLabel(loanSituation) {
     case "PAID":
       label = "Pagado";
       break;
+    case "ACTIVE":
+      label = "Vigente";
+      break;
+    case "COMPOST":
+      label = "Abonado";
+      break;
+    case "DEFEATED":
+      label = "Vencido";
+      break;
     case "LOAN":
       label = "Préstamo";
       break;
@@ -92,4 +101,29 @@ function getLoanTypeLabel(loanType) {
   return label;
 }
 
-export { formatClientName, getLoanSituationLabel, getLoanTypeLabel };
+function getPaymentTypeLabel(paymentType) {
+  let result = "";
+  switch (paymentType) {
+    case "CASH":
+      result = "Efectivo";
+      break;
+    case "CHECK":
+      result = "Cheque";
+      break;
+    case "TRANSFER":
+      result = "Transferencia";
+      break;
+    default:
+      result = "Efectivo";
+      break;
+  }
+
+  return result;
+}
+
+export {
+  formatClientName,
+  getLoanSituationLabel,
+  getLoanTypeLabel,
+  getPaymentTypeLabel,
+};

@@ -30,6 +30,8 @@ import { ReceiptsDetailScreen } from "./screens/ReceiptsDetailScreen";
 import { LoanApplicationScreen } from "./screens/LoanApplicationScreen";
 import { AccountCatalogSCreen } from "./screens/AccountCatalogScreen";
 import { DatacreditScreen } from "./screens/DatacreditScreen";
+import { LoanMovementScreen } from "./screens/LoanMovementScreen";
+import { AmortizationTableScreen } from "./screens/AmortizationTableScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -94,12 +96,20 @@ function App() {
                 element={<RegisterCloseScreen />}
               />
               <Route
+                path="/reports/loan-movement"
+                element={<LoanMovementScreen />}
+              />
+              <Route
                 path="/reports/loan-discounts"
                 element={<LoanDiscountsScreen />}
               />
               <Route
                 path="/reports/datacredit"
                 element={<DatacreditScreen />}
+              />
+              <Route
+                path="/reports/loan-amortization"
+                element={<AmortizationTableScreen />}
               />
               <Route
                 path="/reports/accounting-catalog"

@@ -5,12 +5,12 @@ import { getRegisterClose } from "../../../api/loan";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import { Margin, usePDF } from "react-to-pdf";
-import "./index.css";
 import { tableUIHelper } from "../../../utils/ui-helpers";
 import CurrencyFormat from "react-currency-format";
 import { currencyFormat } from "../../../utils/reports/report-helpers";
 import { TotalBar } from "../../TotalBar";
 import { generateReport } from "../../../utils/reports/resgisterClose";
+import "./index.css";
 
 function RegisterCloseCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -58,7 +58,7 @@ function RegisterCloseCrud() {
   const [columns, setColumns] = React.useState([
     {
       name: "Empleado",
-      width: "250px",
+      width: "198px",
       selector: (row) => (
         <div>
           <p style={{ margin: 0, fontWeight: 500 }}>
@@ -139,6 +139,18 @@ function RegisterCloseCrud() {
             year: "numeric",
           })
           .split(",")[0],
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+    {
+      name: "Comisión",
+      width: tableUIHelper.columns.width.amount,
+      selector: (row) =>
+        currencyFormat(
+          parseFloat(row.register.collector_percentage / 100 || 0) *
+            row.child.reduce((acc, item) => acc + parseFloat(item.pay), 0)
+        ),
       sortable: true,
       reorder: true,
       omit: false,

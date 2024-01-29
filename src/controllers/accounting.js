@@ -322,9 +322,11 @@ controller.getMajorGeneral = async (queryParams) => {
           ? `and gda.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
           : ""
       }
+      and ac.number like '${queryParams.accountId || "%"}'
       order by ac.number`
     );
 
+    console.log(majorGeneral);
     let data = _(majorGeneral).groupBy("number");
 
     return data;

@@ -108,7 +108,7 @@ function ReceivedPaymentCrud() {
     },
     {
       name: "Fecha recibo",
-      selector: (row) => new Date(row.created_date).toLocaleString("en-US"),
+      selector: (row) => new Date(row.created_date).toLocaleString("es-DO"),
       sortable: true,
       reorder: true,
       omit: false,

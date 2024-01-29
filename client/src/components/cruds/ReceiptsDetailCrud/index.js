@@ -2,7 +2,10 @@ import React, { useRef } from "react";
 import { SearchBar } from "../../SearchBar";
 import { Datatable } from "../../Datatable";
 import { getReceiptDetail } from "../../../api/payment";
-import { formatClientName } from "../../../utils/stringFunctions";
+import {
+  formatClientName,
+  getPaymentTypeLabel,
+} from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import { Margin, usePDF } from "react-to-pdf";
 import { useReactToPrint } from "react-to-print";
@@ -107,7 +110,7 @@ function ReceiptDetailCrud() {
     // },
     {
       name: "Fecha",
-      selector: (row) => new Date(row.created_date).toLocaleString("en-US"),
+      selector: (row) => new Date(row.created_date).toLocaleString("es-DO"),
       sortable: true,
       reorder: true,
       omit: false,
@@ -166,7 +169,7 @@ function ReceiptDetailCrud() {
     },
     {
       name: "Tipo de pago",
-      selector: (row) => row.payment_type,
+      selector: (row) => getPaymentTypeLabel(row.payment_type),
       sortable: true,
       reorder: true,
       omit: false,

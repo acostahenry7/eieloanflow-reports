@@ -84,6 +84,20 @@ async function getRegisterClose(queryParams) {
   }
 }
 
+async function getLoanMovement(queryParams) {
+  try {
+    const loanMovements = await request({
+      method: "GET",
+      path: "/loan-movement",
+      urlParams: queryParams || {},
+    });
+
+    return loanMovements;
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function getDatacreditLoans(queryParams) {
   try {
     const loans = await request({
@@ -113,13 +127,29 @@ async function generateDatacredit(queryParams) {
   }
 }
 
+async function getAmortizationTable(queryParams) {
+  try {
+    const amortization = await request({
+      method: "GET",
+      path: "/amortization-table",
+      urlParams: queryParams || {},
+    });
+
+    return amortization;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export {
   getLoanApplication,
   getLoans,
   getLoanActivities,
   getLoanDiscounts,
   getRegisterClose,
+  getLoanMovement,
   getLoanDetail,
   generateDatacredit,
   getDatacreditLoans,
+  getAmortizationTable,
 };
