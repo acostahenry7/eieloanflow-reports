@@ -10,7 +10,8 @@ import {
 import { getOutletsApi } from "../../../api/outlet";
 import { ThreeDots } from "react-loader-spinner";
 import { currencyFormat } from "../../../utils/reports/report-helpers";
-import { generateReport } from "../../../utils/reports/loanDetail";
+import { generateReport } from "../../../utils/reports/loanApplication";
+import LoanRequestInfo from "../../LoanRequestInfo";
 import "./index.css";
 
 function LoanApplicationCrud() {
@@ -102,13 +103,13 @@ function LoanApplicationCrud() {
       reorder: true,
       omit: false,
     },
-    // {
-    //   name: "Total",
-    //   selector: (row) => row.total_amount,
-    //   sortable: true,
-    //   reorder: true,
-    //   omit: false,
-    // },
+    {
+      name: "Monto Solicitado",
+      selector: (row) => currencyFormat(row.requested_amount),
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
     // {
     //   name: "Cantidad de cuotas",
     //   selector: (row) => row.number_of_installments,
@@ -315,14 +316,14 @@ function LoanApplicationCrud() {
         columns={columns}
         data={filterData}
         isLoading={isLoading}
-        // dtOptions={{
-        //   expandableRows: true,
-        //   expandableRowsComponent: ({ data }) => {
-        //     // console.log(data);
+        dtOptions={{
+          expandableRows: true,
+          expandableRowsComponent: ({ data }) => {
+            // console.log(data);
 
-        //     return <LoanDetailSummary data={data} />;
-        //   },
-        // }}
+            return <LoanRequestInfo data={data} />;
+          },
+        }}
       />
     </div>
   );

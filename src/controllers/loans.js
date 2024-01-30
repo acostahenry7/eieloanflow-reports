@@ -9,33 +9,36 @@ const controller = {};
 
 controller.getLoanApplication = async (queryParams) => {
   try {
-    const [loanApplication] =
-      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, c.birth_date, c.sex, c.nationality,
-      c.phone, c.mobile, c_pv.name province, c_mn.name municipality, c_sct.name section, c.street, c.street2, c.year_living,
-      c.month_living, la.loan_application_id, la.loan_type, la.created_date, la.requested_amount, la.loan_application_type, 
-      o.name as outlet_name, la.by_office, la.reference, la.status_type, lwp.company_name as work_place_company, 
-      tc.name as work_place_company_type, lwp.job_time as work_place_journey, lwp.year_job as work_place_years, 
-      lwp.month_job as work_place_months, occ.name as ocupation, lwp.monthly_income, wp_pv.name work_place_province, 
-      wp_mn.name work_place_municipality, wp_sct.name as work_place_section, lwp.work_place_street, lwp.work_place_street2, 
-      lwp.work_place_phone, lwp.other_income work_place_other_income
-      FROM loan_application la
-      LEFT JOIN loan l ON (la.loan_application_id = l.loan_application_id)
-      LEFT JOIN loan_work_place lwp ON (l.loan_application_id = lwp.loan_work_place_id)
-      LEFT JOIN type_company tc ON (lwp.type_company_id = tc.type_company_id)
-      LEFT JOIN occupation occ ON (lwp.occupation_id = occ.occupation_id)
-      LEFT JOIN province wp_pv ON (lwp.work_place_province_id = wp_pv.province_id)
-      LEFT JOIN municipality wp_mn ON (lwp.work_place_municipality_id = wp_mn.municipality_id)
-      LEFT JOIN section wp_sct ON (lwp.work_place_section_id = wp_sct.section_id)
-      JOIN customer c ON (la.customer_id = c.customer_id)
-      LEFT JOIN province c_pv ON (c.province_id  = c_pv.province_id)
-      LEFT JOIN municipality c_mn ON (c.municipality_id  = c_mn.municipality_id)
-      LEFT JOIN section c_sct ON (c.section_id = c_sct.section_id)
-      JOIN outlet o On (la.outlet_id = o.outlet_id)
-      WHERE la.status_type NOT LIKE 'DELETE'
+    const [loanApplication] = await db.query(`
+    SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, c.birth_date, c.sex, c.nationality,
+    c.phone, c.mobile, c_pv.name province, c_mn.name municipality, c_sct.name section, c.street, c.street2, c.year_living,
+    c.month_living, la.loan_application_id, la.loan_type, la.created_date, la.requested_amount, la.loan_application_type, 
+    o.name as outlet_name, la.by_office, la.reference, la.status_type, lwp.company_name as work_place_company, 
+    tc.name as work_place_company_type, lwp.job_time as work_place_journey, lwp.year_job as work_place_years, 
+    lwp.month_job as work_place_months, occ.name as ocupation, lwp.monthly_income, wp_pv.name work_place_province, 
+    wp_mn.name work_place_municipality, wp_sct.name as work_place_section, lwp.work_place_street, lwp.work_place_street2, 
+    lwp.work_place_phone, lwp.other_income work_place_other_income, lg.first_name || ' ' || lg.last_name as guarantor_name,
+    vh.amount as vehicle_amount, vh.year as vehicle_year, vh.vehicle_type, vh.model as vehicle_model, vhb.name vehicle_brand
+    FROM loan_application la
+    LEFT JOIN loan l ON (la.loan_application_id = l.loan_application_id)
+    LEFT JOIN loan_work_place lwp ON (l.loan_application_id = lwp.loan_work_place_id)
+    LEFT JOIN type_company tc ON (lwp.type_company_id = tc.type_company_id)
+    LEFT JOIN occupation occ ON (lwp.occupation_id = occ.occupation_id)
+    LEFT JOIN province wp_pv ON (lwp.work_place_province_id = wp_pv.province_id)
+    LEFT JOIN municipality wp_mn ON (lwp.work_place_municipality_id = wp_mn.municipality_id)
+    LEFT JOIN section wp_sct ON (lwp.work_place_section_id = wp_sct.section_id)
+    JOIN customer c ON (la.customer_id = c.customer_id)
+    LEFT JOIN province c_pv ON (c.province_id  = c_pv.province_id)
+    LEFT JOIN municipality c_mn ON (c.municipality_id  = c_mn.municipality_id)
+    LEFT JOIN section c_sct ON (c.section_id = c_sct.section_id)
+    LEFT JOIN loan_guarantor lg ON (la.loan_application_id = lg.loan_guarantor_id)
+    LEFT JOIN loan_vehicle vh ON (la.loan_application_id = vh.loan_vehicle_id)
+    LEFT JOIN vehicle_brand vhb ON (vh.vehicle_brand_id = vhb.vehicle_brand_id)
+    JOIN outlet o On (la.outlet_id = o.outlet_id)
       AND la.outlet_id LIKE '${queryParams.outletId || "%"}'
       AND la.created_date BETWEEN '${queryParams.dateFrom}' AND '${
-        queryParams.dateTo
-      }'
+      queryParams.dateTo
+    }'
       AND la.status_type LIKE '${queryParams.status || "%"}'
       AND la.loan_type LIKE '${queryParams.loanType || "%"}'`);
 
