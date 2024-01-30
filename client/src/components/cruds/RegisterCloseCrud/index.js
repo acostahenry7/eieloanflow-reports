@@ -143,18 +143,18 @@ function RegisterCloseCrud() {
       reorder: true,
       omit: false,
     },
-    {
-      name: "Comisión",
-      width: tableUIHelper.columns.width.amount,
-      selector: (row) =>
-        currencyFormat(
-          parseFloat(row.register.collector_percentage / 100 || 0) *
-            row.child.reduce((acc, item) => acc + parseFloat(item.pay), 0)
-        ),
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
+    // {
+    //   name: "Comisión",
+    //   width: tableUIHelper.columns.width.amount,
+    //   selector: (row) =>
+    //     currencyFormat(
+    //       parseFloat(row.register.collector_percentage / 100 || 0) *
+    //         row.child.reduce((acc, item) => acc + parseFloat(item.pay), 0)
+    //     ),
+    //   sortable: true,
+    //   reorder: true,
+    //   omit: false,
+    // },
   ]);
 
   const mainFilters = [

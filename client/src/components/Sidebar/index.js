@@ -410,6 +410,30 @@ function Sidebar() {
         },
       ],
     },
+    {
+      label: "Recursos Humanos",
+      icon: (selected) => (
+        <HiOutlineCalculator
+          className="Sidebar-content-item-icon"
+          color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+        />
+      ),
+      route: "/accounting",
+      selected: false,
+      subItems: [
+        {
+          label: "Reporte comisión cobrador",
+          icon: (selected) => (
+            <FaChartBar
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/rrhh-collector-commission",
+          selected: true,
+        },
+      ],
+    },
   ]);
 
   const selectItem = (label) => {

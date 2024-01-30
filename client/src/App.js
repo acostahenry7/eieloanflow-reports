@@ -32,6 +32,7 @@ import { AccountCatalogSCreen } from "./screens/AccountCatalogScreen";
 import { DatacreditScreen } from "./screens/DatacreditScreen";
 import { LoanMovementScreen } from "./screens/LoanMovementScreen";
 import { AmortizationTableScreen } from "./screens/AmortizationTableScreen";
+import { CollectorCommissionScreen } from "./screens/CollectorCommissionScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -140,6 +141,10 @@ function App() {
               <Route
                 path="/reports/detailed-accouting-major-general"
                 element={<DetailedGeneralMajor />}
+              />
+              <Route
+                path="/reports/rrhh-collector-commission"
+                element={<CollectorCommissionScreen />}
               />
             </Routes>
           </div>
