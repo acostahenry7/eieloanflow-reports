@@ -223,125 +223,125 @@ function DetailedGeneralMajor() {
         <Datatable
           columns={columns}
           data={data}
-          // dtOptions={{
-          //   expandableRows: true,
-          //   expandableRowsComponent: ({ data }) => {
-          //     let innerColumns = [
-          //       {
-          //         name: "Fecha asiento",
-          //         selector: (row) =>
-          //           new Date(row.created_date).toLocaleDateString("es-DO"),
-          //         sortable: true,
-          //         reorder: true,
-          //         omit: false,
-          //       },
-          //       {
-          //         name: "Descripción",
-          //         selector: (row) => row.description,
-          //         sortable: true,
-          //         reorder: true,
-          //         omit: false,
-          //       },
-          //       {
-          //         name: "Débito",
-          //         selector: (row) => row.debit,
-          //         sortable: true,
-          //         reorder: true,
-          //         omit: false,
-          //       },
-          //       {
-          //         name: "Crédito",
-          //         selector: (row) => row.credit,
-          //         sortable: true,
-          //         reorder: true,
-          //         omit: false,
-          //       },
-          //       // {
-          //       //   name: "Tipo de pago",
-          //       //   selector: (row) =>
-          //       //     row.payment_type == "CASH" ? "Efectivo" : "Transferencia",
-          //       //   sortable: true,
-          //       //   reorder: true,
-          //       //   omit: false,
-          //       // },
+          dtOptions={{
+            expandableRows: true,
+            expandableRowsComponent: ({ data }) => {
+              let innerColumns = [
+                {
+                  name: "Fecha asiento",
+                  selector: (row) =>
+                    new Date(row.created_date).toLocaleDateString("es-DO"),
+                  sortable: true,
+                  reorder: true,
+                  omit: false,
+                },
+                {
+                  name: "Descripción",
+                  selector: (row) => row.description,
+                  sortable: true,
+                  reorder: true,
+                  omit: false,
+                },
+                {
+                  name: "Débito",
+                  selector: (row) => row.debit,
+                  sortable: true,
+                  reorder: true,
+                  omit: false,
+                },
+                {
+                  name: "Crédito",
+                  selector: (row) => row.credit,
+                  sortable: true,
+                  reorder: true,
+                  omit: false,
+                },
+                // {
+                //   name: "Tipo de pago",
+                //   selector: (row) =>
+                //     row.payment_type == "CASH" ? "Efectivo" : "Transferencia",
+                //   sortable: true,
+                //   reorder: true,
+                //   omit: false,
+                // },
 
-          //       // {
-          //       //   name: "Fecha",
-          //       //   selector: (row) =>
-          //       //     new Date(row.created_date)
-          //       //       .toLocaleString("es-ES")
-          //       //       .split(",")[0],
-          //       //   sortable: true,
-          //       //   reorder: true,
-          //       //   omit: false,
-          //       // },
-          //     ];
+                // {
+                //   name: "Fecha",
+                //   selector: (row) =>
+                //     new Date(row.created_date)
+                //       .toLocaleString("es-ES")
+                //       .split(",")[0],
+                //   sortable: true,
+                //   reorder: true,
+                //   omit: false,
+                // },
+              ];
 
-          //     return (
-          //       <div
-          //         style={{
-          //           boxShadow: "inset 1px 4px 3px rgba(0,0,0,0.2)",
-          //           padding: 20,
-          //           borderRadius: 2,
-          //           backgroundColor: "#f7fbff",
-          //         }}
-          //       >
-          //         <Datatable
-          //           columns={innerColumns}
-          //           data={data.transactions}
-          //           marginTopPagination={18}
-          //         />
-          //         {/* {data.length > 0 && (
-          //           <div
-          //             style={{
-          //               display: isLoading ? "none" : "flex",
-          //               alignItems: "center",
-          //               marginTop: "-46px",
-          //               paddingLeft: 8,
-          //               // justifyContent: "space-between",
-          //               width: "100%",
-          //             }}
-          //           >
-          //             <div>Total</div>
-          //             <div style={{ zIndex: 3 }} className="list-container">
-          //               <ul
-          //                 style={{
-          //                   display: "flex",
-          //                   // width: "100%",
-          //                   // paddingLeft: 200,
-          //                   // boxSizing: "border-box",
-          //                   // width: "70%",
-          //                   // justifyContent: "flex-start",
-          //                 }}
-          //               >
-          //                 <li
-          //                   style={{
-          //                     fontWeight: "bold",
-          //                     fontSize: 12,
-          //                     marginLeft: "175px",
-          //                   }}
-          //                 >
-          //                   <CurrencyFormat
-          //                     value={data.child
-          //                       ?.reduce(
-          //                         (acc, item) => acc + parseFloat(item.pay),
-          //                         0
-          //                       )
-          //                       .toFixed(2)}
-          //                     displayType={"text"}
-          //                     thousandSeparator={true}
-          //                     prefix={"RD$"}
-          //                   />
-          //                 </li>
-          //               </ul>
-          //             </div>
-          //           </div>
-          //         )} */}
-          //       </div>
-          //     );
-          //   },
-          //   fixedHeader: true,
-          // }}
+              return (
+                <div
+                  style={{
+                    boxShadow: "inset 1px 4px 3px rgba(0,0,0,0.2)",
+                    padding: 20,
+                    borderRadius: 2,
+                    backgroundColor: "#f7fbff",
+                  }}
+                >
+                  <Datatable
+                    columns={innerColumns}
+                    data={data.transactions}
+                    marginTopPagination={18}
+                  />
+                  {/* {data.length > 0 && (
+                    <div
+                      style={{
+                        display: isLoading ? "none" : "flex",
+                        alignItems: "center",
+                        marginTop: "-46px",
+                        paddingLeft: 8,
+                        // justifyContent: "space-between",
+                        width: "100%",
+                      }}
+                    >
+                      <div>Total</div>
+                      <div style={{ zIndex: 3 }} className="list-container">
+                        <ul
+                          style={{
+                            display: "flex",
+                            // width: "100%",
+                            // paddingLeft: 200,
+                            // boxSizing: "border-box",
+                            // width: "70%",
+                            // justifyContent: "flex-start",
+                          }}
+                        >
+                          <li
+                            style={{
+                              fontWeight: "bold",
+                              fontSize: 12,
+                              marginLeft: "175px",
+                            }}
+                          >
+                            <CurrencyFormat
+                              value={data.child
+                                ?.reduce(
+                                  (acc, item) => acc + parseFloat(item.pay),
+                                  0
+                                )
+                                .toFixed(2)}
+                              displayType={"text"}
+                              thousandSeparator={true}
+                              prefix={"RD$"}
+                            />
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  )} */}
+                </div>
+              );
+            },
+            fixedHeader: true,
+          }}
         />
       </div>
     </div>
