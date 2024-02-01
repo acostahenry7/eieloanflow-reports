@@ -16,6 +16,8 @@ function CustomerCrud() {
   const [searchParams, setSearchParams] = React.useState({
     dateFrom: new Date().toISOString().split("T")[0],
     dateTo: new Date().toISOString().split("T")[0],
+    paymentDateFrom: new Date().toISOString().split("T")[0],
+    paymentDateTo: new Date().toISOString().split("T")[0],
   });
 
   React.useEffect(() => {
@@ -73,7 +75,7 @@ function CustomerCrud() {
     {
       name: "Fecha Préstamo",
       width: tableUIHelper.columns.width.date,
-      selector: (row) => new Date(row.created_date).toLocaleString("en-US"),
+      selector: (row) => new Date(row.created_date).toLocaleDateString("es-DO"),
       sortable: true,
       reorder: true,
       omit: false,
@@ -156,7 +158,8 @@ function CustomerCrud() {
     {
       name: "Vencido desde",
       width: tableUIHelper.columns.width.date,
-      selector: (row) => new Date(row.defeated_since).toLocaleString("en-US"),
+      selector: (row) =>
+        new Date(row.defeated_since).toLocaleDateString("es-DO"),
       sortable: true,
       reorder: true,
       omit: false,
@@ -209,15 +212,21 @@ function CustomerCrud() {
   ];
 
   const secondaryFilters = [
-    // {
-    //   label: "Cliente",
-    //   field: "customerName",
-    //   placeholder: "Búsqueda por nombre",
-    //   type: "text",
-    // },
     {
       label: "Fecha del Préstamo",
       field: "date",
+      type: "dateRange",
+    },
+    {
+      label: "Cuotas en atraso",
+      field: "arrearFees",
+      placeholder: "Ej. 2",
+      isNotDynamic: true,
+      type: "text",
+    },
+    {
+      label: "Fecha de pago",
+      field: "paymentDate",
       type: "dateRange",
     },
   ];

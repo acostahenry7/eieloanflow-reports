@@ -154,12 +154,12 @@ function LoanApplicationCrud() {
       placeholder: "Cédula",
       type: "text",
     },
-    {
-      label: "No. Préstamo",
-      field: "loanNumber",
-      placeholder: "No. Préstamo",
-      type: "text",
-    },
+    // {
+    //   label: "No. Préstamo",
+    //   field: "loanNumber",
+    //   placeholder: "No. Préstamo",
+    //   type: "text",
+    // },
     {
       label: "Sucursal",
       field: "outletId",

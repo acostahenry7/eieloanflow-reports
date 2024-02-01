@@ -22,9 +22,10 @@ controller.getTodayPayments = async (queryParams) => {
         HAVING l.status_type not in ('DELETE', 'PAID')
         ${
           queryParams.pendingDue
-            ? `AND MIN(a.quota_number) filter(where a.paid = 'false') >= ${queryParams.pendingDue}`
+            ? `AND MIN(a.quota_number) filter(where a.paid = 'false') <= ${queryParams.pendingDue}`
             : ""
         }
+        
         ${generateWhereStatement(queryParams)}
         ${
           queryParams.dateFrom
