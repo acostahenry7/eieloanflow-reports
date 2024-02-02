@@ -33,6 +33,7 @@ import { DatacreditScreen } from "./screens/DatacreditScreen";
 import { LoanMovementScreen } from "./screens/LoanMovementScreen";
 import { AmortizationTableScreen } from "./screens/AmortizationTableScreen";
 import { CollectorCommissionScreen } from "./screens/CollectorCommissionScreen";
+import { ToChargeAccountScreen } from "./screens/ToChargeAccountScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -137,6 +138,10 @@ function App() {
               <Route
                 path="/reports/accouting-major-general"
                 element={<GeneralMajor />}
+              />
+              <Route
+                path="/reports/charge-account"
+                element={<ToChargeAccountScreen />}
               />
               <Route
                 path="/reports/detailed-accouting-major-general"

@@ -335,6 +335,38 @@ controller.getMajorGeneral = async (queryParams) => {
   }
 };
 
+controller.getToChargeAccount = async (queryParams) => {
+  try {
+    const [data] = await db.query(
+      `select c.first_name || ' ' || c.last_name as customer_name, c.identification,
+        l.loan_number_id, la.loan_type, l.status_type, l.loan_situation, 
+        sum(a.amount_of_fee) as total_due,
+        sum(a.total_paid)  as total_paid,
+        sum(a.amount_of_fee) filter(where a.paid = 'false') as total_pending
+        from loan l
+        join loan_application la on (l.loan_application_id = la.loan_application_id)
+        join customer c on (la.customer_id = c.customer_id)
+        join amortization a on (l.loan_id = a.loan_id)
+        where l.status_type not in ('DELETE', 'PAID')
+        AND  l.outlet_id like '${queryParams.outletId || ""}%'	
+        AND c.identification like '${queryParams.identification || ""}%'
+        AND l.loan_number_id::varchar like '${queryParams.loanNumber || ""}%'
+        AND l.status_type like '${queryParams.loanStatus || ""}%'
+        AND la.loan_type like '${queryParams.loanType || ""}%'
+        AND l.loan_situation like '${queryParams.loanSituation || ""}%'
+        AND l.created_date::date <='${queryParams.dateTo}'
+        group by l.loan_number_id, la.loan_type, l.status_type, l.loan_situation, 
+        l.amount_approved, c.first_name, c.last_name, c.identification,l.created_date
+        order by l.created_date desc
+        `
+    );
+
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 function getMainAccountsArr(arr) {
   let testAccounts = [];
   for (let i = 0; i < arr.length; i++) {

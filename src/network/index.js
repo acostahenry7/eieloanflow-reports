@@ -371,6 +371,17 @@ module.exports = (app) => {
       });
   });
 
+  router.get("/api/charge-account", (req, res) => {
+    accountingCtrl
+      .getToChargeAccount(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   router.get("*", (req, res) => {
     res.sendFile(path.resolve(__dirname, "../../client/build/index.html"));
   });

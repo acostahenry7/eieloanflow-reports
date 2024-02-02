@@ -15,6 +15,20 @@ async function getAccountCatalog(queryParams) {
   }
 }
 
+async function getToChargeAccount(queryParams) {
+  try {
+    const chargeAccount = await request({
+      method: "GET",
+      path: "/charge-account",
+      urlParams: queryParams || {},
+    });
+
+    return chargeAccount;
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function getGeneralBalance(queryParams) {
   try {
     const generalBalance = await request({
@@ -89,6 +103,7 @@ async function generate607Api(queryParams) {
 export {
   getAccountCatalog,
   getGeneralBalance,
+  getToChargeAccount,
   getValidationBalance,
   generate606Api,
   generate607Api,

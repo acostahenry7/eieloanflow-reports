@@ -32,7 +32,7 @@ import { MdInsertChart, MdOutlineBalance } from "react-icons/md";
 import { IoReceiptOutline } from "react-icons/io5";
 import { RiFileExcel2Line } from "react-icons/ri";
 import { HiOutlineDocumentText } from "react-icons/hi2";
-import { GiPayMoney } from "react-icons/gi";
+import { GiPayMoney, GiReceiveMoney } from "react-icons/gi";
 
 function Sidebar() {
   const { isSidebarOpened } = React.useContext(SidebarContext);
@@ -317,6 +317,17 @@ function Sidebar() {
             />
           ),
           route: "/reports/accounting-account-payable",
+          selected: false,
+        },
+        {
+          label: "Cuentas por cobrar",
+          icon: (selected) => (
+            <GiReceiveMoney
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/charge-account",
           selected: false,
         },
         {
