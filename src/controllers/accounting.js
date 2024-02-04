@@ -340,14 +340,16 @@ controller.getToChargeAccount = async (queryParams) => {
     const [data] = await db.query(
       `select c.first_name || ' ' || c.last_name as customer_name, c.identification,
         l.loan_number_id, la.loan_type, l.status_type, l.loan_situation, 
-        sum(a.amount_of_fee) as total_due,
-        sum(a.total_paid)  as total_paid,
-        sum(a.amount_of_fee) filter(where a.paid = 'false') as total_pending
+        sum(a.amount_of_fee) filter(where a.status_type <> 'DELETE') as total_due,
+        sum(a.total_paid) filter(where a.status_type <> 'DELETE') as total_paid,
+        sum(a.amount_of_fee - a.discount) filter(where a.paid = 'false' and a.status_type <> 'DELETE') +
+        coalesce(sum(a.amount_of_fee - a.total_paid - a.discount) filter(where a.status_type = 'COMPOST'),0)
+        as total_pending
         from loan l
         join loan_application la on (l.loan_application_id = la.loan_application_id)
         join customer c on (la.customer_id = c.customer_id)
         join amortization a on (l.loan_id = a.loan_id)
-        where l.status_type not in ('DELETE', 'PAID')
+        where l.status_type not in ('DELETE', 'PAID', 'REFINANCE')
         AND  l.outlet_id like '${queryParams.outletId || ""}%'	
         AND c.identification like '${queryParams.identification || ""}%'
         AND l.loan_number_id::varchar like '${queryParams.loanNumber || ""}%'

@@ -26,7 +26,6 @@ controller.getTodayPayments = async (queryParams) => {
             : ""
         }
         
-        ${generateWhereStatement(queryParams)}
         ${
           queryParams.dateFrom
             ? getDateRangeFilter(

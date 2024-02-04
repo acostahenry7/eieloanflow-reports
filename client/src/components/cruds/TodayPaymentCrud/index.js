@@ -147,7 +147,7 @@ function TodayPaymentCrud() {
       type: "text",
     },
     {
-      label: "Fecha",
+      label: "Fecha de pago",
       field: "date",
       placeholder: "Búsqueda por nombre",
       type: "dateRange",

@@ -11,7 +11,8 @@ import { getToChargeAccount } from "../../../api/accounting";
 import { getOutletsApi } from "../../../api/outlet";
 import { ThreeDots } from "react-loader-spinner";
 import { currencyFormat } from "../../../utils/reports/report-helpers";
-import { generateReport } from "../../../utils/reports/loanDetail";
+import { generateReport } from "../../../utils/reports/toChargeAccount";
+import { tableUIHelper } from "../../../utils/ui-helpers";
 import "./index.css";
 
 function ToChargeAccountCrud() {
@@ -83,6 +84,7 @@ function ToChargeAccountCrud() {
 
     {
       name: "Tipo de préstamo",
+      width: tableUIHelper.columns.width.phone,
       selector: (row) => getLoanTypeLabel(row.loan_type),
       sortable: true,
       reorder: true,
@@ -96,25 +98,31 @@ function ToChargeAccountCrud() {
     //   omit: false,
     // },
     {
-      name: "Total adeudado",
-      selector: (row) => row.total_due,
+      name: "Total préstamo",
+      width: tableUIHelper.columns.width.date,
+      selector: (row) => currencyFormat(row.total_due, false),
       sortable: true,
       reorder: true,
       omit: false,
     },
     {
       name: "Total cobrado",
-      selector: (row) => row.total_paid,
+      width: tableUIHelper.columns.width.date,
+      selector: (row) => currencyFormat(row.total_paid, false),
       sortable: true,
       reorder: true,
       omit: false,
     },
     {
       name: "Por cobrar",
-      selector: (row) =>
-        !row.total_pending
-          ? parseFloat(row.total_due) - parseFloat(row.total_paid)
-          : row.total_pending,
+      width: tableUIHelper.columns.width.date,
+      selector: (row) => currencyFormat(row.total_pending, false),
+      // !row.total_pending
+      //   ? currencyFormat(
+      //       parseFloat(row.total_due) - parseFloat(row.total_paid),
+      //       false
+      //     )
+      //   : currencyFormat(row.total_pending, false),
       sortable: true,
       reorder: true,
       omit: false,
@@ -341,42 +349,54 @@ function ToChargeAccountCrud() {
         //   },
         // }}
       />
-      <div
-        style={{
-          display: "flex",
-          marginTop: "-150px",
-          alignItems: "center",
-          fontSize: 13,
-          fontWeight: "bold",
-        }}
-      >
-        <span style={{ paddingLeft: 15 }}>Totales</span>
-        <p style={{ marginLeft: 530 }}>
-          {currencyFormat(
-            filterData.reduce(
-              (acc, item) => acc + parseFloat(item.total_due),
-              0
-            )
-          )}
-        </p>
-        <p style={{ marginLeft: 85 }}>
-          {currencyFormat(
-            filterData.reduce(
-              (acc, item) => acc + parseFloat(item.total_paid),
-              0
-            )
-          )}
-        </p>
-        <p style={{ marginLeft: 94 }}>
-          {currencyFormat(
-            filterData.reduce(
-              (acc, item) =>
-                acc + parseFloat(item.total_due) - parseFloat(item.total_paid),
-              0
-            )
-          )}
-        </p>
-      </div>
+      {!isLoading && filterData.length > 0 && (
+        <div
+          style={{
+            display: "flex",
+            marginTop: "-150px",
+            alignItems: "center",
+            fontSize: 13,
+            fontWeight: "bold",
+          }}
+        >
+          <span style={{ paddingLeft: 15 }}>Totales</span>
+          <p style={{ marginLeft: 467, width: 130 }}>
+            {currencyFormat(
+              filterData.reduce(
+                (acc, item) => acc + parseFloat(item.total_due),
+                0
+              )
+            )}
+          </p>
+          <p
+            style={{
+              marginLeft: 50,
+              width: 130,
+            }}
+          >
+            {currencyFormat(
+              filterData.reduce(
+                (acc, item) => acc + parseFloat(item.total_paid),
+                0
+              )
+            )}
+          </p>
+          <p
+            style={{
+              marginLeft: 50,
+              width: 130,
+            }}
+          >
+            {currencyFormat(
+              filterData.reduce(
+                (acc, item) => acc + parseFloat(item.total_pending || 0),
+                //parseFloat(item.total_paid),
+                0
+              )
+            )}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
