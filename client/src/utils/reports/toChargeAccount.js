@@ -13,7 +13,7 @@ import {
 } from "./report-helpers";
 import { getLoanTypeLabel, getLoanSituationLabel } from "../stringFunctions";
 
-let colsWidth = [80, 110, 135, 162, 195, 220, 240];
+let colsWidth = [80, 110, 135, 162, 190, 215, 240];
 
 function generateReport(data, configParams) {
   //General Configuration Params
@@ -70,13 +70,13 @@ function generateReport(data, configParams) {
       }
     );
     doc.text(
-      `${currencyFormat(item.total_paid, false)}`,
+      `${currencyFormat(item.total_paid_capital, false)}`,
       left + colsWidth[3] + 12,
       top,
       { align: "right" }
     );
     doc.text(
-      `${currencyFormat(item.total_pending || 0, false)}`,
+      `${currencyFormat(item.total_paid_interest || 0, false)}`,
       left + colsWidth[4] + 12,
       top,
       {
@@ -84,13 +84,13 @@ function generateReport(data, configParams) {
       }
     );
     doc.text(
-      `${getLoanSituationLabel(item.status_type)}`,
+      `${currencyFormat(item.total_paid, false)}`,
       left + colsWidth[5] + 12,
       top,
       { align: "right" }
     );
     doc.text(
-      `${getLoanSituationLabel(item.loan_situation) || item.status_type}`,
+      `${currencyFormat(item.total_pending || 0, false)}`,
       left + colsWidth[6] + 16,
       top,
       { align: "right" }
@@ -127,12 +127,38 @@ function generateReport(data, configParams) {
         doc,
         currencyFormat(
           data.reduce(
-            (acc, element) => acc + parseFloat(element.total_pending || 0),
+            (acc, element) => acc + parseFloat(element.total_paid_capital),
             0
           ),
           false
         ),
         left + colsWidth[4] + 13,
+        top + 5,
+        { align: "right" }
+      );
+      createSubTitle(
+        doc,
+        currencyFormat(
+          data.reduce(
+            (acc, element) => acc + parseFloat(element.total_paid_interest),
+            0
+          ),
+          false
+        ),
+        left + colsWidth[5] + 13,
+        top + 5,
+        { align: "right" }
+      );
+      createSubTitle(
+        doc,
+        currencyFormat(
+          data.reduce(
+            (acc, element) => acc + parseFloat(element.total_pending || 0),
+            0
+          ),
+          false
+        ),
+        left + colsWidth[6] + 16,
         top + 5,
         { align: "right" }
       );
@@ -155,10 +181,10 @@ function renderTableHeader(doc, pos, top) {
   createSubTitle(doc, "Préstamo", pos + colsWidth[0], top);
   createSubTitle(doc, "Tipo\nPréstamo", pos + colsWidth[1], top - 2);
   createSubTitle(doc, "Total\nAdeudado", pos + colsWidth[2], top - 2);
-  createSubTitle(doc, "Total\nCobrado.", pos + colsWidth[3], top - 2);
-  createSubTitle(doc, "Por\nCobrar", pos + colsWidth[4], top - 2);
-  createSubTitle(doc, "Estatus", pos + colsWidth[5], top);
-  createSubTitle(doc, "Situación", pos + colsWidth[6], top);
+  createSubTitle(doc, "Capital\nCobrado.", pos + colsWidth[3], top - 2);
+  createSubTitle(doc, "Interés\nCobrado", pos + colsWidth[4], top - 2);
+  createSubTitle(doc, "Total\nCobrado", pos + colsWidth[5], top - 2);
+  createSubTitle(doc, "Por\nCobrar", pos + colsWidth[6] + 5, top - 2);
 
   // pos += colsWidth[2];
   // createSubTitle(doc, "Créditos", pos, top, "center");

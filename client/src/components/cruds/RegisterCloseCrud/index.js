@@ -274,6 +274,14 @@ function RegisterCloseCrud() {
                   reorder: true,
                   omit: false,
                 },
+                {
+                  name: "Estatus",
+                  selector: (row) =>
+                    row.status_type == "ENABLED" ? "Realizado" : "Cancelado",
+                  sortable: true,
+                  reorder: true,
+                  omit: false,
+                },
 
                 {
                   name: "Fecha",

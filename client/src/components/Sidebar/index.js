@@ -7,7 +7,14 @@ import {
   HiChevronDown,
   HiOutlineCalculator,
 } from "react-icons/hi";
-import { FaUsersSlash, FaCalculator, FaChartBar } from "react-icons/fa";
+import {
+  FaUsersSlash,
+  FaCalculator,
+  FaChartBar,
+  FaUser,
+  FaUsers,
+  FaCoins,
+} from "react-icons/fa";
 import { BiDollar, BiBlock } from "react-icons/bi";
 import { AiOutlineAudit, AiTwotoneBank } from "react-icons/ai";
 import {
@@ -331,6 +338,17 @@ function Sidebar() {
           selected: false,
         },
         {
+          label: "Intereses Cobrados",
+          icon: (selected) => (
+            <FaCoins
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/charge-account",
+          selected: false,
+        },
+        {
           label: "Balanza de comprobación",
           icon: (selected) => (
             <MdOutlineBalance
@@ -432,6 +450,17 @@ function Sidebar() {
       route: "/accounting",
       selected: false,
       subItems: [
+        {
+          label: "Empleados",
+          icon: (selected) => (
+            <FaUsers
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/rrhh-employees",
+          selected: true,
+        },
         {
           label: "Reporte comisión cobrador",
           icon: (selected) => (

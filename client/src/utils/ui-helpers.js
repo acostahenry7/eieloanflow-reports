@@ -6,6 +6,7 @@ export const tableUIHelper = {
       phone: "140px",
       fee: "110px",
       amount: "150px",
+      description: "240px",
     },
   },
 };

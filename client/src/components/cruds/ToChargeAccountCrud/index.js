@@ -106,6 +106,22 @@ function ToChargeAccountCrud() {
       omit: false,
     },
     {
+      name: "Capital cobrado",
+      width: tableUIHelper.columns.width.date,
+      selector: (row) => currencyFormat(row.total_paid_capital, false),
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+    {
+      name: "Interes cobrado",
+      width: tableUIHelper.columns.width.date,
+      selector: (row) => currencyFormat(row.total_paid_interest, false),
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+    {
       name: "Total cobrado",
       width: tableUIHelper.columns.width.date,
       selector: (row) => currencyFormat(row.total_paid, false),
@@ -115,7 +131,7 @@ function ToChargeAccountCrud() {
     },
     {
       name: "Por cobrar",
-      width: tableUIHelper.columns.width.date,
+      width: "150px",
       selector: (row) => currencyFormat(row.total_pending, false),
       // !row.total_pending
       //   ? currencyFormat(
@@ -364,6 +380,32 @@ function ToChargeAccountCrud() {
             {currencyFormat(
               filterData.reduce(
                 (acc, item) => acc + parseFloat(item.total_due),
+                0
+              )
+            )}
+          </p>
+          <p
+            style={{
+              marginLeft: 50,
+              width: 130,
+            }}
+          >
+            {currencyFormat(
+              filterData.reduce(
+                (acc, item) => acc + parseFloat(item.total_paid_capital),
+                0
+              )
+            )}
+          </p>
+          <p
+            style={{
+              marginLeft: 50,
+              width: 130,
+            }}
+          >
+            {currencyFormat(
+              filterData.reduce(
+                (acc, item) => acc + parseFloat(item.total_paid_interest),
                 0
               )
             )}

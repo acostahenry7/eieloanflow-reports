@@ -9,6 +9,7 @@ const zoneCtrl = require("../controllers/zones");
 const paymentCtrl = require("../controllers/payments");
 const loanCtrl = require("../controllers/loans");
 const accountingCtrl = require("../controllers/accounting");
+const rrhhCtrl = require("../controllers/rrhh");
 
 module.exports = (app) => {
   router.post("/api/signin", (req, res) => {
@@ -295,6 +296,17 @@ module.exports = (app) => {
       });
   });
 
+  router.get("/api/payable-account", (req, res) => {
+    accountingCtrl
+      .getPayableAccount(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   router.post("/api/606", (req, res) => {
     accountingCtrl
       .generate606(req, res, req.query)
@@ -374,6 +386,19 @@ module.exports = (app) => {
   router.get("/api/charge-account", (req, res) => {
     accountingCtrl
       .getToChargeAccount(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  //RRHH
+
+  router.get("/api/employee", (req, res) => {
+    rrhhCtrl
+      .getEmployees(req.query)
       .then((msg) => {
         response.success(req, res, msg, 200);
       })

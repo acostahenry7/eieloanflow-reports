@@ -335,13 +335,51 @@ controller.getMajorGeneral = async (queryParams) => {
   }
 };
 
+controller.getPayableAccount = async (queryParams) => {
+  console.log(queryParams);
+  try {
+    const [data] = await db.query(`
+    SELECT ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount, 
+	concept, ap.outlet_id, ap.status_type, ap.created_by,
+	extract(YEAR FROM ap.created_date) as created_year, 
+	extract(MONTH FROM ap.created_date) as created_month, 
+	extract(DAY FROM ap.created_date) as created_day, 
+	ap.last_modified_by, ap.last_modified_date, 
+	ap.debit_account, ap.credit_account, ap.ncf,et.name as expense_type, et.code,
+	extract(YEAR FROM max(cp.created_date)) as last_payment_year, 
+	extract(MONTH FROM max(cp.created_date)) as last_payment_month, 
+	extract(DAY FROM max(cp.created_date)) as last_payment_day,
+	max(cp.payment_type) as payment_type
+	FROM account_payable ap
+	LEFT JOIN expenses_type et ON (ap.expenses_type_id = et.expenses_type_id)
+	LEFT JOIN check_payment cp ON (ap.account_payable_id = cp.account_payable_id)
+	WHERE ap.outlet_id like'${queryParams.outletId}%'
+	AND ap.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'
+	GROUP BY ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount, 
+	concept, ap.outlet_id, ap.status_type, ap.created_by,
+	ap.created_date, ap.created_date, ap.created_date, 
+	ap.last_modified_by, ap.last_modified_date, 
+	ap.debit_account, ap.credit_account, ap.ncf,et.name, et.code`);
+
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 controller.getToChargeAccount = async (queryParams) => {
   try {
     const [data] = await db.query(
       `select c.first_name || ' ' || c.last_name as customer_name, c.identification,
         l.loan_number_id, la.loan_type, l.status_type, l.loan_situation, 
         sum(a.amount_of_fee) filter(where a.status_type <> 'DELETE') as total_due,
-        sum(a.total_paid) filter(where a.status_type <> 'DELETE') as total_paid,
+        coalesce(sum (a.capital) filter(where a.status_type <> 'DELETE' and a.paid = 'true'),0) +
+        coalesce(sum (a.total_paid - a.interest) filter(where a.total_paid > a.interest and a.status_type <> 'DELETE' and a.paid = 'false'),0) as total_paid_capital,
+        coalesce(sum (a.interest) filter(where a.status_type <> 'DELETE' and a.paid = 'true'),0) +
+        coalesce(sum (a.interest) filter(where a.total_paid > a.interest and a.status_type <> 'DELETE' and a.paid = 'false'),0) +
+        coalesce(sum (a.total_paid) filter(where a.total_paid <= a.interest and a.status_type <> 'DELETE' and a.paid = 'false'),0)
+        as total_paid_interest,
+        sum(a.total_paid + a.discount) filter(where a.status_type <> 'DELETE') as total_paid,
         sum(a.amount_of_fee - a.discount) filter(where a.paid = 'false' and a.status_type <> 'DELETE') +
         coalesce(sum(a.amount_of_fee - a.total_paid - a.discount) filter(where a.status_type = 'COMPOST'),0)
         as total_pending
@@ -359,6 +397,9 @@ controller.getToChargeAccount = async (queryParams) => {
         AND l.created_date::date <='${queryParams.dateTo}'
         group by l.loan_number_id, la.loan_type, l.status_type, l.loan_situation, 
         l.amount_approved, c.first_name, c.last_name, c.identification,l.created_date
+        having  coalesce(sum (a.interest) filter(where a.status_type <> 'DELETE' and a.paid = 'true'),0) +
+        coalesce(sum (a.interest) filter(where a.total_paid > a.interest and a.status_type <> 'DELETE' and a.paid = 'false'),0) +
+        coalesce(sum (a.total_paid) filter(where a.total_paid <= a.interest and a.status_type <> 'DELETE' and a.paid = 'false'),0) > 0
         order by l.created_date desc
         `
     );

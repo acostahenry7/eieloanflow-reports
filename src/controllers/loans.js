@@ -252,7 +252,7 @@ controller.getRegisterClose = async (queryParams) => {
       await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, p.pay, 
       r.amount, p.register_id, r.total_cash, r.total_check, r.total_transfer, r.total_discount, r.total_pay, r.total_registered as difference, 
       e.first_name || ' ' || e.last_name as employee_name, r.created_date opening_date, r.last_modified_date, p.created_date, p.payment_type,
-      e.commission_debt_collector_percentage as collector_percentage,
+      e.commission_debt_collector_percentage as collector_percentage, p.status_type,
       case
 	  	when r.total_registered  + 10 > r.total_pay - r.total_check then r.total_pay - r.total_registered - r.total_check
 	  	else total_registered 

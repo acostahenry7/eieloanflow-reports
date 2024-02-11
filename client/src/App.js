@@ -34,6 +34,8 @@ import { LoanMovementScreen } from "./screens/LoanMovementScreen";
 import { AmortizationTableScreen } from "./screens/AmortizationTableScreen";
 import { CollectorCommissionScreen } from "./screens/CollectorCommissionScreen";
 import { ToChargeAccountScreen } from "./screens/ToChargeAccountScreen";
+import { EmployeeScreen } from "./screens/EmployeeScreen";
+import { AccountPayableScren } from "./screens/AccountPayableScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -139,6 +141,11 @@ function App() {
                 path="/reports/accouting-major-general"
                 element={<GeneralMajor />}
               />
+
+              <Route
+                path="/reports/accounting-account-payable"
+                element={<AccountPayableScren />}
+              />
               <Route
                 path="/reports/charge-account"
                 element={<ToChargeAccountScreen />}
@@ -146,6 +153,10 @@ function App() {
               <Route
                 path="/reports/detailed-accouting-major-general"
                 element={<DetailedGeneralMajor />}
+              />
+              <Route
+                path="/reports/rrhh-employees"
+                element={<EmployeeScreen />}
               />
               <Route
                 path="/reports/rrhh-collector-commission"
