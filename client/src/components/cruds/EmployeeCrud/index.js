@@ -260,11 +260,11 @@ function EmployeeCrud() {
   ];
 
   const secondaryFilters = [
-    {
-      label: "Fecha de Ingreso",
-      field: "date",
-      type: "dateRange",
-    },
+    // {
+    //   label: "Fecha de Ingreso",
+    //   field: "date",
+    //   type: "dateRange",
+    // },
     // {
     //   label: "Cuotas en atraso",
     //   field: "arrearFees",

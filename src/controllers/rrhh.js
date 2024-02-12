@@ -12,11 +12,6 @@ controller.getEmployees = async (queryParams) => {
             JOIN outlet o ON (e.outlet_id = o.outlet_id)
             JOIN position p ON (e.position_id = p.position_id)
             WHERE e.status_type NOT IN ('DELETE')
-            ${
-              queryParams.dateFrom
-                ? `AND e.date_of_hire::date BETWEEN '${queryParams.dateFrom}' AND '${queryParams.dateTo}'`
-                : ""
-            }
             AND e.status_type like '${queryParams.statusType || "%"}'
             AND e.outlet_id like '${queryParams.outletId || "%"}'`
     );
