@@ -5,7 +5,7 @@ import { getEmployees } from "../../../api/rrhh";
 import { formatClientName } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import { tableUIHelper } from "../../../utils/ui-helpers";
-import { generateReport } from "../../../utils/reports/arrearCustomers";
+import { generateReport } from "../../../utils/reports/employee";
 import { currencyFormat } from "../../../utils/reports/report-helpers";
 
 function EmployeeCrud() {
@@ -15,8 +15,8 @@ function EmployeeCrud() {
   const [reqToggle, setReqToggle] = React.useState([]);
   const [searchedText, setSearchedText] = React.useState("");
   const [searchParams, setSearchParams] = React.useState({
-    dateFrom: new Date().toISOString().split("T")[0],
-    dateTo: new Date().toISOString().split("T")[0],
+    // dateFrom: new Date().toISOString().split("T")[0],
+    // dateTo: new Date().toISOString().split("T")[0],
     paymentDateFrom: new Date().toISOString().split("T")[0],
     paymentDateTo: new Date().toISOString().split("T")[0],
   });
@@ -280,7 +280,9 @@ function EmployeeCrud() {
   });
 
   const exportPDF = () => {
-    let reportDate = new Date(searchParams.dateTo);
+    let reportDate = searchParams.dateTo
+      ? new Date(searchParams.dateTo)
+      : new Date();
 
     let outletName = outlets.filter(
       (item) => item.outlet_id == searchParams.outletId

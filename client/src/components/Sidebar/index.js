@@ -337,17 +337,17 @@ function Sidebar() {
           route: "/reports/charge-account",
           selected: false,
         },
-        {
-          label: "Intereses Cobrados",
-          icon: (selected) => (
-            <FaCoins
-              className="Sidebar-content-item-icon"
-              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
-            />
-          ),
-          route: "/reports/charge-account",
-          selected: false,
-        },
+        // {
+        //   label: "Intereses Cobrados",
+        //   icon: (selected) => (
+        //     <FaCoins
+        //       className="Sidebar-content-item-icon"
+        //       color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+        //     />
+        //   ),
+        //   route: "/reports/charge-account",
+        //   selected: false,
+        // },
         {
           label: "Balanza de comprobación",
           icon: (selected) => (

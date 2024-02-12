@@ -106,15 +106,9 @@ controller.getReceivedPayments = async (queryParams) => {
       p.payment_origin, p.pay, l.status_type, l.outlet_id,r.receipt_number, p.status_type
       HAVING l.status_type not in ('DELETE', 'PAID')
       ${generateWhereStatement(queryParams)}
-      ${
-        queryParams.dateFrom
-          ? getDateRangeFilter(
-              "p.created_date",
-              queryParams.dateFrom,
-              queryParams.dateTo
-            )
-          : ""
-      }`);
+      AND p.created_date::date between '${queryParams.dateFrom}' and '${
+        queryParams.dateTo
+      }'`);
 
     if (data.length == 0) {
       return [];
