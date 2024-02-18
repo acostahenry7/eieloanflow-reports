@@ -105,22 +105,22 @@ function ToChargeAccountCrud() {
       reorder: true,
       omit: false,
     },
-    {
-      name: "Capital cobrado",
-      width: tableUIHelper.columns.width.date,
-      selector: (row) => currencyFormat(row.total_paid_capital, false),
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
-    {
-      name: "Interes cobrado",
-      width: tableUIHelper.columns.width.date,
-      selector: (row) => currencyFormat(row.total_paid_interest, false),
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
+    // {
+    //   name: "Capital cobrado",
+    //   width: tableUIHelper.columns.width.date,
+    //   selector: (row) => currencyFormat(row.total_paid_capital, false),
+    //   sortable: true,
+    //   reorder: true,
+    //   omit: false,
+    // },
+    // {
+    //   name: "Interes cobrado",
+    //   width: tableUIHelper.columns.width.date,
+    //   selector: (row) => currencyFormat(row.total_paid_interest, false),
+    //   sortable: true,
+    //   reorder: true,
+    //   omit: false,
+    // },
     {
       name: "Total cobrado",
       width: tableUIHelper.columns.width.date,
@@ -384,7 +384,7 @@ function ToChargeAccountCrud() {
               )
             )}
           </p>
-          <p
+          {/* <p
             style={{
               marginLeft: 50,
               width: 130,
@@ -409,7 +409,7 @@ function ToChargeAccountCrud() {
                 0
               )
             )}
-          </p>
+          </p> */}
           <p
             style={{
               marginLeft: 50,

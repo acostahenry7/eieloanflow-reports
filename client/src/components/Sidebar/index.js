@@ -337,6 +337,17 @@ function Sidebar() {
           route: "/reports/charge-account",
           selected: false,
         },
+        {
+          label: "Intereses cobrados",
+          icon: (selected) => (
+            <GiReceiveMoney
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/paid-interest",
+          selected: false,
+        },
         // {
         //   label: "Intereses Cobrados",
         //   icon: (selected) => (

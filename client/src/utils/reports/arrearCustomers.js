@@ -11,6 +11,7 @@ import {
   sectionSpacing,
   getTextWidth,
 } from "./report-helpers";
+import { getLoanFrequencyLabel } from "../stringFunctions";
 
 let colsWidth = [85, 105, 135, 160, 183, 203, 221, 259];
 
@@ -65,12 +66,17 @@ function generateReport(data, configParams) {
     doc.text(`${item.number_of_installments}`, left + colsWidth[4] + 10, top, {
       align: "right",
     });
-    doc.text(`${item.paid_dues}`, left + colsWidth[5] + 10, top, {
+    doc.text(`${item.arrears_dues}`, left + colsWidth[5] + 10, top, {
       align: "right",
     });
-    doc.text(`${item.arrears_dues}`, left + colsWidth[6] + 10, top, {
-      align: "right",
-    });
+    doc.text(
+      `${getLoanFrequencyLabel(item.frequency_of_payment)}`,
+      left + colsWidth[6] + 14,
+      top,
+      {
+        align: "right",
+      }
+    );
     createSubTitle(
       doc,
       `${item.arrear_percentaje}%`,
@@ -109,8 +115,8 @@ function renderTableHeader(doc, pos, top) {
   createSubTitle(doc, "Monto\nAprobado", pos + colsWidth[2], top - 2);
   createSubTitle(doc, "Monto\nCuota", pos + colsWidth[3], top - 2);
   createSubTitle(doc, "Cantidad\nCuotas", pos + colsWidth[4], top - 2);
-  createSubTitle(doc, "Cuotas\nPagadas", pos + colsWidth[5], top - 2);
-  createSubTitle(doc, "Cuotas\nAtraso", pos + colsWidth[6], top - 2);
+  createSubTitle(doc, "Cuotas\nAtraso", pos + colsWidth[5], top - 2);
+  createSubTitle(doc, "Freq. de\nPago", pos + colsWidth[6], top - 2);
   createSubTitle(doc, "Porcentaje\nAtraso", pos + colsWidth[7] - 19, top - 2);
   // pos += colsWidth[2];
   // createSubTitle(doc, "Créditos", pos, top, "center");

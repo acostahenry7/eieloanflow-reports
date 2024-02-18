@@ -368,6 +368,7 @@ controller.getPayableAccount = async (queryParams) => {
 };
 
 controller.getToChargeAccount = async (queryParams) => {
+  console.log(queryParams);
   try {
     const [data] = await db.query(
       `select c.first_name || ' ' || c.last_name as customer_name, c.identification,
@@ -394,7 +395,12 @@ controller.getToChargeAccount = async (queryParams) => {
         AND l.status_type like '${queryParams.loanStatus || ""}%'
         AND la.loan_type like '${queryParams.loanType || ""}%'
         AND l.loan_situation like '${queryParams.loanSituation || ""}%'
-        AND l.created_date::date <='${queryParams.dateTo}'
+        ${
+          Boolean(queryParams.isInterest) == true
+            ? `AND a.payment_date::date >= '${queryParams.dateFrom}'`
+            : ""
+        }
+        AND a.payment_date::date <='${queryParams.dateTo}'
         group by l.loan_number_id, la.loan_type, l.status_type, l.loan_situation, 
         l.amount_approved, c.first_name, c.last_name, c.identification,l.created_date
         having  coalesce(sum (a.interest) filter(where a.status_type <> 'DELETE' and a.paid = 'true'),0) +

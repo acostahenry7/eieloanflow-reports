@@ -121,9 +121,36 @@ function getPaymentTypeLabel(paymentType) {
   return result;
 }
 
+function getLoanFrequencyLabel(key) {
+  let result = "";
+
+  switch (key) {
+    case "DAILY":
+      result = "Diario";
+      break;
+    case "INTER_DAY":
+      result = "Inter-diario";
+      break;
+    case "MONTHLY":
+      result = "Mensual";
+      break;
+    case "BEWEEKLY":
+      result = "Quincenal";
+      break;
+    case "WEEKLY":
+      result = "Semanal";
+      break;
+
+    default:
+      break;
+  }
+  return result;
+}
+
 export {
   formatClientName,
   getLoanSituationLabel,
   getLoanTypeLabel,
   getPaymentTypeLabel,
+  getLoanFrequencyLabel,
 };

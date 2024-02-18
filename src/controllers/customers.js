@@ -8,7 +8,7 @@ controller.getArrearUsers = async (queryParams) => {
   try {
     const [data, meta] =
       await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, l.loan_situation, c.identification, l.loan_number_id, c.phone, l.created_date, l.amount_approved, l.amount_of_free, 
-      l.number_of_installments, 
+      l.number_of_installments, l.frequency_of_payment,
       COUNT(a.amortization_id) filter (where a.status_type = 'PAID') as paid_dues,
       COUNT(a.amortization_id) filter (where a.status_type = 'DEFEATED') as arrears_dues,
       TRUNC(cast((COUNT(a.amortization_id) filter (where a.status_type = 'DEFEATED')) as DECIMAL)/l.number_of_installments::integer, 2) * 100 as arrear_percentaje,
@@ -20,7 +20,8 @@ controller.getArrearUsers = async (queryParams) => {
       JOIN amortization a ON (a.loan_id = l.loan_id AND a.payment_date between '${
         queryParams.paymentDateFrom
       }' and '${queryParams.paymentDateTo}')
-      group by c.first_name, c.last_name, l.status_type,  c.identification, c.phone, l.loan_number_id, l.loan_situation, l.created_date, l.amount_approved, l.amount_of_free, l.number_of_installments, l.outlet_id
+      group by c.first_name, c.last_name, l.status_type,  c.identification, c.phone, l.loan_number_id, l.loan_situation, 
+      l.created_date, l.amount_approved, l.amount_of_free, l.number_of_installments, l.outlet_id, l.frequency_of_payment
       having l.loan_situation like 'ARREARS'
       AND l.status_type not in ('DELETE', 'PAID')
       AND COUNT(a.amortization_id) filter (where a.status_type = 'DEFEATED') > 0
@@ -43,7 +44,10 @@ controller.getArrearUsers = async (queryParams) => {
       AND l.outlet_id like '${queryParams.outletId || ""}%'
       AND l.created_date between '${queryParams.dateFrom}' and '${
         queryParams.dateTo
-      }'`);
+      }'
+      AND l.frequency_of_payment like '${
+        queryParams.paymentFrequency || ""
+      }%'`);
 
     if (data.length == 0) {
       return [];

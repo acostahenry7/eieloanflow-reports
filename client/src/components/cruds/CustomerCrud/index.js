@@ -2,7 +2,10 @@ import React from "react";
 import { SearchBar } from "../../SearchBar";
 import { Datatable } from "../../Datatable";
 import { getArrearCustomersApi } from "../../../api/customer";
-import { formatClientName } from "../../../utils/stringFunctions";
+import {
+  formatClientName,
+  getLoanFrequencyLabel,
+} from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import { tableUIHelper } from "../../../utils/ui-helpers";
 import { generateReport } from "../../../utils/reports/arrearCustomers";
@@ -165,6 +168,13 @@ function CustomerCrud() {
       omit: false,
     },
     {
+      name: "Frequencia de Pago",
+      selector: (row) => getLoanFrequencyLabel(row.frequency_of_payment),
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+    {
       name: "Monto Vencido",
       selector: (row) => row.defeated_amount,
       sortable: true,
@@ -192,6 +202,39 @@ function CustomerCrud() {
       placeholder: "No. Préstamo",
       type: "text",
     },
+
+    {
+      label: "Frequencia de pago",
+      field: "paymentFrequency",
+      type: "select",
+      options: [
+        {
+          label: "Todos",
+          value: "",
+        },
+        {
+          label: "Semanal",
+          value: "WEEKLY",
+        },
+        {
+          label: "Inter-diario",
+          value: "INTER_DAY",
+        },
+        {
+          label: "Mensual",
+          value: "MONTHLY",
+        },
+        {
+          label: "Quincenal",
+          value: "BEWEEKLY",
+        },
+        {
+          label: "Diario",
+          value: "DAILY",
+        },
+      ],
+    },
+
     {
       label: "Sucursal",
       field: "outletId",

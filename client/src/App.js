@@ -36,6 +36,7 @@ import { CollectorCommissionScreen } from "./screens/CollectorCommissionScreen";
 import { ToChargeAccountScreen } from "./screens/ToChargeAccountScreen";
 import { EmployeeScreen } from "./screens/EmployeeScreen";
 import { AccountPayableScren } from "./screens/AccountPayableScreen";
+import { PaidInterestScreen } from "./screens/PaidInterestScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -149,6 +150,10 @@ function App() {
               <Route
                 path="/reports/charge-account"
                 element={<ToChargeAccountScreen />}
+              />
+              <Route
+                path="/reports/paid-interest"
+                element={<PaidInterestScreen />}
               />
               <Route
                 path="/reports/detailed-accouting-major-general"
