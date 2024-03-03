@@ -39,69 +39,22 @@ controller.getGeneralBalance = async (queryParams) => {
 
   try {
     const [generalBalance, meta] =
-      await db.query(`SELECT ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
+      await db.query(`select ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
       ac.is_control, ac.status_type, ac.created_by, ac.created_date, ac.last_modified_by, ac.last_modified_date,
-      ac.balance as catalog_balance,
-      COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) = ${
-        queryParams.date?.split("-")[0]
-      } and extract(MONTH from gda.created_date) = ${
-        queryParams.date?.split("-")[1]
-      })  , 0) as prev_debit,
-      COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) = ${
-        queryParams.date?.split("-")[0]
-      } and extract(MONTH from gda.created_date) = ${
-        queryParams.date?.split("-")[1]
-      }) , 0)as prev_credit,
-      /*BALANCE MES*/
-      ABS(COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) = ${
-        queryParams.date?.split("-")[0]
-      } and extract(MONTH from gda.created_date)= ${
-        queryParams.date?.split("-")[1]
-      }) , 0)-
-      COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) = ${
-        queryParams.date?.split("-")[0]
-      } and extract(MONTH from gda.created_date) = ${
-        queryParams.date?.split("-")[1]
-      }) , 0)) as prev_balance,
-      /*TIPO DE ASIENTO A LA FECHA*/
-      COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) = ${
-        queryParams.date?.split("-")[0]
-      } and extract(MONTH from gda.created_date ) <= ${
-        queryParams.date?.split("-")[1]
-      } and extract(DAY from gda.created_date ) <= ${
-        queryParams.date?.split("-")[2]
-      } ) , 0) as debit,
-      COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) = ${
-        queryParams.date?.split("-")[0]
-      } and extract(MONTH from gda.created_date ) <= ${
-        queryParams.date?.split("-")[1]
-      } and extract(DAY from gda.created_date ) <= ${
-        queryParams.date?.split("-")[2]
-      } ) , 0)as credit,
-      /*BALANCE A LA FECHA*/
-      ABS(COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) = ${
-        queryParams.date?.split("-")[0]
-      } and extract(MONTH from gda.created_date ) <= ${
-        queryParams.date?.split("-")[1]
-      } and extract(DAY from gda.created_date ) <= ${
-        queryParams.date?.split("-")[2]
-      } ) , 0) -
-      COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) = ${
-        queryParams.date?.split("-")[0]
-      } and extract(MONTH from gda.created_date ) <= ${
-        queryParams.date?.split("-")[1]
-      } and extract(DAY from gda.created_date ) <= ${
-        queryParams.date?.split("-")[2]
-      } ) , 0)) as balance,
-      ac.outlet_id
-      FROM account_catalog ac
-      LEFT JOIN general_diary_account gda ON (ac.account_catalog_id = gda.account_catalog_id
-      and gda.created_date::date <='${queryParams.date}')
-      WHERE outlet_id like '${queryParams.outletId}'
-      GROUP BY ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
-      ac.is_control, ac.status_type, ac.created_by, ac.created_date, ac.last_modified_by, ac.last_modified_date,
-      ac.balance, ac.outlet_id
-      ORDER BY number`);
+      coalesce(t1.debit,0) debit, coalesce(t1.credit, 0)credit,  coalesce(t1.balance,0) balance
+      from account_catalog ac
+      left join (select ac.account_catalog_id, ac.name,
+      coalesce(sum(gda.debit),0) debit,
+      coalesce(sum(gda.credit),0) credit,
+      coalesce(abs(sum(gda.debit) - sum(gda.credit)),0) balance	
+      from account_catalog ac
+      left join general_diary_account gda on (ac.account_catalog_id = gda.account_catalog_id)
+      left join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
+      where ac.outlet_id like '${queryParams.outletId}'
+      group by ac.account_catalog_id, ac.name
+      having min(gd.general_diary_date) <= '${queryParams.date}' ) t1 on (ac.account_catalog_id = t1.account_catalog_id)
+      where ac.outlet_id like '${queryParams.outletId}'
+      order by ac.number`);
 
     if (data.length == 0) {
       return [];
@@ -187,8 +140,8 @@ controller.getGeneralBalance = async (queryParams) => {
           (sItem) => sItem.control_account == item.account_catalog_id
         ).length > 0;
 
-      if (isParent) balance = parseFloat(item.balance);
-      if (isParent) prevBalance = parseFloat(item.prev_balance);
+      //if (isParent) balance = parseFloat(item.balance);
+      // if (isParent) prevBalance = parseFloat(item.prev_balance);
 
       accountBalances.push({
         account_catalog_id: item.account_catalog_id,
@@ -197,7 +150,7 @@ controller.getGeneralBalance = async (queryParams) => {
         is_control: item.is_control,
         control_account: item.control_account,
         balance: getAccountBalance(originalData, item, balance),
-        prevBalance: getPrevAccountBalance(originalData, item, prevBalance),
+        //prevBalance: getPrevAccountBalance(originalData, item, prevBalance),
       });
     }
 
@@ -323,6 +276,7 @@ controller.getMajorGeneral = async (queryParams) => {
           : ""
       }
       and ac.number like '${queryParams.accountId || "%"}'
+      and gd.status_type != 'DELETE'
       order by ac.number`
     );
 
@@ -381,8 +335,7 @@ controller.getToChargeAccount = async (queryParams) => {
         coalesce(sum (a.total_paid) filter(where a.total_paid <= a.interest and a.status_type <> 'DELETE' and a.paid = 'false'),0)
         as total_paid_interest,
         sum(a.total_paid + a.discount) filter(where a.status_type <> 'DELETE') as total_paid,
-        sum(a.amount_of_fee - a.discount) filter(where a.paid = 'false' and a.status_type <> 'DELETE') +
-        coalesce(sum(a.amount_of_fee - a.total_paid - a.discount) filter(where a.status_type = 'COMPOST'),0)
+        sum(a.amount_of_fee - a.total_paid - a.discount_interest) filter(where a.paid = 'false' and a.status_type <> 'DELETE') 
         as total_pending
         from loan l
         join loan_application la on (l.loan_application_id = la.loan_application_id)
@@ -464,6 +417,8 @@ function getAccountsArr(baseArr, arr) {
 }
 
 function getAccountBalance(accountList, currentAccount, balance) {
+  //console.log(accountList);
+
   let accounts = accountList.filter(
     (item) => item.control_account == currentAccount.account_catalog_id
   );
@@ -485,7 +440,9 @@ function getAccountBalance(accountList, currentAccount, balance) {
     );
 
     if (controlledAcccounts.length > 0) {
+      console.log("ITEM BALANCE", item);
       balance += getAccountBalance(accountList, item, parseFloat(item.balance));
+      console.log("GENERAL BALANCE", balance);
     } else {
       balance += parseFloat(item.balance);
     }

@@ -114,7 +114,7 @@ function generateReport(data, configParams) {
         doc,
         currencyFormat(
           data.reduce(
-            (acc, element) => acc + parseFloat(element.total_paid),
+            (acc, element) => acc + parseFloat(element.total_paid_capital),
             0
           ),
           false
@@ -127,7 +127,7 @@ function generateReport(data, configParams) {
         doc,
         currencyFormat(
           data.reduce(
-            (acc, element) => acc + parseFloat(element.total_paid_capital),
+            (acc, element) => acc + parseFloat(element.total_paid_interest),
             0
           ),
           false
@@ -140,7 +140,7 @@ function generateReport(data, configParams) {
         doc,
         currencyFormat(
           data.reduce(
-            (acc, element) => acc + parseFloat(element.total_paid_interest),
+            (acc, element) => acc + parseFloat(element.total_paid),
             0
           ),
           false

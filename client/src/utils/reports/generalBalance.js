@@ -202,6 +202,7 @@ function generateReport(data, configParams) {
     (item) => item.number == "23"
   )[0].controlledAccounts;
 
+  console.log(data.balances);
   let [topPCirculantes4, balancePCirculantes4] = generateReportSection(
     doc,
     pasivosCirculantes3,
@@ -221,6 +222,12 @@ function generateReport(data, configParams) {
   top = topPCirculantes4;
 
   top += spacing;
+  console.log(
+    balancePCirculantes,
+    balancePCirculantes2,
+    balancePCirculantes3,
+    balancePCirculantes4
+  );
 
   let grandTotalPasivoCirculante =
     balancePCirculantes +

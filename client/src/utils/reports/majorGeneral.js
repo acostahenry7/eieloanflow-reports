@@ -60,10 +60,20 @@ function generateReport(data, configParams) {
     });
     renderTableHeader(doc, left, top);
     top += sectionSpacing;
+
     account[1].map((transaction, index) => {
       counter += 1;
+      let description = transaction.description.split(" ");
       doc.text(transaction.created_date.split("T")[0], left + 3, top);
-      doc.text(transaction.description, left + colsWidth[0] + 3, top);
+      doc.text(
+        `${description[0] || ""} ${description[1] || ""} ${
+          description[2] || ""
+        } ${description[3] || ""} ${description[5] || ""} ${
+          description[6] || ""
+        } ${description[17] || ""}`,
+        left + colsWidth[0] + 3,
+        top
+      );
       createSubTitle(
         doc,
         transaction.debit,
@@ -101,6 +111,44 @@ function generateReport(data, configParams) {
       counter = 0;
       doc.addPage();
       top = 40;
+    } else {
+      createSubTitle(doc, "Totales (RD$)", left + 2, top + 10);
+      createSubTitle(
+        doc,
+        currencyFormat(
+          Math.round(
+            account[1].reduce((acc, item) => acc + parseFloat(item.debit), 0)
+          ),
+          false
+        ),
+        left + colsWidth[0] + colsWidth[1] + 17,
+        top + 10
+      );
+      createSubTitle(
+        doc,
+        currencyFormat(
+          Math.round(
+            account[1].reduce((acc, item) => acc + parseFloat(item.credit), 0)
+          ),
+          false
+        ),
+        left + colsWidth[0] + colsWidth[1] + colsWidth[2],
+        top + 10
+      );
+      createSubTitle(
+        doc,
+        currencyFormat(
+          Math.round(
+            account[1].reduce(
+              (acc, item) => acc + parseFloat(item.debit - item.credit),
+              0
+            )
+          ),
+          false
+        ),
+        left + colsWidth[0] + colsWidth[1] + colsWidth[2] + colsWidth[3],
+        top + 10
+      );
     }
   });
 

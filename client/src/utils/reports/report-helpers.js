@@ -143,9 +143,8 @@ export function generateReportSection(
     totalBalance += balance;
 
     if (sectionData[i].is_control == false) {
-      balance += parseInt(sectionData[i].balance);
-
-      totalBalance += balance;
+      //balance += parseInt(sectionData[i].balance);
+      //totalBalance += balance;
     }
 
     let isVisible =

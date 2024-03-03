@@ -2,6 +2,7 @@ import React from "react";
 import "./index.css";
 import { BiChevronDown } from "react-icons/bi";
 import CurrencyFormat from "react-currency-format";
+import { currencyFormat } from "../../utils/reports/report-helpers";
 
 function ExpandableItem(props) {
   const [opened, setOpened] = React.useState(false);
@@ -59,12 +60,13 @@ function ExpandableItem(props) {
           </p>
           {/* <span>{props.data.balance}</span> */}
           <b>
-            <CurrencyFormat
+            {currencyFormat(currentAccountBalance)}
+            {/* <CurrencyFormat
               value={currentAccountBalance}
               displayType={"text"}
               thousandSeparator={true}
               prefix={"RD$"}
-            />
+            /> */}
           </b>
         </div>
       )}
