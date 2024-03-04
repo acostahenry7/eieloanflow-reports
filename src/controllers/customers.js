@@ -29,7 +29,7 @@ controller.getArrearUsers = async (queryParams) => {
   try {
     const [data, meta] =
       await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, l.loan_situation, c.identification, l.loan_number_id, c.phone, l.created_date, l.amount_approved, l.amount_of_free, 
-      l.number_of_installments, l.frequency_of_payment,
+      l.number_of_installments, l.frequency_of_payment, max(z.name) as zone, max(z.zone_id) as zone_id,
       COUNT(a.amortization_id) filter (where a.status_type = 'PAID') as paid_dues,
       COUNT(a.amortization_id) filter (where a.status_type = 'DEFEATED') as arrears_dues,
       TRUNC(cast((COUNT(a.amortization_id) filter (where a.status_type = 'DEFEATED')) as DECIMAL)/l.number_of_installments::integer, 2) * 100 as arrear_percentaje,
@@ -38,6 +38,9 @@ controller.getArrearUsers = async (queryParams) => {
       FROM customer_loan cl
       JOIN customer c ON (cl.customer_id = c.customer_id)
       JOIN loan l ON (cl.loan_id = l.loan_id)
+      JOIN loan_payment_address lpa ON (l.loan_payment_address_id = lpa.loan_payment_address_id)
+            LEFT JOIN zone_neighbor_hood znh ON (lpa.section_id = znh.section_id)
+            LEFT JOIN zone z ON (znh.zone_id = z.zone_id)
       JOIN amortization a ON (a.loan_id = l.loan_id AND a.payment_date between '${
         queryParams.paymentDateFrom
       }' and '${queryParams.paymentDateTo}')
@@ -66,9 +69,8 @@ controller.getArrearUsers = async (queryParams) => {
       AND l.created_date between '${queryParams.dateFrom}' and '${
         queryParams.dateTo
       }'
-      AND l.frequency_of_payment like '${
-        queryParams.paymentFrequency || ""
-      }%'`);
+      AND l.frequency_of_payment like '${queryParams.paymentFrequency || ""}%'
+      AND max(z.name) like '${queryParams.zoneId || ""}%'`);
 
     if (data.length == 0) {
       return [];

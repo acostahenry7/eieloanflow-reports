@@ -9,8 +9,11 @@ import {
 import { getOutletsApi } from "../../../api/outlet";
 import { tableUIHelper } from "../../../utils/ui-helpers";
 import { generateReport } from "../../../utils/reports/arrearCustomers";
+import { getZonesApi } from "../../../api/zone";
+import { orderBy, uniqBy } from "lodash";
 
 function CustomerCrud() {
+  const [zones, setZones] = React.useState([]);
   const [outlets, setOutlets] = React.useState([]);
   const [data, setData] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -28,11 +31,14 @@ function CustomerCrud() {
       try {
         setIsLoading(true);
         const outlets = await getOutletsApi();
+        const zones = await getZonesApi(searchParams);
         const customers = await getArrearCustomersApi(searchParams);
         if (customers.error == true) {
           throw new Error(customers.body);
         }
         console.log(customers.body);
+        setZones([]);
+        setZones(zones.body);
         setOutlets(outlets.body);
         setData(customers.body);
       } catch (error) {
@@ -63,6 +69,14 @@ function CustomerCrud() {
       name: "Préstamo",
       width: tableUIHelper.columns.width.loan,
       selector: (row) => row.loan_number_id,
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+    {
+      name: "Zona",
+      width: tableUIHelper.columns.width.loan,
+      selector: (row) => row.zone,
       sortable: true,
       reorder: true,
       omit: false,
@@ -271,6 +285,21 @@ function CustomerCrud() {
       label: "Fecha de pago",
       field: "paymentDate",
       type: "dateRange",
+    },
+    {
+      label: "Zona",
+      field: "zoneId",
+      type: "select",
+      options: [
+        {
+          label: "Todas las zonas",
+          value: "",
+        },
+        ...orderBy(uniqBy(zones, "name"), ["name"]).map((zone) => ({
+          label: zone.name,
+          value: zone.name,
+        })),
+      ],
     },
   ];
 
