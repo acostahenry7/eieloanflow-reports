@@ -6,10 +6,12 @@ import {
   formatClientName,
   getLoanFrequencyLabel,
   getCustomerEstatusLabel,
+  getLoanSituationLabel,
+  getLoanTypeLabel,
 } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import { tableUIHelper } from "../../../utils/ui-helpers";
-import { generateReport } from "../../../utils/reports/arrearCustomers";
+import { generateReport } from "../../../utils/reports/customerLoan";
 
 function CustomerLoanCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -47,17 +49,26 @@ function CustomerLoanCrud() {
     {
       name: "Cliente",
       // width: "230px",
-      selector: (row) => (
-        <div>
-          <p style={{ margin: 0, fontWeight: 500 }}>
-            {formatClientName(row.customer_name)}
-          </p>
-          <span style={{ fontSize: 12 }}>{row.identification}</span>
-        </div>
-      ),
+      selector: (row) => row.customer_name.toUpperCase().trim(),
       sortable: true,
       reorder: true,
       wrap: true,
+      omit: false,
+    },
+    {
+      name: "Cédula",
+      //width: tableUIHelper.columns.width.loan,
+      selector: (row) => row.identification,
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+    {
+      name: "Estatus cliente",
+      //width: tableUIHelper.columns.width.phone,
+      selector: (row) => getCustomerEstatusLabel(row.status_type),
+      sortable: true,
+      reorder: true,
       omit: false,
     },
     {
@@ -69,9 +80,17 @@ function CustomerLoanCrud() {
       omit: false,
     },
     {
-      name: "Estatus cliente",
-      //width: tableUIHelper.columns.width.phone,
-      selector: (row) => getCustomerEstatusLabel(row.status_type),
+      name: "Estado de préstamo",
+      //width: tableUIHelper.columns.width.loan,
+      selector: (row) => getLoanSituationLabel(row.loan_status),
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+    {
+      name: "Tipo",
+      //width: tableUIHelper.columns.width.loan,
+      selector: (row) => getLoanTypeLabel(row.loan_type),
       sortable: true,
       reorder: true,
       omit: false,
@@ -169,23 +188,80 @@ function CustomerLoanCrud() {
   ];
 
   const secondaryFilters = [
-    // {
-    //   label: "Fecha del Préstamo",
-    //   field: "date",
-    //   type: "dateRange",
-    // },
-    // {
-    //   label: "Cuotas en atraso",
-    //   field: "arrearFees",
-    //   placeholder: "Ej. 2",
-    //   isNotDynamic: true,
-    //   type: "text",
-    // },
-    // {
-    //   label: "Fecha de pago",
-    //   field: "paymentDate",
-    //   type: "dateRange",
-    // },
+    {
+      label: "Estatus Préstamo",
+      field: "loanStatus",
+      type: "select",
+      options: [
+        {
+          label: "Todos",
+          value: "",
+        },
+        {
+          label: "Creado",
+          value: "CREATED",
+        },
+        {
+          label: "Pagado",
+          value: "PAID",
+        },
+        {
+          label: "Cancelado",
+          value: "CANCEL",
+        },
+        {
+          label: "Renegociado",
+          value: "RENEGOTIATED",
+        },
+        {
+          label: "Transferido",
+          value: "TRANSFERRED",
+        },
+        {
+          label: "Incobrable",
+          value: "BAD-LOAN",
+        },
+        {
+          label: "Reenganchado",
+          value: "reenganchado",
+        },
+      ],
+    },
+    {
+      label: "Tipo de préstamo",
+      field: "loanType",
+      type: "select",
+      options: [
+        {
+          label: "Todos",
+          value: "",
+        },
+        {
+          label: "Personal",
+          value: "LOAN_TYPE_PERSONAL",
+        },
+        {
+          label: "Vehículo",
+          value: "LOAN_TYPE_VEHICLE",
+        },
+        {
+          label: "Hipotecario",
+          value: "LOAN_TYPE_MORTGAGE",
+        },
+        {
+          label: "Pymes",
+          value: "LOAN_PYMES",
+        },
+        {
+          label: "Micro",
+          value: "LOAN_MICRO",
+        },
+        {
+          label: "Seguro",
+          value: "LOAN_INSURANCE",
+        },
+      ],
+    },
   ];
 
   const filterData = data.filter((item) => {
@@ -194,7 +270,7 @@ function CustomerLoanCrud() {
   });
 
   const exportPDF = () => {
-    let reportDate = new Date(searchParams.dateTo);
+    let reportDate = new Date();
 
     let outletName = outlets.filter(
       (item) => item.outlet_id == searchParams.outletId

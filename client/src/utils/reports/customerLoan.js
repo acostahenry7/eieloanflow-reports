@@ -1,0 +1,145 @@
+import { jsPDF } from "jspdf";
+import {
+  createTitle,
+  createSubTitle,
+  createMainTitle,
+  createMainSubTitle,
+  createDate,
+  currencyFormat,
+  generateReportSection,
+  spacing,
+  sectionSpacing,
+  getTextWidth,
+} from "./report-helpers";
+import {
+  getCustomerEstatusLabel,
+  getLoanFrequencyLabel,
+  getLoanSituationLabel,
+  getLoanTypeLabel,
+} from "../stringFunctions";
+
+let colsWidth = [75, 105, 130, 152, 188];
+
+function generateReport(data, configParams) {
+  //General Configuration Params
+  //-------Layout--------
+  let headerTop = 20;
+  let top = 40;
+  let left = 10;
+  let right = left + 80;
+  let granTotalRight = 460;
+  let rightTotal = right;
+  let center = 80;
+  let itemsPerPage = 46;
+
+  //-------File settings---------
+  let fileNameDate = new Date().toISOString().split("T")[0];
+  let fileName = `clientes-${fileNameDate}.pdf`;
+
+  const width = 215.9;
+  const height = 279.4;
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: [width, height],
+  });
+
+  let parentAccounts = [];
+
+  let title = `${configParams.title}`;
+  let subTitle = `CLIENTES`;
+  let date = `${configParams.date}`;
+
+  createMainTitle(doc, title, left, headerTop - 5);
+  createMainSubTitle(doc, subTitle, left, headerTop);
+  createDate(doc, date, right + 87, headerTop);
+
+  let counter = 0;
+  renderTableHeader(doc, left, top - 10);
+  data.map((item, index) => {
+    //Adding one entry
+    let customerName = `${item.customer_name
+      .split(" ")
+      .map((item, index) => (index <= 3 ? item : undefined))
+      .filter((item) => item != undefined)
+      .join(" ")}`;
+    doc.text(`${customerName}`, left, top);
+    doc.text(`${item.identification}`, left + colsWidth[0], top);
+    doc.text(
+      `${getCustomerEstatusLabel(item.status_type)}`,
+      left + colsWidth[1],
+      top
+    );
+    createSubTitle(doc, `${item.loan_number_id}`, left + colsWidth[2], top);
+    doc.text(
+      `${getLoanSituationLabel(item.loan_status)}`,
+      left + colsWidth[3],
+      top
+    );
+    doc.text(
+      `${getLoanTypeLabel(item.loan_type)}`,
+      left + colsWidth[4] + 10,
+      top,
+      {
+        align: "right",
+      }
+    );
+    // doc.text(`${item.arrears_dues}`, left + colsWidth[5] + 10, top, {
+    //   align: "right",
+    // });
+    // doc.text(
+    //   `${getLoanFrequencyLabel(item.frequency_of_payment)}`,
+    //   left + colsWidth[6] + 14,
+    //   top,
+    //   {
+    //     align: "right",
+    //   }
+    // );
+    // createSubTitle(
+    //   doc,
+    //   `${item.arrear_percentaje}%`,
+    //   left + colsWidth[7],
+    //   top,
+    //   {
+    //     align: "right",
+    //   }
+    // );
+    // doc.text(`${item.arrear_percentaje}%`, left + 155, top);
+    // doc.text(
+    //   `${new Date(item.defeated_since).toLocaleString("es-Es").split(",")[0]}`,
+    //   left + 180,
+    //   top
+    // );
+    // doc.text(`${item.defeated_amount}`, left + 210, top);
+    top += spacing;
+    counter++;
+    if (counter == itemsPerPage) {
+      doc.addPage();
+      top = 40;
+      renderTableHeader(doc, left, top - 10);
+      counter = 0;
+    }
+  });
+
+  doc.save(fileName);
+}
+
+function renderTableHeader(doc, pos, top) {
+  doc.rect(pos, top - 6, 200, 10);
+  // pos += 3;
+  createSubTitle(doc, "Cliente", pos + 1, top);
+  createSubTitle(doc, "Cédula", pos + colsWidth[0], top);
+  createSubTitle(doc, "Estado\nCliente", pos + colsWidth[1], top - 2, "center");
+  createSubTitle(doc, "Prestamo", pos + colsWidth[2], top);
+  createSubTitle(doc, "Estado\nPrestamo", pos + colsWidth[3], top - 2);
+  createSubTitle(doc, "Tipo", pos + colsWidth[4], top);
+  // createSubTitle(doc, "Cuotas\nAtraso", pos + colsWidth[5], top - 2);
+  // createSubTitle(doc, "Freq. de\nPago", pos + colsWidth[6], top - 2);
+  // createSubTitle(doc, "Porcentaje\nAtraso", pos + colsWidth[7] - 19, top - 2);
+  // pos += colsWidth[2];
+  // createSubTitle(doc, "Créditos", pos, top, "center");
+  // pos += colsWidth[3];
+  // createSubTitle(doc, "Balance", pos, top, "center");
+}
+
+export { generateReport };

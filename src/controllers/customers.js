@@ -7,12 +7,16 @@ controller.customerLoans = async (queryParams) => {
   console.log(queryParams);
   try {
     const [data, meta] =
-      await db.query(`select first_name || ' ' || last_name as customer_name, identification, loan_number_id, c.status_type
+      await db.query(`select first_name || ' ' || last_name as customer_name, identification, loan_number_id,
+      c.status_type, l.status_type as loan_status, la.loan_type
       from loan l
       join loan_application la on (l.loan_application_id = la.loan_application_id)
       join customer c on (la.customer_id = c.customer_id)
       where l.outlet_id like '${queryParams.outletId || ""}%'
+      and l.status_type not in ('DELETE')
+      and l.status_type like '${queryParams.loanStatus || ""}%'
       and c.status_type like '${queryParams.customerStatus || ""}%'
+      and la.loan_type like '${queryParams.loanType || ""}%'
       order by first_name`);
 
     if (data.length == 0) {
