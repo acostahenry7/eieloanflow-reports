@@ -3,6 +3,27 @@ const { generateWhereStatement } = require("../utils");
 
 const controller = {};
 
+controller.customerLoans = async (queryParams) => {
+  console.log(queryParams);
+  try {
+    const [data, meta] =
+      await db.query(`select first_name || ' ' || last_name as customer_name, identification, loan_number_id, c.status_type
+      from loan l
+      join loan_application la on (l.loan_application_id = la.loan_application_id)
+      join customer c on (la.customer_id = c.customer_id)
+      where l.outlet_id like '%'
+      order by first_name`);
+
+    if (data.length == 0) {
+      return [];
+    }
+    return data;
+  } catch (error) {
+    console.log(error);
+    throw new Error(error.message);
+  }
+};
+
 controller.getArrearUsers = async (queryParams) => {
   console.log(queryParams);
   try {

@@ -63,6 +63,19 @@ module.exports = (app) => {
       });
   });
 
+  router.get("/api/customer-loan", (req, res) => {
+    console.log(req.query);
+
+    customerCtrl
+      .customerLoans(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   //Payments
   router.get("/api/payment/today", (req, res) => {
     console.log(req.query);

@@ -14,4 +14,18 @@ async function getArrearCustomersApi(queryParams) {
   }
 }
 
-export { getArrearCustomersApi };
+async function getCustomerLoanApi(queryParams) {
+  try {
+    const customers = await request({
+      method: "GET",
+      path: "/customer-loan",
+      urlParams: queryParams,
+    });
+
+    return customers;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export { getArrearCustomersApi, getCustomerLoanApi };

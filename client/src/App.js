@@ -37,6 +37,7 @@ import { ToChargeAccountScreen } from "./screens/ToChargeAccountScreen";
 import { EmployeeScreen } from "./screens/EmployeeScreen";
 import { AccountPayableScren } from "./screens/AccountPayableScreen";
 import { PaidInterestScreen } from "./screens/PaidInterestScreen";
+import { CustomerLoanScreen } from "./screens/CustomerLoanScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -58,6 +59,10 @@ function App() {
               <Route
                 path="/reports/arrear-customers"
                 element={<CustomerReportScreen />}
+              />
+              <Route
+                path="/reports/customer-loan"
+                element={<CustomerLoanScreen />}
               />
               <Route
                 path="/reports/today-payments"

@@ -57,6 +57,17 @@ function Sidebar() {
       selected: false,
       subItems: [
         {
+          label: "Clientes (prestamos)",
+          icon: (selected) => (
+            <FaUsers
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/customer-loan",
+          selected: false,
+        },
+        {
           label: "Clientes en atraso",
           icon: (selected) => (
             <FaUsersSlash

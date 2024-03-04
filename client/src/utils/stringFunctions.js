@@ -147,10 +147,27 @@ function getLoanFrequencyLabel(key) {
   return result;
 }
 
+function getCustomerEstatusLabel(key) {
+  let result = "";
+
+  switch (key) {
+    case "ENABLED":
+      result = "Activo";
+      break;
+    case "DISABLED":
+      result = "Inactivo";
+      break;
+    default:
+      break;
+  }
+  return result;
+}
+
 export {
   formatClientName,
   getLoanSituationLabel,
   getLoanTypeLabel,
   getPaymentTypeLabel,
   getLoanFrequencyLabel,
+  getCustomerEstatusLabel,
 };
