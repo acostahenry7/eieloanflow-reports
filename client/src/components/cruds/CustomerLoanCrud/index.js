@@ -147,6 +147,25 @@ function CustomerLoanCrud() {
         }),
       ],
     },
+    {
+      label: "Estatus Cliente",
+      field: "customerStatus",
+      type: "select",
+      options: [
+        {
+          label: "Todos",
+          value: "",
+        },
+        {
+          label: "Activo",
+          value: "ENABLED",
+        },
+        {
+          label: "Inactivo",
+          value: "DISABLED",
+        },
+      ],
+    },
   ];
 
   const secondaryFilters = [

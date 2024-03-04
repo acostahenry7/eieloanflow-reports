@@ -11,7 +11,8 @@ controller.customerLoans = async (queryParams) => {
       from loan l
       join loan_application la on (l.loan_application_id = la.loan_application_id)
       join customer c on (la.customer_id = c.customer_id)
-      where l.outlet_id like '%'
+      where l.outlet_id like '${queryParams.outletId || ""}%'
+      and c.status_type like '${queryParams.customerStatus || ""}%'
       order by first_name`);
 
     if (data.length == 0) {
