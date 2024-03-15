@@ -50,7 +50,7 @@ function generateReport(data, configParams) {
 
   let counter = 0;
   renderTableHeader(doc, left, top - 10);
-  data.map((item) => {
+  data.map((item, index) => {
     //Adding one entry
     let customerName = `${item.customer_name
       .split(" ")
@@ -79,11 +79,38 @@ function generateReport(data, configParams) {
     // doc.text(`${item.defeated_amount}`, left + 210, top);
     top += spacing;
     counter++;
-    if (counter == itemsPerPage) {
+    if (counter == itemsPerPage && index != data.length - 1) {
       doc.addPage();
       top = 40;
       renderTableHeader(doc, left, top - 10);
       counter = 0;
+    }
+
+    if (index == data.length - 1) {
+      top += 5;
+      createSubTitle(doc, `Totales (RD$ )`, left, top);
+
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce((acc, item) => acc + parseFloat(item.amount_approved), 0),
+          false
+        )}`,
+        left + colsWidth[2],
+        top
+      );
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce((acc, item) => acc + parseFloat(item.amount_of_free), 0),
+          false
+        )}`,
+        left + colsWidth[5] + 12,
+        top,
+        {
+          align: "right",
+        }
+      );
     }
   });
 

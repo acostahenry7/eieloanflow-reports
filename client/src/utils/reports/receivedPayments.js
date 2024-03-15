@@ -144,6 +144,36 @@ function generateReport(data, configParams) {
       renderTableHeader(doc, left, top - 10);
       counter = 0;
     }
+
+    if (index == data.length - 1) {
+      top += 5;
+      createSubTitle(doc, `Totales (RD$ )`, left, top);
+
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce((acc, item) => acc + parseFloat(item.total_paid_mora), 0),
+          false
+        )}`,
+        left + colsWidth[6] + 10,
+        top,
+        {
+          align: "right",
+        }
+      );
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce((acc, item) => acc + parseFloat(item.pay), 0),
+          false
+        )}`,
+        left + colsWidth[7] - 7,
+        top,
+        {
+          align: "right",
+        }
+      );
+    }
   });
 
   doc.save(fileName);

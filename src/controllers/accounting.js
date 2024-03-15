@@ -26,7 +26,7 @@ controller.accountCatalog = async (queryParams) => {
 
 controller.getGeneralBalance = async (queryParams) => {
   let data = {};
-  console.log(queryParams);
+  // console.log(queryParams);
 
   let lastMonth =
     queryParams.date?.split("-")[1] == "01"
@@ -265,22 +265,24 @@ controller.getMajorGeneral = async (queryParams) => {
 
   try {
     const [majorGeneral, meta] = await db.query(
-      `select ac.number, ac.name,gd.description, gda.debit, gda.credit, gda.created_date
+      `select ac.number, ac.name,gd.description, gda.debit, gda.credit, gd.general_diary_date as created_date
       from general_diary_account gda
       join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
       join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
       where gd.outlet_id='${queryParams.outletId}'
       ${
         queryParams.dateFrom
-          ? `and gda.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
+          ? `and gd.general_diary_date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
           : ""
       }
       and ac.number like '${queryParams.accountId || "%"}'
       and gd.status_type != 'DELETE'
-      order by ac.number`
+      and gd.description not like '%226464%'
+      and gd.description not like '%227695%'
+      order by gd.general_diary_date desc`
     );
 
-    console.log(majorGeneral);
+    // console.log(majorGeneral);
     let data = _(majorGeneral).groupBy("number");
 
     return data;
@@ -440,9 +442,9 @@ function getAccountBalance(accountList, currentAccount, balance) {
     );
 
     if (controlledAcccounts.length > 0) {
-      console.log("ITEM BALANCE", item);
+      // console.log("ITEM BALANCE", item);
       balance += getAccountBalance(accountList, item, parseFloat(item.balance));
-      console.log("GENERAL BALANCE", balance);
+      // console.log("GENERAL BALANCE", balance);
     } else {
       balance += parseFloat(item.balance);
     }

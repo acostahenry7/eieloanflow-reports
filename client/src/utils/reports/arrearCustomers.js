@@ -95,11 +95,74 @@ function generateReport(data, configParams) {
     // doc.text(`${item.defeated_amount}`, left + 210, top);
     top += spacing;
     counter++;
-    if (counter == itemsPerPage) {
+    if (counter == itemsPerPage && index != data.length - 1) {
       doc.addPage();
       top = 40;
       renderTableHeader(doc, left, top - 10);
       counter = 0;
+    }
+
+    if (index == data.length - 1) {
+      top += 5;
+      createSubTitle(doc, `Totales (RD$ )`, left, top);
+
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce((acc, item) => acc + parseFloat(item.amount_approved), 0),
+          false
+        )}`,
+        left + colsWidth[2],
+        top
+      );
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce((acc, item) => acc + parseFloat(item.amount_of_free), 0),
+          false
+        )}`,
+        left + colsWidth[3],
+        top
+      );
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce(
+            (acc, item) => acc + parseFloat(item.number_of_installments),
+            0
+          ),
+          false
+        )}`,
+        left + colsWidth[4] + 10,
+        top,
+        {
+          align: "right",
+        }
+      );
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce((acc, item) => acc + parseFloat(item.arrears_dues), 0),
+          false
+        )}`,
+        left + colsWidth[5] + 10,
+        top,
+        {
+          align: "right",
+        }
+      );
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce(
+            (acc, item) => acc + parseFloat(item.arrear_percentaje),
+            0
+          ) / data.length,
+          false
+        )}%`,
+        left + colsWidth[6] + 26,
+        top
+      );
     }
   });
 

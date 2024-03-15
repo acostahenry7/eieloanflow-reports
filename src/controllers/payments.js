@@ -25,7 +25,7 @@ controller.getTodayPayments = async (queryParams) => {
             ? `AND MIN(a.quota_number) filter(where a.paid = 'false') <= ${queryParams.pendingDue}`
             : ""
         }
-        
+        AND l.outlet_id like '${queryParams.outletId || ""}%'
         ${
           queryParams.dateFrom
             ? getDateRangeFilter(

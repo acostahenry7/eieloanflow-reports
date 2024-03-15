@@ -18,6 +18,7 @@ function GeneralMajor() {
   });
   const [isLoading, setIsLoading] = React.useState(false);
   const [reqToggle, setReqToggle] = React.useState([]);
+  const [searchedText, setSearchedText] = React.useState("");
 
   React.useEffect(() => {
     (async () => {
@@ -36,32 +37,6 @@ function GeneralMajor() {
       }
     })();
   }, [reqToggle, searchParams]);
-
-  const generateMajorGeneral = async () => {
-    console.log(searchParams);
-    try {
-      setIsLoading(true);
-      let response = await getMajorGeneral(searchParams);
-
-      let reportConfig = {
-        title: outlets.filter(
-          (item) => item.outlet_id == searchParams.outletId
-        )[0].name,
-        date: `De ${new Date(searchParams.dateFrom)
-          .toUTCString()
-          .slice(5, 16)} al ${new Date(searchParams.dateTo)
-          .toUTCString()
-          .slice(5, 16)}`,
-      };
-      generateReport(response.body, reportConfig);
-      setIsLoading(false);
-
-      console.log(response);
-    } catch (error) {
-      console.log(error);
-      setIsLoading(false);
-    }
-  };
 
   const [columns, setColumns] = React.useState([
     // {
@@ -138,6 +113,18 @@ function GeneralMajor() {
 
   let mainFilters = [
     {
+      label: "No. cuenta",
+      field: "accountNumber",
+      placeholder: "Búsqueda por número",
+      type: "text",
+    },
+    {
+      label: "Cuenta",
+      field: "accountName",
+      placeholder: "Búsqueda por nombre",
+      type: "text",
+    },
+    {
       label: "Sucursal",
       field: "outletId",
       type: "select",
@@ -165,6 +152,38 @@ function GeneralMajor() {
     },
   ];
 
+  const filterData = data.filter((item) => {
+    let searchText = `accountNumber${item.account.number}accountName${item.account.name}`;
+    return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
+  });
+
+  const generateMajorGeneral = () => {
+    console.log(searchParams);
+    try {
+      setIsLoading(true);
+      // let response = await getMajorGeneral(searchParams);
+
+      let reportConfig = {
+        title: outlets.filter(
+          (item) => item.outlet_id == searchParams.outletId
+        )[0].name,
+        date: `De ${new Date(searchParams.dateFrom)
+          .toUTCString()
+          .slice(5, 16)} al ${new Date(searchParams.dateTo)
+          .toUTCString()
+          .slice(5, 16)}`,
+      };
+      console.log(data);
+      generateReport(filterData, reportConfig);
+      setIsLoading(false);
+
+      // console.log(response);
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="">
       <TopBar title="Mayor General" />
@@ -174,14 +193,16 @@ function GeneralMajor() {
             mainFilters={mainFilters}
             secondaryFilters={secondaryFilters}
             setSearchParams={setSearchParams}
+            searchParams={searchParams}
+            setSearchedText={setSearchedText}
             setRequestToggle={setReqToggle}
-            exportFunction={async () => await generateMajorGeneral()}
+            exportFunction={() => generateMajorGeneral()}
           />
 
           {isLoading && <ThreeDots />}
           <Datatable
             columns={columns}
-            data={data}
+            data={filterData}
             dtOptions={{
               expandableRows: true,
               expandableRowsComponent: ({ data }) => {
