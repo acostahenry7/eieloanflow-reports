@@ -77,6 +77,61 @@ controller.getArrearUsers = async (queryParams) => {
       AND l.frequency_of_payment like '${queryParams.paymentFrequency || ""}%'
       AND max(z.name) like '${queryParams.zoneId || ""}%'`);
 
+    `SELECT t1.customer_name, loan_situation, identification, loan_number_id, phone, created_date, amount_approved, amount_of_free, 
+      number_of_installments, frequency_of_payment,paid_dues, arrears_dues, defeated_since,	   
+	  (select sum(pending)
+	   from 
+	   (select amount_of_fee + mora - discount - total_paid as pending
+	   from amortization 
+	   where loan_id = (select loan_id from loan where loan_number_id = t1.loan_number_id)
+	   and status_type='DEFEATED'
+	   limit t1.arrears_dues
+	  )t0) as defeated_amount
+FROM
+(SELECT c.first_name || ' ' || c.last_name as customer_name, l.loan_situation, c.identification, l.loan_number_id, c.phone, l.created_date, l.amount_approved, l.amount_of_free, 
+      l.number_of_installments, l.frequency_of_payment,
+	  --max(z.name) as zone, max(z.zone_id) as zone_id,
+      COUNT(distinct(a.amortization_id)) filter (where a.status_type = 'PAID') as paid_dues,
+      COUNT(distinct(a.amortization_id)) filter (where a.status_type = 'DEFEATED') as arrears_dues,
+      TRUNC(cast((COUNT(distinct(a.amortization_id)) filter (where a.status_type = 'DEFEATED')) as DECIMAL)/l.number_of_installments::integer, 2) * 100 as arrear_percentaje,
+      MIN(a.payment_date) filter (where a.status_type = 'DEFEATED') as defeated_since
+      FROM customer_loan cl
+      JOIN customer c ON (cl.customer_id = c.customer_id)
+      JOIN loan l ON (cl.loan_id = l.loan_id)
+      JOIN loan_payment_address lpa ON (l.loan_payment_address_id = lpa.loan_payment_address_id)
+      JOIN zone_neighbor_hood znh ON (lpa.section_id = znh.section_id)
+      JOIN zone z ON (znh.zone_id = z.zone_id)
+      JOIN amortization a ON (a.loan_id = l.loan_id and a.payment_date between '${
+        queryParams.paymentDateFrom
+      }' and '${queryParams.paymentDateTo}' )
+      group by c.first_name, c.last_name, l.status_type,  c.identification, c.phone, l.loan_number_id, l.loan_situation, 
+      l.created_date, l.amount_approved, l.amount_of_free, l.number_of_installments, l.outlet_id, l.frequency_of_payment
+      having l.loan_situation like 'ARREARS'
+      AND l.status_type not in ('DELETE', 'PAID')
+      AND COUNT(a.amortization_id) filter (where a.status_type = 'DEFEATED') > 0
+      AND lower(c.first_name || ' ' || c.last_name) like '${
+        queryParams.customerName || ""
+      }%'
+      AND c.identification like '${queryParams.identification || ""}%'
+      ${
+        queryParams.loanNumber
+          ? `AND l.loan_number_id::varchar like '${
+              queryParams.loanNumber || ""
+            }'`
+          : ""
+      } 
+      ${
+        parseInt(queryParams.arrearFees) > 0
+          ? `AND count(a.quota_number) filter(where a.status_type = 'DEFEATED') = ${queryParams.arrearFees}`
+          : ""
+      }
+      AND l.outlet_id like '${queryParams.outletId || ""}%'
+      AND l.created_date between '${queryParams.dateFrom}' and '${
+      queryParams.dateTo
+    }'
+      AND l.frequency_of_payment like '${queryParams.paymentFrequency || ""}%'
+      ) T1`;
+
     if (data.length == 0) {
       return [];
     }

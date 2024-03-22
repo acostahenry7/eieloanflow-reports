@@ -341,7 +341,10 @@ function RegisterCloseCrud() {
                           >
                             <CurrencyFormat
                               value={data.child
-                                ?.reduce(
+                                ?.filter(
+                                  (item) => item.status_type == "ENABLED"
+                                )
+                                .reduce(
                                   (acc, item) => acc + parseFloat(item.pay),
                                   0
                                 )

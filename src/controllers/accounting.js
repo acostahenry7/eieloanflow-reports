@@ -265,7 +265,8 @@ controller.getMajorGeneral = async (queryParams) => {
 
   try {
     const [majorGeneral, meta] = await db.query(
-      `select ac.number, ac.name,gd.description, gda.debit, gda.credit, gd.general_diary_date as created_date
+      ` select ac.number, ac.name,gd.description, sum(gda.debit) debit, sum(gda.credit) credit, 
+      gd.general_diary_date as created_date
       from general_diary_account gda
       join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
       join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
@@ -279,6 +280,7 @@ controller.getMajorGeneral = async (queryParams) => {
       and gd.status_type != 'DELETE'
       and gd.description not like '%226464%'
       and gd.description not like '%227695%'
+      group by gd.payment_id, ac.number, ac.name,gd.description,gd.general_diary_date
       order by gd.general_diary_date desc`
     );
 

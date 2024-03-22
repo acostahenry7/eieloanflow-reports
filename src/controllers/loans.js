@@ -249,7 +249,7 @@ controller.getRegisterClose = async (queryParams) => {
   console.log(queryParams);
   try {
     const [data, meta] =
-      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, p.pay, 
+      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, p.pay, o.name as outlet,
       r.amount, p.register_id, r.total_cash, r.total_check, r.total_transfer, r.total_discount, r.total_pay, r.total_registered as difference, 
       e.first_name || ' ' || e.last_name as employee_name, r.created_date opening_date, r.last_modified_date, p.created_date, p.payment_type,
       e.commission_debt_collector_percentage as collector_percentage, p.status_type,
@@ -263,6 +263,7 @@ controller.getRegisterClose = async (queryParams) => {
       JOIN register r ON (p.register_id = r.register_id)
       JOIN jhi_user u ON (r.user_id = u.user_id)
       JOIN employee e ON (u.employee_id = e.employee_id)
+      JOIN outlet o ON (l.outlet_id = o.outlet_id)
       WHERE l.status_type NOT IN ('DELETE')
       AND p.outlet_id like '${queryParams.outletId || ""}%'
       ${

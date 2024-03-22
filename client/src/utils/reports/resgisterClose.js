@@ -11,9 +11,10 @@ import {
   sectionSpacing,
   getTextWidth,
 } from "./report-helpers";
+import { groupBy } from "lodash";
 
 let colsWidth = [40, 70, 100, 127, 152, 184, 214, 237];
-let innerColsWidth = [30, 130, 190, 235];
+let innerColsWidth = [30, 105, 180, 210, 240];
 
 function generateReport(data, configParams) {
   //General Configuration Params
@@ -149,10 +150,11 @@ function generateReport(data, configParams) {
         .join(" ")}`;
 
       doc.text(`${innerItem.loan_number_id}`, left + 2, top);
-      doc.text(`${customerName}`, left + innerColsWidth[0], top);
+      doc.text(`${innerItem.outlet}`, left + innerColsWidth[0], top);
+      doc.text(`${customerName}`, left + innerColsWidth[1], top);
       doc.text(
         `${currencyFormat(innerItem.pay, false)}`,
-        left + innerColsWidth[1] + 10,
+        left + innerColsWidth[2] + 10,
         top,
         { align: "right" }
       );
@@ -173,7 +175,7 @@ function generateReport(data, configParams) {
       }
       doc.text(
         `${innerItem.payment_type}`,
-        left + innerColsWidth[2] + 10,
+        left + innerColsWidth[3] + 10,
         top,
         { align: "right" }
       );
@@ -181,7 +183,7 @@ function generateReport(data, configParams) {
         `${
           new Date(innerItem.created_date).toLocaleString("es-Es").split(",")[0]
         }`,
-        left + innerColsWidth[3] + 15,
+        left + innerColsWidth[4] + 15,
         top,
         { align: "right" }
       );
@@ -189,7 +191,7 @@ function generateReport(data, configParams) {
       top += spacing;
 
       if (innerIndex == item.child.length - 1) {
-        createSubTitle(doc, "Total: ", left + 2, top + 5);
+        createSubTitle(doc, "Total ", left + 2, top + 5);
         createSubTitle(
           doc,
           currencyFormat(
@@ -198,9 +200,33 @@ function generateReport(data, configParams) {
               0
             )
           ),
-          left + innerColsWidth[1] + 10,
+          left + innerColsWidth[2] + 10,
           top + 5,
           { align: "right" }
+        );
+
+        top += 5;
+        Object.entries(groupBy(item.child, "outlet")).map(
+          (outletItem, index) => {
+            createSubTitle(
+              doc,
+              `Total ${outletItem[0]} `,
+              left + 2,
+              top + (index + 2) * 5
+            );
+            createSubTitle(
+              doc,
+              currencyFormat(
+                outletItem[1].reduce(
+                  (acc, element) => acc + parseFloat(element.pay),
+                  0
+                )
+              ),
+              left + innerColsWidth[2] + 10,
+              top + (index + 2) * 5,
+              { align: "right" }
+            );
+          }
         );
       }
 
@@ -246,10 +272,11 @@ function renderInnerTableHeader(doc, pos, top) {
   doc.rect(pos, top - 6, 260, 10);
   // pos += 3;
   createSubTitle(doc, "Préstamo", pos + 1, top);
-  createSubTitle(doc, "Cliente", pos + innerColsWidth[0], top);
-  createSubTitle(doc, "Monto\nPago", pos + innerColsWidth[1], top - 2);
-  createSubTitle(doc, "Tipo\nPago", pos + innerColsWidth[2], top - 2);
-  createSubTitle(doc, "Fecha", pos + innerColsWidth[3], top);
+  createSubTitle(doc, "Sucursal", pos + innerColsWidth[0], top);
+  createSubTitle(doc, "Cliente", pos + innerColsWidth[1], top);
+  createSubTitle(doc, "Monto\nPago", pos + innerColsWidth[2], top - 2);
+  createSubTitle(doc, "Tipo\nPago", pos + innerColsWidth[3], top - 2);
+  createSubTitle(doc, "Fecha", pos + innerColsWidth[4], top);
   // createSubTitle(doc, "Total\nTransferencia", pos + colsWidth[4], top - 2);
   // createSubTitle(doc, "Total\nDescuento", pos + colsWidth[5], top - 2);
   // createSubTitle(doc, "Total\nPagado", pos + colsWidth[6], top - 2);
