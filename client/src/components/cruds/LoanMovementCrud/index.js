@@ -213,14 +213,15 @@ function LoanMovementCrud() {
     },
   ];
 
-  const secondaryFilters = [
+  const [secondaryFilters, setSecondaryFilters] = React.useState([
     {
       label: "Fecha",
       field: "date",
       placeholder: "Búsqueda por nombre",
       type: "dateRange",
+      isActive: true,
     },
-  ];
+  ]);
 
   const filterData = data.filter((item) => {
     let searchText = `employeeName${item.loanMovement.employee_name}indetification${item.identification}loanNumber${item.loanMovement.loan_number_id}createdBy${item.created_by}receiptNumber${item.receipt_number}`;
@@ -250,6 +251,7 @@ function LoanMovementCrud() {
       <SearchBar
         mainFilters={mainFilters}
         secondaryFilters={secondaryFilters}
+        setSecondaryFilters={setSecondaryFilters}
         setRequestToggle={setReqToggle}
         setSearchParams={setSearchParams}
         setSearchedText={setSearchedText}

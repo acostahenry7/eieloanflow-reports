@@ -108,9 +108,8 @@ function TotalBar({ data, loadingStatus }) {
           <li className="list-item">
             <CurrencyFormat
               value={data
-                .filter((item) => item.child.status_type == "ENABLED")
                 .reduce(
-                  (acc, item) => acc + parseFloat(item.child.total_pay || 0),
+                  (acc, item) => acc + parseFloat(item.register.total_pay || 0),
                   0
                 )
                 .toFixed(2)}

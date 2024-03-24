@@ -198,13 +198,15 @@ function ToChargeAccountCrud() {
     },
   ];
 
-  const secondaryFilters = [
+  const [secondaryFilters, setSecondaryFilters] = React.useState([
     {
       label: "Fecha",
       field: "date",
       placeholder: "Búsqueda por nombre",
       type: "dateRange",
+      isActive: true,
     },
+
     {
       label: "Estatus",
       field: "loanStatus",
@@ -243,6 +245,7 @@ function ToChargeAccountCrud() {
           value: "reenganchado",
         },
       ],
+      isActive: true,
     },
     {
       label: "Tipo de préstamo",
@@ -278,6 +281,7 @@ function ToChargeAccountCrud() {
           value: "LOAN_INSURANCE",
         },
       ],
+      isActive: true,
     },
     {
       label: "Situación",
@@ -313,8 +317,9 @@ function ToChargeAccountCrud() {
           value: "SEIZED",
         },
       ],
+      isActive: true,
     },
-  ];
+  ]);
   const filterData = data.filter((item) => {
     let searchText = `customerName${item.customer_name}identification${item.identification}loanNumber${item.loan_number_id}`;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
@@ -343,6 +348,7 @@ function ToChargeAccountCrud() {
       <SearchBar
         mainFilters={mainFilters}
         secondaryFilters={secondaryFilters}
+        setSecondaryFilters={setSecondaryFilters}
         setRequestToggle={setReqToggle}
         searchParams={searchParams}
         setSearchParams={setSearchParams}

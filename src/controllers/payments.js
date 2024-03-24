@@ -60,7 +60,7 @@ controller.getCanceledPayments = async (queryParams) => {
       JOIN loan l ON (p.loan_id = l.loan_id)
       JOIN receipt r ON (r.payment_id = p.payment_id)
       JOIN jhi_user ju ON (p.created_by = ju.login)
-      JOIN employee e ON (p.employee_reverse_id = e.employee_id)
+      LEFT JOIN employee e ON (p.employee_reverse_id = e.employee_id)
       WHERE p.status_type = 'CANCEL' 
       AND l.status_type not in ('DELETE', 'PAID')
       ${generateWhereStatement(queryParams)}
@@ -197,6 +197,7 @@ controller.getCollectorVisits = async (queryParams) => {
       LEFT JOIN customer c ON (v.customer_id = c.customer_id)
       JOIN jhi_user u ON (v.user_id = u.user_id)
       JOIN employee e ON (u.employee_id = e.employee_id)
+      WHERE v.visit_date:: date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'
       order by v.visit_date desc`);
 
     if (data.length == 0) {

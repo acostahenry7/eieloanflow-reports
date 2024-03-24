@@ -213,26 +213,29 @@ function LoanRequestsCrud() {
     },
   ];
 
-  const secondaryFilters = [
+  const [secondaryFilters, setSecondaryFilters] = React.useState([
     {
       label: "Fecha",
       field: "date",
       placeholder: "Búsqueda por nombre",
       type: "dateRange",
+      isActive: true,
     },
     {
       label: "Cajero",
       placeholder: "cajero",
       field: "createdBy",
       type: "text",
+      isActive: true,
     },
     {
       label: "Recibo",
       placeholder: "número recibo",
       field: "receiptNumber",
       type: "text",
+      isActive: true,
     },
-  ];
+  ]);
 
   const filterData = data.filter((item) => {
     let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}createdBy${item.created_by}receiptNumber${item.receipt_number}`;
@@ -244,12 +247,14 @@ function LoanRequestsCrud() {
       <SearchBar
         mainFilters={mainFilters}
         secondaryFilters={secondaryFilters}
+        setSecondaryFilters={setSecondaryFilters}
         setRequestToggle={setReqToggle}
         setSearchParams={setSearchParams}
         setSearchedText={setSearchedText}
         columns={columns}
         setColumns={setColumns}
       />
+      <b>hola</b>
       <button onClick={toPDF}>exportar</button>
       <div ref={targetRef}>
         <Datatable columns={columns} data={filterData} isLoading={isLoading} />

@@ -3,6 +3,7 @@ import "./index.css";
 import { MdFilterListAlt } from "react-icons/md";
 import { HiOutlineRefresh } from "react-icons/hi";
 import { AiOutlineUnorderedList } from "react-icons/ai";
+import { TbFilterCog } from "react-icons/tb";
 import { useFormik } from "formik";
 import Popover from "@mui/material/Popover";
 import { TiExport } from "react-icons/ti";
@@ -10,6 +11,7 @@ import { TiExport } from "react-icons/ti";
 function SearchBar({
   mainFilters,
   secondaryFilters,
+  setSecondaryFilters,
   setRequestToggle,
   searchParams,
   setSearchParams,
@@ -19,6 +21,7 @@ function SearchBar({
   exportFunction,
 }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorFilterConf, setAnchorFilterConf] = React.useState(null);
   const [showOtherfilters, setShowOtherFilters] = React.useState(
     secondaryFilters.length > 0 ? true : false
   );
@@ -44,6 +47,20 @@ function SearchBar({
     });
 
     setColumns(newColumns);
+  };
+
+  const changeFilterVisibility = (filterName) => {
+    let newFilters = [...secondaryFilters];
+
+    newFilters.forEach((filter) => {
+      if (filter.label === filterName) {
+        filter.isActive = !filter.isActive;
+        searchForm.resetForm();
+        // setSearchParams({});
+      }
+    });
+
+    setSecondaryFilters(newFilters);
   };
 
   return (
@@ -127,7 +144,7 @@ function SearchBar({
         }`}
       >
         {secondaryFilters
-          ?.filter((item) => item.type === "text")
+          ?.filter((item) => item.type === "text" && item.isActive == true)
           .map((sf, index) => (
             <div key={index} className={`SearchBar-secondary-item `}>
               <label>{sf.label}</label>
@@ -145,7 +162,7 @@ function SearchBar({
             </div>
           ))}
         {secondaryFilters
-          .filter((item) => item.type === "select")
+          .filter((item) => item.type === "select" && item.isActive == true)
           .map((mf, index) => (
             <div key={index} className="SearchBar-main-item">
               <label>{mf.label}</label>
@@ -164,7 +181,7 @@ function SearchBar({
             </div>
           ))}
         {secondaryFilters
-          ?.filter((item) => item.type === "dateRange")
+          ?.filter((item) => item.type === "dateRange" && item.isActive == true)
           .map((sf, index) => (
             <div key={index} className={`SearchBar-secondary-item`}>
               <label>{sf.label}</label>
@@ -233,15 +250,15 @@ function SearchBar({
           title="Refresh and clear filters"
           className="SearchBar-actions-icon"
           onClick={() => {
-            // window.location.reload();
-            // searchForm.resetForm();
+            //window.location.reload();
+            searchForm.resetForm();
             // setSearchParams({
             //   outletId: "857b8b3b-d603-4474-9b35-4a90277d9bc0",
             //   dateFrom: new Date().toISOString().split("T")[0],
             //   dateTo: new Date().toISOString().split("T")[0],
             // });
             // setSearchedText("");
-            setRequestToggle((state) => !state);
+            //setRequestToggle((state) => !state);
           }}
         />
         <AiOutlineUnorderedList
@@ -281,6 +298,44 @@ function SearchBar({
             ))}
           </ul>
         </Popover>
+
+        <TbFilterCog
+          title="Activar / Inactivar filtros"
+          className="SearchBar-actions-icon"
+          aria-describedby={"filters-config"}
+          onClick={(e) => setAnchorFilterConf(e.currentTarget)}
+        />
+        <Popover
+          id={"filters-config"}
+          open={Boolean(anchorFilterConf)}
+          anchorEl={anchorFilterConf}
+          onClose={() => {
+            setAnchorFilterConf(null);
+          }}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "left",
+          }}
+        >
+          <ul className="search-bar-filter-list">
+            {secondaryFilters?.map((filter, index) => (
+              <li className="search-bar-filter-list-item" key={index}>
+                <span>{filter.label}</span>
+                <input
+                  type="checkbox"
+                  onChange={() => {
+                    changeFilterVisibility(filter.label);
+                  }}
+                  checked={filter.isActive}
+                />
+              </li>
+            ))}
+          </ul>
+        </Popover>
         <button
           title="Exportar"
           style={{
@@ -311,12 +366,8 @@ function getInitialValues(arr) {
         initialValues[item.field] = item.currentValue || item.options[0]?.value;
         break;
       case "dateRange":
-        initialValues[item.field + "From"] = new Date()
-          .toISOString()
-          .split("T")[0];
-        initialValues[item.field + "To"] = new Date()
-          .toISOString()
-          .split("T")[0];
+        initialValues[item.field + "From"] = item.from;
+        initialValues[item.field + "To"] = item.to;
         break;
       case "date":
         initialValues[item.field] = new Date().toISOString().split("T")[0];

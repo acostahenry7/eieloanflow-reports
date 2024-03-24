@@ -202,18 +202,20 @@ function LoanDiscountsCrud() {
     },
   ];
 
-  const secondaryFilters = [
+  const [secondaryFilters, setSecondaryFilters] = React.useState([
     {
       label: "Fecha",
       field: "date",
       placeholder: "Búsqueda por nombre",
       type: "dateRange",
+      isActive: true,
     },
     {
       label: "Empleado",
       placeholder: "Empleado",
       field: "employeeName",
       type: "text",
+      isActive: true,
     },
     // {
     //   label: "Recibo",
@@ -221,7 +223,7 @@ function LoanDiscountsCrud() {
     //   field: "receiptNumber",
     //   type: "text",
     // },
-  ];
+  ]);
 
   const exportPDF = () => {
     generateReport(data, {});
@@ -238,6 +240,7 @@ function LoanDiscountsCrud() {
       <SearchBar
         mainFilters={mainFilters}
         secondaryFilters={secondaryFilters}
+        setSecondaryFilters={setSecondaryFilters}
         setRequestToggle={setReqToggle}
         setSearchParams={setSearchParams}
         setSearchedText={setSearchedText}

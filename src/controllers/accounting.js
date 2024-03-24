@@ -270,6 +270,7 @@ controller.getMajorGeneral = async (queryParams) => {
       from general_diary_account gda
       join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
       join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
+      join payment p on (gd.payment_id = p.payment_id)
       where gd.outlet_id='${queryParams.outletId}'
       ${
         queryParams.dateFrom
@@ -277,7 +278,8 @@ controller.getMajorGeneral = async (queryParams) => {
           : ""
       }
       and ac.number like '${queryParams.accountId || "%"}'
-      and gd.status_type != 'DELETE'
+      and gd.status_type not in ('DELETE', 'REVERSED')
+      and p.status_type <> 'CANCEL'
       and gd.description not like '%226464%'
       and gd.description not like '%227695%'
       group by gd.payment_id, ac.number, ac.name,gd.description,gd.general_diary_date

@@ -13,7 +13,7 @@ import {
 } from "./report-helpers";
 import { getLoanSituationLabel } from "../stringFunctions";
 
-let colsWidth = [25, 48, 75, 100, 127, 155, 175, 198, 220, 245];
+let colsWidth = [25, 48, 75, 110, 115, 145, 175, 198, 220, 245];
 
 function generateReport(data, configParams) {
   //General Configuration Params
@@ -74,11 +74,11 @@ function generateReport(data, configParams) {
       left + colsWidth[3],
       top
     );
-    doc.text(
-      currencyFormat(item.balance_of_capital, false),
-      left + colsWidth[4],
-      top
-    );
+    // doc.text(
+    //   currencyFormat(item.balance_of_capital, false),
+    //   left + colsWidth[4],
+    //   top
+    // );
     doc.text(
       currencyFormat(item.total_paid_mora, false),
       left + colsWidth[5],
@@ -211,7 +211,7 @@ function renderTableHeader(doc, pos, top) {
   createSubTitle(doc, "Capital", pos + colsWidth[1], top, "center");
   createSubTitle(doc, "Interés", pos + colsWidth[2], top);
   createSubTitle(doc, "Cuota.", pos + colsWidth[3], top);
-  createSubTitle(doc, "Balance\nCapital", pos + colsWidth[4], top - 2);
+  // createSubTitle(doc, "Balance\nCapital", pos + colsWidth[4], top - 2);
   createSubTitle(doc, "Mora\nPagada", pos + colsWidth[5], top - 2);
   createSubTitle(doc, "Desc.", pos + colsWidth[6], top);
   createSubTitle(doc, "Total\nPagado", pos + colsWidth[7], top - 2);

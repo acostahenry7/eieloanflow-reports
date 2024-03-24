@@ -46,9 +46,26 @@ controller.getArrearUsers = async (queryParams) => {
       JOIN loan_payment_address lpa ON (l.loan_payment_address_id = lpa.loan_payment_address_id)
             LEFT JOIN zone_neighbor_hood znh ON (lpa.section_id = znh.section_id)
             LEFT JOIN zone z ON (znh.zone_id = z.zone_id)
-      JOIN amortization a ON (a.loan_id = l.loan_id AND a.payment_date between '${
-        queryParams.paymentDateFrom
-      }' and '${queryParams.paymentDateTo}')
+      JOIN amortization a ON (a.loan_id = l.loan_id 
+        ${
+          queryParams.paymentDateFrom && !queryParams.paymentDateTo
+            ? `AND a.payment_date >= '${queryParams.paymentDateFrom || ""}'`
+            : ""
+        } 
+  
+        ${
+          queryParams.paymentDateToo && !queryParams.paymentDateFrom
+            ? `AND a.payment_date <= '${queryParams.paymentDateTo || ""}'`
+            : ""
+        } 
+  
+        ${
+          queryParams.paymentDateFrom && queryParams.paymentDateTo
+            ? `AND a.payment_date between '${queryParams.paymentDateFrom}' and '${queryParams.paymentDateTo}'`
+            : ""
+        } 
+
+        )
       group by c.first_name, c.last_name, l.status_type,  c.identification, c.phone, l.loan_number_id, l.loan_situation, 
       l.created_date, l.amount_approved, l.amount_of_free, l.number_of_installments, l.outlet_id, l.frequency_of_payment
       having l.loan_situation like 'ARREARS'
@@ -71,9 +88,26 @@ controller.getArrearUsers = async (queryParams) => {
           : ""
       }
       AND l.outlet_id like '${queryParams.outletId || ""}%'
-      AND l.created_date between '${queryParams.dateFrom}' and '${
-        queryParams.dateTo
-      }'
+      ${
+        queryParams.dateFrom && !queryParams.dateTo
+          ? `AND l.created_date >= '${queryParams.dateFrom || ""}'`
+          : ""
+      } 
+
+      ${
+        queryParams.dateTo && !queryParams.dateFrom
+          ? `AND l.created_date <= '${queryParams.dateTo || ""}'`
+          : ""
+      } 
+
+      ${
+        queryParams.dateFrom && queryParams.dateTo
+          ? `AND l.created_date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
+          : ""
+      } 
+
+
+      
       AND l.frequency_of_payment like '${queryParams.paymentFrequency || ""}%'
       AND max(z.name) like '${queryParams.zoneId || ""}%'`);
 
@@ -143,3 +177,7 @@ FROM
 };
 
 module.exports = controller;
+
+// AND a.payment_date between '${
+//   queryParams.paymentDateFrom
+// }' and '${queryParams.paymentDateTo}')

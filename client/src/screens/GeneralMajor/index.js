@@ -143,14 +143,15 @@ function GeneralMajor() {
     },
   ];
 
-  let secondaryFilters = [
+  let [secondaryFilters, setSecondaryFilters] = React.useState([
     {
       label: "Fecha",
       field: "date",
       placeholder: "Búsqueda por nombre",
       type: "dateRange",
+      isActive: true,
     },
-  ];
+  ]);
 
   const filterData = data.filter((item) => {
     let searchText = `accountNumber${item.account.number}accountName${item.account.name}`;
@@ -192,6 +193,7 @@ function GeneralMajor() {
           <SearchBar
             mainFilters={mainFilters}
             secondaryFilters={secondaryFilters}
+            setSecondaryFilters={setSecondaryFilters}
             setSearchParams={setSearchParams}
             searchParams={searchParams}
             setSearchedText={setSearchedText}

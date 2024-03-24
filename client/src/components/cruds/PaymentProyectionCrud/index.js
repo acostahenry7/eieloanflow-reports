@@ -139,14 +139,15 @@ function PaymentProyectionCrud() {
     },
   ];
 
-  const secondaryFilters = [
+  const [secondaryFilters, setSecondaryFilters] = React.useState([
     {
       label: "Fecha",
       field: "date",
       placeholder: "Búsqueda por nombre",
       type: "dateRange",
+      isActive: true,
     },
-  ];
+  ]);
 
   const filterData = data.filter((item) => {
     let searchText = `customerName${item.employee_name}indetification${item.identification}loanNumber${item.loan_number_id}`;
@@ -176,6 +177,7 @@ function PaymentProyectionCrud() {
       <SearchBar
         mainFilters={mainFilters}
         secondaryFilters={secondaryFilters}
+        setSecondaryFilters={setSecondaryFilters}
         setRequestToggle={setReqToggle}
         setSearchParams={setSearchParams}
         setSearchedText={setSearchedText}

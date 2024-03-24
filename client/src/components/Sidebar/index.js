@@ -179,17 +179,6 @@ function Sidebar() {
           route: "/reports/paid-mora",
           selected: false,
         },
-        {
-          label: "Recibos de Ingreso",
-          icon: (selected) => (
-            <IoReceiptOutline
-              className="Sidebar-content-item-icon"
-              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
-            />
-          ),
-          route: "/reports/receipt-detail",
-          selected: false,
-        },
       ],
     },
     {
@@ -357,6 +346,17 @@ function Sidebar() {
             />
           ),
           route: "/reports/paid-interest",
+          selected: false,
+        },
+        {
+          label: "Recibos de Ingreso (NCF)",
+          icon: (selected) => (
+            <IoReceiptOutline
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/receipt-detail",
           selected: false,
         },
         // {

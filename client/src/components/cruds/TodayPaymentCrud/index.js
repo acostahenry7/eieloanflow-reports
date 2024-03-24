@@ -138,21 +138,25 @@ function TodayPaymentCrud() {
     },
   ];
 
-  const secondaryFilters = [
+  const [secondaryFilters, setSecondaryFilters] = React.useState([
     {
       label: "No. de cuotas",
       field: "pendingDue",
       isNotDynamic: true,
       placeholder: "1",
       type: "text",
+      isActive: true,
     },
     {
       label: "Fecha de pago",
       field: "date",
       placeholder: "Búsqueda por nombre",
       type: "dateRange",
+      from: new Date().toISOString().split("T")[0],
+      to: new Date().toISOString().split("T")[0],
+      isActive: true,
     },
-  ];
+  ]);
 
   const filterData = data.filter((item) => {
     let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}pendingDue${item.pending_due}`;
@@ -182,6 +186,7 @@ function TodayPaymentCrud() {
       <SearchBar
         mainFilters={mainFilters}
         secondaryFilters={secondaryFilters}
+        setSecondaryFilters={setSecondaryFilters}
         setRequestToggle={setReqToggle}
         setSearchParams={setSearchParams}
         setSearchedText={setSearchedText}

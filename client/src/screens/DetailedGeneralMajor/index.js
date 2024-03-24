@@ -196,14 +196,15 @@ function DetailedGeneralMajor() {
     },
   ];
 
-  let secondaryFilters = [
+  let [secondaryFilters, setSecondaryFilters] = React.useState([
     {
       label: "Fecha",
       field: "date",
       placeholder: "Búsqueda por nombre",
       type: "dateRange",
+      isActive: true,
     },
-  ];
+  ]);
 
   console.log(data);
 
@@ -214,6 +215,7 @@ function DetailedGeneralMajor() {
         <SearchBar
           mainFilters={mainFilters}
           secondaryFilters={secondaryFilters}
+          setSecondaryFilters={setSecondaryFilters}
           setSearchParams={setSearchParams}
           setRequestToggle={setReqToggle}
           exportFunction={async () => await generateDetailedMajorGeneral()}

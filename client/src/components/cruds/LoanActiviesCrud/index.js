@@ -186,18 +186,20 @@ function LoanActivitiesCrud() {
     },
   ];
 
-  const secondaryFilters = [
+  const [secondaryFilters, setSecondaryFilters] = React.useState([
     {
       label: "Fecha",
       field: "date",
       placeholder: "Búsqueda por nombre",
       type: "dateRange",
+      isActive: true,
     },
     {
       label: "Empleado",
       placeholder: "Empleado",
       field: "employeeName",
       type: "text",
+      isActive: true,
     },
     {
       label: "Estatus",
@@ -237,6 +239,7 @@ function LoanActivitiesCrud() {
           value: "reenganchado",
         },
       ],
+      isActive: true,
     },
     {
       label: "Tipo de préstamo",
@@ -272,6 +275,7 @@ function LoanActivitiesCrud() {
           value: "LOAN_INSURANCE",
         },
       ],
+      isActive: true,
     },
     {
       label: "Situación",
@@ -307,6 +311,7 @@ function LoanActivitiesCrud() {
           value: "SEIZED",
         },
       ],
+      isActive: true,
     },
     // {
     //   label: "Recibo",
@@ -314,7 +319,7 @@ function LoanActivitiesCrud() {
     //   field: "receiptNumber",
     //   type: "text",
     // },
-  ];
+  ]);
 
   const exportPDF = () => {
     generateReport(data, {});
@@ -331,6 +336,7 @@ function LoanActivitiesCrud() {
       <SearchBar
         mainFilters={mainFilters}
         secondaryFilters={secondaryFilters}
+        setSecondaryFilters={setSecondaryFilters}
         setRequestToggle={setReqToggle}
         setSearchParams={setSearchParams}
         setSearchedText={setSearchedText}

@@ -16,7 +16,7 @@ function RegisterCloseCrud() {
   const [outlets, setOutlets] = React.useState([]);
   const [data, setData] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [reqToggle, setReqToggle] = React.useState([]);
+  const [reqToggle, setReqToggle] = React.useState(false);
   const [searchedText, setSearchedText] = React.useState("");
   const [searchParams, setSearchParams] = React.useState({
     dateFrom: new Date().toISOString().split("T")[0],
@@ -143,6 +143,21 @@ function RegisterCloseCrud() {
       reorder: true,
       omit: false,
     },
+    {
+      name: "Fecha de cierre",
+      selector: (row) =>
+        new Date(row.register.last_modified_date)
+          .toLocaleString("es-ES", {
+            day: "2-digit",
+            month: "numeric",
+            year: "numeric",
+          })
+          .split(",")[0],
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+
     // {
     //   name: "Comisión",
     //   width: tableUIHelper.columns.width.amount,
@@ -190,14 +205,17 @@ function RegisterCloseCrud() {
     },
   ];
 
-  const secondaryFilters = [
+  const [secondaryFilters, setSecondaryFilters] = React.useState([
     {
       label: "Fecha",
       field: "date",
       placeholder: "Búsqueda por nombre",
       type: "dateRange",
+      from: new Date().toISOString().split("T")[0],
+      to: new Date().toISOString().split("T")[0],
+      isActive: true,
     },
-  ];
+  ]);
 
   const filterData = data.filter((item) => {
     let searchText = `employeeName${item.register.employee_name}indetification${item.identification}loanNumber${item.loan_number_id}createdBy${item.created_by}receiptNumber${item.receipt_number}`;
@@ -227,6 +245,7 @@ function RegisterCloseCrud() {
       <SearchBar
         mainFilters={mainFilters}
         secondaryFilters={secondaryFilters}
+        setSecondaryFilters={setSecondaryFilters}
         setRequestToggle={setReqToggle}
         setSearchParams={setSearchParams}
         setSearchedText={setSearchedText}

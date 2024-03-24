@@ -20,10 +20,10 @@ function CustomerCrud() {
   const [reqToggle, setReqToggle] = React.useState([]);
   const [searchedText, setSearchedText] = React.useState("");
   const [searchParams, setSearchParams] = React.useState({
-    dateFrom: new Date().toISOString().split("T")[0],
-    dateTo: new Date().toISOString().split("T")[0],
-    paymentDateFrom: new Date().toISOString().split("T")[0],
-    paymentDateTo: new Date().toISOString().split("T")[0],
+    // dateFrom: new Date().toISOString().split("T")[0],
+    // dateTo: new Date().toISOString().split("T")[0],
+    // paymentDateFrom: new Date().toISOString().split("T")[0],
+    // paymentDateTo: new Date().toISOString().split("T")[0],
   });
 
   React.useEffect(() => {
@@ -268,11 +268,14 @@ function CustomerCrud() {
     },
   ];
 
-  const secondaryFilters = [
+  const [secondaryFilters, setSecondaryFilters] = React.useState([
     {
       label: "Fecha del Préstamo",
       field: "date",
       type: "dateRange",
+      from: "",
+      to: "",
+      isActive: false,
     },
     {
       label: "Cuotas en atraso",
@@ -280,15 +283,20 @@ function CustomerCrud() {
       placeholder: "Ej. 2",
       isNotDynamic: true,
       type: "text",
+      isActive: true,
     },
     {
       label: "Fecha de pago",
       field: "paymentDate",
       type: "dateRange",
+      from: "",
+      to: "",
+      isActive: false,
     },
     {
       label: "Zona",
       field: "zoneId",
+      isActive: true,
       type: "select",
       options: [
         {
@@ -301,7 +309,7 @@ function CustomerCrud() {
         })),
       ],
     },
-  ];
+  ]);
 
   const filterData = data.filter((item) => {
     let searchText = `customerName${item.customer_name}identification${item.identification}loanNumber${item.loan_number_id}`;
@@ -331,6 +339,7 @@ function CustomerCrud() {
       <SearchBar
         mainFilters={mainFilters}
         secondaryFilters={secondaryFilters}
+        setSecondaryFilters={setSecondaryFilters}
         setRequestToggle={setReqToggle}
         searchParams={searchParams}
         setSearchParams={setSearchParams}
