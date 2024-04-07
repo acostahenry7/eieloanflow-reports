@@ -36,11 +36,11 @@ controller.getArrearUsers = async (queryParams) => {
       await db.query(`SELECT string_agg(distinct(z.name), ',') as zone, string_agg(distinct(z.zone_id), ',') as zone_id, 
       c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, l.loan_situation, 
       c.phone, l.created_date, l.amount_approved, l.amount_of_free,l.frequency_of_payment,
-      COUNT(a.amortization_id) filter (where a.status_type <> 'DELETE') number_of_installments, 
-      COUNT(a.amortization_id) filter (where a.status_type = 'PAID') as paid_dues,
-      COUNT(a.amortization_id) filter (where a.status_type = 'DEFEATED') as arrears_dues,
-      TRUNC(cast((COUNT(a.amortization_id) filter (where a.status_type = 'DEFEATED')) as DECIMAL)/
-      COUNT(a.amortization_id) filter (where a.status_type <> 'DELETE'), 2) * 100 as arrear_percentaje,
+      COUNT(distinct(a.amortization_id)) filter (where a.status_type <> 'DELETE') number_of_installments, 
+      COUNT(distinct(a.amortization_id)) filter (where a.status_type = 'PAID') as paid_dues,
+      COUNT(distinct(a.amortization_id)) filter (where a.status_type = 'DEFEATED') as arrears_dues,
+      TRUNC(cast((COUNT(distinct(a.amortization_id)) filter (where a.status_type = 'DEFEATED')) as DECIMAL)/
+      COUNT(distinct(a.amortization_id)) filter (where a.status_type <> 'DELETE'), 2) * 100 as arrear_percentaje,
       MIN(a.payment_date) filter (where a.status_type = 'DEFEATED') defeated_since,
       SUM(a.amount_of_fee) filter (where a.status_type = 'DEFEATED') defeated_amount
       FROM customer_loan cl
