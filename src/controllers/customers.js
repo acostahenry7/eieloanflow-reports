@@ -42,7 +42,8 @@ controller.getArrearUsers = async (queryParams) => {
       TRUNC(cast((COUNT(distinct(a.amortization_id)) filter (where a.status_type = 'DEFEATED')) as DECIMAL)/
       COUNT(distinct(a.amortization_id)) filter (where a.status_type <> 'DELETE'), 2) * 100 as arrear_percentaje,
       MIN(a.payment_date) filter (where a.status_type = 'DEFEATED') defeated_since,
-      SUM(a.amount_of_fee) filter (where a.status_type = 'DEFEATED') defeated_amount
+      TRUNC(SUM(a.amount_of_fee) filter (where a.status_type = 'DEFEATED') 
+      / COUNT(distinct(a.amortization_id)) filter (where a.status_type = 'DEFEATED'),2)  defeated_amount
       FROM customer_loan cl
       JOIN customer c ON (cl.customer_id = c.customer_id)
       JOIN loan l ON (cl.loan_id = l.loan_id)
