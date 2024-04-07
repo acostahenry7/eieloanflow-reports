@@ -57,7 +57,7 @@ controller.getArrearUsers = async (queryParams) => {
       AND COUNT(a.amortization_id) filter (where a.status_type = 'DEFEATED') > 0
       ${
         parseInt(queryParams.arrearFees) > 0
-          ? `AND count(a.quota_number) filter(where a.status_type = 'DEFEATED') = ${queryParams.arrearFees}`
+          ? `AND count(distinct(a.amortization_id)) filter(where a.status_type = 'DEFEATED') = ${queryParams.arrearFees}`
           : ""
       }
       AND l.outlet_id like '${queryParams.outletId || ""}%'
