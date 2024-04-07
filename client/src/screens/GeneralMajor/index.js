@@ -125,6 +125,13 @@ function GeneralMajor() {
       type: "text",
     },
     {
+      label: "Empleado",
+      field: "employeeName",
+      placeholder: "Búsqueda por cajero",
+      type: "text",
+      isNotDynamic: true,
+    },
+    {
       label: "Sucursal",
       field: "outletId",
       type: "select",

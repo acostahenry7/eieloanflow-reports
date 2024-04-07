@@ -52,7 +52,7 @@ controller.getGeneralBalance = async (queryParams) => {
       left join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
       where ac.outlet_id like '${queryParams.outletId}'
       group by ac.account_catalog_id, ac.name
-      having min(gd.general_diary_date) <= '${queryParams.date}' ) t1 on (ac.account_catalog_id = t1.account_catalog_id)
+      having min(gd.created_date) <= '${queryParams.date}' ) t1 on (ac.account_catalog_id = t1.account_catalog_id)
       where ac.outlet_id like '${queryParams.outletId}'
       order by ac.number`);
 
@@ -266,15 +266,18 @@ controller.getMajorGeneral = async (queryParams) => {
   try {
     const [majorGeneral, meta] = await db.query(
       ` select ac.number, ac.name,gd.description, sum(gda.debit) debit, sum(gda.credit) credit, 
-      gd.general_diary_date as created_date
+      gd.created_date as created_date, e.first_name || ' ' || e.last_name as employee_name
       from general_diary_account gda
       join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
       join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
       join payment p on (gd.payment_id = p.payment_id)
+      join register r on (p.register_id = r.register_id)
+      JOIN jhi_user u ON (r.user_id = u.user_id)
+      JOIN employee e ON (u.employee_id = e.employee_id)
       where gd.outlet_id='${queryParams.outletId}'
       ${
         queryParams.dateFrom
-          ? `and gd.general_diary_date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
+          ? `and gd.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
           : ""
       }
       and ac.number like '${queryParams.accountId || "%"}'
@@ -282,8 +285,11 @@ controller.getMajorGeneral = async (queryParams) => {
       and p.status_type <> 'CANCEL'
       and gd.description not like '%226464%'
       and gd.description not like '%227695%'
-      group by gd.payment_id, ac.number, ac.name,gd.description,gd.general_diary_date
-      order by gd.general_diary_date desc`
+      and lower(e.first_name || ' ' || e.last_name) like '${
+        `%${queryParams.employeeName.toLowerCase()}%` || "%"
+      }'
+      group by gd.payment_id, ac.number, ac.name,gd.description,gd.created_date, e.first_name, e.last_name
+      order by gd.created_date desc`
     );
 
     // console.log(majorGeneral);

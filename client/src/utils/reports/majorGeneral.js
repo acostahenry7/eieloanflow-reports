@@ -82,9 +82,9 @@ function generateReport(data, configParams) {
       doc.text(
         `${description[0] || ""} ${description[1] || ""} ${
           description[2] || ""
-        } ${description[3] || ""} ${description[5] || ""} ${
-          description[6] || ""
-        } ${description[17] || ""}`,
+        } ${description[3] || ""}${description[4] || ""}  ${
+          description[5] || ""
+        } ${description[6] || ""}`,
         left + colsWidth[0] + 3,
         top
       );

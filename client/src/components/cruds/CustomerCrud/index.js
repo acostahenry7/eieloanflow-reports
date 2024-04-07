@@ -36,8 +36,8 @@ function CustomerCrud() {
         if (customers.error == true) {
           throw new Error(customers.body);
         }
-        console.log(customers.body);
-        setZones([]);
+        console.log("ZONES", zones);
+        // setZones([]);
         setZones(zones.body);
         setOutlets(outlets.body);
         setData(customers.body);
@@ -248,7 +248,21 @@ function CustomerCrud() {
         },
       ],
     },
-
+    {
+      label: "Zona",
+      field: "zoneName",
+      type: "select",
+      options: [
+        {
+          label: "Todas las zonas",
+          value: "",
+        },
+        ...zones.map((zone) => ({
+          label: zone.name,
+          value: zone.name,
+        })),
+      ],
+    },
     {
       label: "Sucursal",
       field: "outletId",
@@ -292,22 +306,6 @@ function CustomerCrud() {
       from: "",
       to: "",
       isActive: false,
-    },
-    {
-      label: "Zona",
-      field: "zoneId",
-      isActive: true,
-      type: "select",
-      options: [
-        {
-          label: "Todas las zonas",
-          value: "",
-        },
-        ...orderBy(uniqBy(zones, "name"), ["name"]).map((zone) => ({
-          label: zone.name,
-          value: zone.name,
-        })),
-      ],
     },
   ]);
 

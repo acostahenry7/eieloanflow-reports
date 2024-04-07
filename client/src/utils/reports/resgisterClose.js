@@ -195,10 +195,9 @@ function generateReport(data, configParams) {
         createSubTitle(
           doc,
           currencyFormat(
-            item.child.reduce(
-              (acc, element) => acc + parseFloat(element.pay),
-              0
-            )
+            item.child
+              .filter((a) => a.status_type == "ENABLED")
+              .reduce((acc, element) => acc + parseFloat(element.pay), 0)
           ),
           left + innerColsWidth[2] + 10,
           top + 5,
