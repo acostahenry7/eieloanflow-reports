@@ -270,14 +270,14 @@ controller.getMajorGeneral = async (queryParams) => {
       from general_diary_account gda
       join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
       join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
-      join payment p on (gd.payment_id = p.payment_id)
+      left join payment p on (gd.payment_id = p.payment_id)
       join register r on (p.register_id = r.register_id)
       JOIN jhi_user u ON (r.user_id = u.user_id)
       JOIN employee e ON (u.employee_id = e.employee_id)
       where gd.outlet_id='${queryParams.outletId}'
       ${
         queryParams.dateFrom
-          ? `and gd.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
+          ? `and gd.general_diary_date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
           : ""
       }
       and ac.number like '${queryParams.accountId || "%"}'
@@ -285,9 +285,7 @@ controller.getMajorGeneral = async (queryParams) => {
       and p.status_type <> 'CANCEL'
       and gd.description not like '%226464%'
       and gd.description not like '%227695%'
-      and lower(e.first_name || ' ' || e.last_name) like '${
-        `%${queryParams.employeeName.toLowerCase()}%` || "%"
-      }'
+      '
       group by gd.payment_id, ac.number, ac.name,gd.description,gd.created_date, e.first_name, e.last_name
       order by gd.created_date desc`
     );
@@ -300,6 +298,10 @@ controller.getMajorGeneral = async (queryParams) => {
     console.log(err);
   }
 };
+
+// and lower(e.first_name || ' ' || e.last_name) like '${
+//   `%${queryParams.employeeName?.toLowerCase()}%` || "%"
+// }
 
 controller.getPayableAccount = async (queryParams) => {
   console.log(queryParams);

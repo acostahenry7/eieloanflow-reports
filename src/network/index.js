@@ -10,6 +10,7 @@ const paymentCtrl = require("../controllers/payments");
 const loanCtrl = require("../controllers/loans");
 const accountingCtrl = require("../controllers/accounting");
 const rrhhCtrl = require("../controllers/rrhh");
+const processMoraCtrl = require("../controllers/processMora");
 
 module.exports = (app) => {
   router.post("/api/signin", (req, res) => {
@@ -412,6 +413,18 @@ module.exports = (app) => {
   router.get("/api/employee", (req, res) => {
     rrhhCtrl
       .getEmployees(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  //Proceso Mora
+  router.get("/api/proceso-mora", (req, res) => {
+    processMoraCtrl
+      .fixMoraHandler()
       .then((msg) => {
         response.success(req, res, msg, 200);
       })

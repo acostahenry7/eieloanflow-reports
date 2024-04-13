@@ -51,13 +51,18 @@ function TotalBar({ data, loadingStatus }) {
           </li>
           <li className="list-item">
             <CurrencyFormat
-              value={data
-                .reduce(
-                  (acc, item) =>
-                    acc + parseFloat(item.register.total_cash || 0),
-                  0
-                )
-                .toFixed(2)}
+              value={(() => {
+                let totalCash = 0;
+                data.map(function (item) {
+                  item.child
+                    .filter((a) => a.status_type == "ENABLED")
+                    .map((c) => {
+                      totalCash += parseFloat(c.pay);
+                    });
+                });
+                console.log("HOLAA", totalCash);
+                return totalCash.toFixed(2);
+              })()}
               displayType={"text"}
               thousandSeparator={true}
               prefix={"RD $"}

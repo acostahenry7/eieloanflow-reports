@@ -26,7 +26,7 @@ function generateReport(data, configParams) {
   let granTotalRight = 460;
   let rightTotal = right;
   let center = 80;
-  let itemsPerPage = 28;
+  let itemsPerPage = 25;
 
   //-------File settings---------
   let fileNameDate = new Date().toISOString().split("T")[0];
@@ -205,6 +205,10 @@ function generateReport(data, configParams) {
         );
 
         top += 5;
+        if (counter > itemsPerPage - 4) {
+          doc.addPage();
+          top = 10;
+        }
         Object.entries(groupBy(item.child, "outlet")).map(
           (outletItem, index) => {
             createSubTitle(
@@ -216,10 +220,9 @@ function generateReport(data, configParams) {
             createSubTitle(
               doc,
               currencyFormat(
-                outletItem[1].reduce(
-                  (acc, element) => acc + parseFloat(element.pay),
-                  0
-                )
+                outletItem[1]
+                  .filter((a) => a.status_type == "ENABLED")
+                  .reduce((acc, element) => acc + parseFloat(element.pay), 0)
               ),
               left + innerColsWidth[2] + 10,
               top + (index + 2) * 5,
@@ -242,6 +245,9 @@ function generateReport(data, configParams) {
       doc.addPage();
       top = 40;
       renderTableHeader(doc, left, top - 10);
+    } else {
+      doc.addPage();
+      top = 40;
     }
   });
 
