@@ -266,14 +266,14 @@ controller.getMajorGeneral = async (queryParams) => {
   try {
     const [majorGeneral, meta] = await db.query(
       ` select ac.number, ac.name,gd.description, sum(gda.debit) debit, sum(gda.credit) credit, 
-      gd.created_date as created_date, e.first_name || ' ' || e.last_name as employee_name
+      gd.general_diary_date as created_date, e.first_name || ' ' || e.last_name as employee_name
       from general_diary_account gda
       join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
       join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
-      left join payment p on (gd.payment_id = p.payment_id)
-      join register r on (p.register_id = r.register_id)
-      JOIN jhi_user u ON (r.user_id = u.user_id)
-      JOIN employee e ON (u.employee_id = e.employee_id)
+      left join payment p on (gd.payment_id = p.payment_id and p.status_type <> 'CANCEL')
+      left join register r on (p.register_id = r.register_id)
+      left JOIN jhi_user u ON (r.user_id = u.user_id)
+      left JOIN employee e ON (u.employee_id = e.employee_id)
       where gd.outlet_id='${queryParams.outletId}'
       ${
         queryParams.dateFrom
@@ -282,12 +282,10 @@ controller.getMajorGeneral = async (queryParams) => {
       }
       and ac.number like '${queryParams.accountId || "%"}'
       and gd.status_type not in ('DELETE', 'REVERSED')
-      and p.status_type <> 'CANCEL'
       and gd.description not like '%226464%'
       and gd.description not like '%227695%'
-      '
-      group by gd.payment_id, ac.number, ac.name,gd.description,gd.created_date, e.first_name, e.last_name
-      order by gd.created_date desc`
+      group by gd.payment_id, ac.number, ac.name,gd.description,gd.general_diary_date, e.first_name, e.last_name
+      order by gd.general_diary_date asc`
     );
 
     // console.log(majorGeneral);
