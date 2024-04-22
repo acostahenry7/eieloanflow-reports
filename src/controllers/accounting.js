@@ -274,7 +274,7 @@ controller.getMajorGeneral = async (queryParams) => {
       left join register r on (p.register_id = r.register_id)
       left JOIN jhi_user u ON (r.user_id = u.user_id)
       left JOIN employee e ON (u.employee_id = e.employee_id)
-      where gd.outlet_id='${queryParams.outletId}'
+      where r.outlet_id='${queryParams.outletId}'
       ${
         queryParams.dateFrom
           ? `and gd.general_diary_date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
@@ -282,8 +282,18 @@ controller.getMajorGeneral = async (queryParams) => {
       }
       and ac.number like '${queryParams.accountId || "%"}'
       and gd.status_type not in ('DELETE', 'REVERSED')
+      and p.status_type <> 'CANCEL'
       and gd.description not like '%226464%'
       and gd.description not like '%227695%'
+      ${
+        queryParams.employeeName
+          ? `and lower(e.first_name || ' ' || e.last_name) like '${
+              `%${queryParams.employeeName?.toLowerCase()}%` || "%"
+            }'
+        `
+          : ""
+      }
+      
       group by gd.payment_id, ac.number, ac.name,gd.description,gd.general_diary_date, e.first_name, e.last_name
       order by gd.general_diary_date asc`
     );
@@ -296,10 +306,6 @@ controller.getMajorGeneral = async (queryParams) => {
     console.log(err);
   }
 };
-
-// and lower(e.first_name || ' ' || e.last_name) like '${
-//   `%${queryParams.employeeName?.toLowerCase()}%` || "%"
-// }
 
 controller.getPayableAccount = async (queryParams) => {
   console.log(queryParams);

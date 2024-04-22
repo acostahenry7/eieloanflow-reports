@@ -52,7 +52,7 @@ controller.getArrearUsers = async (queryParams) => {
       LEFT JOIN zone z ON (znh.zone_id = z.zone_id and z.outlet_id = l.outlet_id)
       group by c.first_name, c.last_name,  c.identification, c.phone, l.loan_number_id, l.created_date, l.amount_approved, 
       l.amount_of_free, l.number_of_installments, l.loan_situation, l.status_type, l.frequency_of_payment, l.outlet_id
-      HAVING l.status_type not in ('DELETE', 'PAID')
+      HAVING l.status_type not in ('DELETE', 'PAID', 'TRANSFERRED')
       AND COUNT(a.amortization_id) filter (where a.status_type = 'DEFEATED') > 0
       ${
         parseInt(queryParams.arrearFees) > 0

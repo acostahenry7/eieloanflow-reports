@@ -263,11 +263,12 @@ controller.getRegisterClose = async (queryParams) => {
       JOIN jhi_user u ON (r.user_id = u.user_id)
       JOIN employee e ON (u.employee_id = e.employee_id)
       JOIN outlet o ON (l.outlet_id = o.outlet_id)
-      WHERE l.status_type NOT IN ('DELETE')
-      AND p.outlet_id like '${queryParams.outletId || ""}%'
+      --WHERE l.status_type NOT IN ('DELETE')
+      WHERE p.status_type = 'ENABLED'
+      AND r.outlet_id like '${queryParams.outletId || ""}%'
       ${
         queryParams.dateFrom && queryParams.dateTo
-          ? `AND r.last_modified_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
+          ? `AND p.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
           : ""
       }
       ORDER BY r.created_date desc,  p.register_id`);
