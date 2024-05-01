@@ -227,6 +227,7 @@ controller.getPaidMora = async (queryParams) => {
         where total_paid_mora > 0
         and a.outlet_id like '${queryParams.outletId}%'
         and l.status_type not in ('DELETE')
+        and p.created_by <> 'y.aragonez'
         group by a.amortization_id, l.loan_number_id, c.first_name, c.last_name, c.identification,
                pd.pay_mora, a.total_paid_mora, a.discount_mora
         having max(p.created_date)::date BETWEEN '${queryParams.dateFrom}' and '${queryParams.dateTo}'
