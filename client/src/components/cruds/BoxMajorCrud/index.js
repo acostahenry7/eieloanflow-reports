@@ -138,13 +138,13 @@ function BoxMajorCrud() {
     )[0]?.name;
     let conf = {
       title: outletName || "Todas las sucursales",
-      date: reportDate.toLocaleString("es-Es", {
-        timeZone: "UTC",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }),
+      date: `De ${new Date(searchParams.dateFrom)
+        .toUTCString()
+        .slice(5, 16)} al ${new Date(searchParams.dateTo)
+        .toUTCString()
+        .slice(5, 16)}`,
     };
+
     generateReport(filterData, conf);
   };
 
