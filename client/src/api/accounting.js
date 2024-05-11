@@ -85,6 +85,34 @@ async function getMajorGeneral(queryParams) {
   }
 }
 
+async function getBoxMajorByEmployee(queryParams) {
+  try {
+    const boxMajor = await request({
+      method: "GET",
+      path: "/box-employee-major",
+      urlParams: queryParams || {},
+    });
+
+    return boxMajor;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getSummarizeMajor(queryParams) {
+  try {
+    const summarizeMajor = await request({
+      method: "GET",
+      path: "/summarize-major",
+      urlParams: queryParams || {},
+    });
+
+    return summarizeMajor;
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function generate606Api(queryParams) {
   try {
     const is606Generated = await request({
@@ -116,6 +144,7 @@ async function generate607Api(queryParams) {
 
 export {
   getAccountCatalog,
+  getSummarizeMajor,
   getGeneralBalance,
   getToChargeAccount,
   getPayableAccount,
@@ -123,4 +152,5 @@ export {
   generate606Api,
   generate607Api,
   getMajorGeneral,
+  getBoxMajorByEmployee,
 };

@@ -54,31 +54,78 @@ let controller = {};
 
 controller.fixMoraHandler = async () => {
   const [data, meta] =
-    await db.query(`  select  general_diary_account_id, ac.number
-  from general_diary_account gda
-  join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
-  where general_diary_id in (
-  select general_diary_id
-  from general_diary
-  where payment_id = 'd4a6c3a3-d763-4299-9460-a60b1e1eba6a')
-  and ac.number in ('1101', '1215')`);
+    await db.query(`select t1.payment_id, gda.general_diary_account_id, t1.general_diary_number_id, t1.loan_number_id, t1.quota_number, t1.pay,
+    t1.pay_mora, t1.interest, t1.missing_interest_seat, t1.missing_box_seat, ac.number
+    from (select distinct on (pd.payment_id) pd.payment_id, gd.general_diary_number_id, gd.general_diary_id, l.loan_number_id, 
+    a.quota_number,pd.pay, pd.pay_mora, a.interest, 
+    case 
+      when pd.pay >= a.interest then a.interest
+      else pd.pay
+    end as missing_interest_seat,
+    pd.pay missing_box_seat
+    from payment_detail pd
+    join amortization a on (pd.amortization_id = a.amortization_id)
+    join loan l on (a.loan_id = l.loan_id)
+    join general_diary gd on (pd.payment_id = gd.payment_id)
+    where pd.payment_id in (select p.payment_id
+              from payment p
+              left join general_diary gd on (p.payment_id = gd.payment_id)
+              left join general_diary_account gda on (gd.general_diary_id = gda.general_diary_id)
+              left join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
+              left join register r on (p.register_id = r.register_id)
+              --left join lan
+              --where p.created_by = 'rossy.m'	
+              where p.created_date::date between '2024-04-11' and '2024-04-30'
+              and p.status_type = 'ENABLED'
+              and gd.status_type = 'ENABLED'
+              and r.outlet_id = '857b8b3b-d603-4474-9b35-4a90277d9bc0'
+              group by p.payment_id, gd.payment_id, gd.status_type
+              having p.pay <> coalesce(sum(debit) filter(where ac.number = '1101' and gda.status_type = 'ENABLED'),0)
+              )
+    order by  pd.payment_id, l.loan_number_id, quota_number desc) t1
+    join general_diary_account gda on (t1.general_diary_id = gda.general_diary_id)
+    left join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
+    order by loan_number_id`);
 
   console.log(data.length);
+  let credits = [];
   for (item of data) {
-    if (item.number == "1101") {
-      await db.query(`UPDATE general_diary_account
-      SET debit = 255.00, credit=0.00
-      WHERE general_diary_account_id = '${item.general_diary_account_id}'`);
-    } else {
-      await db.query(`UPDATE general_diary_account
-      SET credit = 255.00, debit=0.00
-      WHERE general_diary_account_id = '${item.general_diary_account_id}'`);
+    switch (item.number) {
+      case "1101":
+        await db.query(`UPDATE general_diary_account
+          SET debit = debit + ${item.missing_box_seat}, credit=0.00
+          WHERE general_diary_account_id = '${item.general_diary_account_id}'`);
+        break;
+      case "1215":
+        // await db.query(`UPDATE general_diary_account
+        //   SET credit = credit + ${item.pay}, debit=0.00
+        //   WHERE general_diary_account_id = '${item.general_diary_account_id}'`);
+        credits.push(item.general_diary_account_id);
+        break;
+      case "2401":
+        await db.query(`UPDATE general_diary_account
+          SET debit = debit + (debit - ${item.missing_interest_seat}), credit=0.00
+          WHERE general_diary_account_id = '${item.general_diary_account_id}'`);
+        break;
+      case "4101":
+        await db.query(`UPDATE general_diary_account
+          SET credit = credit +  (credit - ${item.missing_interest_seat}), debit =0.00
+          WHERE general_diary_account_id = '${item.general_diary_account_id}'`);
+        break;
+      case "4102":
+        await db.query(`UPDATE general_diary_account
+          SET credit = credit +  (credit - ${item.pay_mora}), debit =0.00
+          WHERE general_diary_account_id = '${item.general_diary_account_id}'`);
+        break;
+
+      default:
+        break;
     }
 
     //console.log(`updated item ${item.loan_number_id} ${item.quota_number}`);
   }
   console.log(data.length);
-  return data;
+  return credits;
 };
 
 // controller.fixMoraHandler = async () => {

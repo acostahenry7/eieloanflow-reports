@@ -38,6 +38,8 @@ import { EmployeeScreen } from "./screens/EmployeeScreen";
 import { AccountPayableScren } from "./screens/AccountPayableScreen";
 import { PaidInterestScreen } from "./screens/PaidInterestScreen";
 import { CustomerLoanScreen } from "./screens/CustomerLoanScreen";
+import { GroupedRegisterCloseScreen } from "./screens/GroupedRegisterCloseScreen";
+import { BoxMajorScreen } from "./screens/BoxMajorScreen";
 
 function App() {
   const { token, logout } = React.useContext(AuthContext);
@@ -106,6 +108,10 @@ function App() {
                 element={<RegisterCloseScreen />}
               />
               <Route
+                path="/reports/grouped-register-close"
+                element={<GroupedRegisterCloseScreen />}
+              />
+              <Route
                 path="/reports/loan-movement"
                 element={<LoanMovementScreen />}
               />
@@ -147,7 +153,10 @@ function App() {
                 path="/reports/accouting-major-general"
                 element={<GeneralMajor />}
               />
-
+              <Route
+                path="/reports/accounting-box-major"
+                element={<BoxMajorScreen />}
+              />
               <Route
                 path="/reports/accounting-account-payable"
                 element={<AccountPayableScren />}

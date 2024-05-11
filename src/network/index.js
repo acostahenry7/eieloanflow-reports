@@ -253,6 +253,18 @@ module.exports = (app) => {
       });
   });
 
+  router.get("/api/payment/grouped-register-close", (req, res) => {
+    console.log("hi");
+    loanCtrl
+      .getGroupedRegisterClose(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   router.get("/api/loan-movement", (req, res) => {
     loanCtrl
       .getLoanMovement(req.query)
@@ -313,6 +325,17 @@ module.exports = (app) => {
   router.get("/api/payable-account", (req, res) => {
     accountingCtrl
       .getPayableAccount(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  router.get("/api/summarize-major", (req, res) => {
+    accountingCtrl
+      .getSummarizeMajor(req.query)
       .then((msg) => {
         response.success(req, res, msg, 200);
       })
@@ -389,6 +412,17 @@ module.exports = (app) => {
   router.get("/api/major-general", (req, res) => {
     accountingCtrl
       .getMajorGeneral(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  router.get("/api/box-employee-major", (req, res) => {
+    accountingCtrl
+      .getBoxMajorByEmployee(req.query)
       .then((msg) => {
         response.success(req, res, msg, 200);
       })

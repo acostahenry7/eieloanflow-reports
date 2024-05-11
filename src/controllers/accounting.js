@@ -277,7 +277,7 @@ controller.getMajorGeneral = async (queryParams) => {
       where r.outlet_id='${queryParams.outletId}'
       ${
         queryParams.dateFrom
-          ? `and gd.general_diary_date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
+          ? `and p.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
           : ""
       }
       and ac.number like '${queryParams.accountId || "%"}'
@@ -304,6 +304,37 @@ controller.getMajorGeneral = async (queryParams) => {
     return data;
   } catch (err) {
     console.log(err);
+  }
+};
+
+controller.getBoxMajorByEmployee = async (queryParams) => {
+  try {
+    const [data, metadata] =
+      await db.query(`select e.first_name || ' ' || e.last_name as employee_name, count(distinct(gd.payment_id)) transactions,
+    sum(gda.debit) debit, sum(gda.credit) credit
+    from general_diary gd 
+    join general_diary_account gda on (gd.general_diary_id = gda.general_diary_id)
+    join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
+    left join payment p on (gd.payment_id = p.payment_id)
+    left join register r on (p.register_id = r.register_id)
+    left join jhi_user ju on (r.created_by = ju.login)
+    left join employee e on (ju.employee_id = e.employee_id)
+    left join outlet o on (gd.outlet_id = o.outlet_id) 
+    where r.outlet_id like'${queryParams.outletId}%'
+    and gd.status_type = 'ENABLED'
+    ${
+      queryParams.dateFrom
+        ? `and p.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
+        : ""
+    }
+    and ac.number = '1101'
+    --and e.first_name is not null
+    group by r.created_by, e.first_name, e.last_name
+    order by min(general_diary_number_id) desc`);
+
+    return data;
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -385,6 +416,43 @@ controller.getToChargeAccount = async (queryParams) => {
   } catch (error) {
     console.log(error);
   }
+};
+
+controller.getSummarizeMajor = async (queryParams) => {
+  try {
+    let [data] =
+      await db.query(`select employee, employee_name, count(payment_id) transactions,  sum(debit) as debit, sum(credit) as credit 
+      from 
+      (select ac.number, ac.name,gd.description, sum(gda.debit) debit, sum(gda.credit) credit, 
+       r.created_by as employee, r.register_id, p.payment_id, e.first_name || ' ' || e.last_name as employee_name,
+      gd.general_diary_date as created_date
+      from general_diary_account gda
+      join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
+      join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
+      join payment p on (gd.payment_id = p.payment_id)
+      join register r on (p.register_id = r.register_id)
+      join jhi_user ju on (r.created_by = ju.login)
+      join employee e on (ju.employee_id = e.employee_id)
+      where gd.outlet_id='${queryParams.outletId}'
+      and gd.general_diary_date between '${queryParams.dateFrom}' and '${
+        queryParams.dateTo
+      }'
+      and ac.number like '${queryParams.accountNumber || ""}%'
+      and gd.status_type not in ('DELETE', 'REVERSED')
+      and p.status_type <> 'CANCEL'
+      and gd.description not like '%226464%'
+      and gd.description not like '%227695%'
+      and ac.number like '${queryParams.accountNumber || ""}%'
+       /*and debit > 188000*/
+      group by gd.payment_id, ac.number, ac.name,gd.description,
+       gd.general_diary_date,r.created_by, r.register_id, p.payment_id, e.first_name,
+       e.last_name
+      order by gd.general_diary_date desc
+      )t1
+      group by employee,employee_name`);
+
+    return data;
+  } catch (error) {}
 };
 
 function getMainAccountsArr(arr) {

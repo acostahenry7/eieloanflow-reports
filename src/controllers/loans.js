@@ -286,6 +286,29 @@ controller.getRegisterClose = async (queryParams) => {
   }
 };
 
+controller.getGroupedRegisterClose = async (queryParams) => {
+  try {
+    const [data, meta] = await db.query(`
+      select e.first_name || ' ' || e.last_name as employee_name, 
+      count(payment_id) as transactions,  sum(pay) filter(where p.status_type = 'ENABLED') pay,
+      o.name as outlet
+      from payment p
+      left join register r on (p.register_id = r.register_id)
+      left join jhi_user ju on (r.created_by = ju.login)
+      left join employee e on (ju.employee_id = e.employee_id)
+      left join outlet o on (r.outlet_id = o.outlet_id)
+      where r.outlet_id like '${queryParams.outletId || ""}%'
+      AND p.created_date::date between '${queryParams.dateFrom}' and '${
+      queryParams.dateTo
+    }'
+      group by ju.login, e.first_name, e.last_name, o.name`);
+
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 controller.getLoanMovement = async (queryParams) => {
   try {
     const [data, meta] = await db.query(`

@@ -112,6 +112,20 @@ async function getReceiptDetail(queryParams) {
   }
 }
 
+async function getGroupRegisterClose(queryParams) {
+  try {
+    const paidMora = await request({
+      method: "GET",
+      path: "/payment/grouped-register-close",
+      urlParams: queryParams || {},
+    });
+
+    return paidMora;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export {
   getTodayPaymentsApi,
   getCanceledPaymentsApi,
@@ -121,4 +135,5 @@ export {
   getCollectorVisitsApi,
   getPaidMora,
   getReceiptDetail,
+  getGroupRegisterClose,
 };

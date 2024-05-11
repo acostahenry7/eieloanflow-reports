@@ -103,6 +103,17 @@ function Sidebar() {
           selected: false,
         },
         {
+          label: "Condensado de caja",
+          icon: (selected) => (
+            <TbReport
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/grouped-register-close",
+          selected: false,
+        },
+        {
           label: "Pagos pendientes",
           icon: (selected) => (
             <BiDollar
@@ -446,6 +457,17 @@ function Sidebar() {
             />
           ),
           route: "/reports/detailed-accouting-major-general",
+          selected: false,
+        },
+        {
+          label: "Mayor Caja (cajeros)",
+          icon: (selected) => (
+            <TbReport
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/accounting-box-major",
           selected: false,
         },
         {
