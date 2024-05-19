@@ -163,8 +163,8 @@ controller.getLoanActivities = async (queryParams) => {
       JOIN customer c ON (la.customer_id = c.customer_id)
       JOIN jhi_user u ON (al.created_by = u.login)
       JOIN employee e ON (u.employee_id = e.employee_id)
-      WHERE l.status_type not in ('DELETE', 'PAID')  
-        
+      WHERE l.status_type not in ('DELETE', 'PAID')
+
         ${
           queryParams.dateFrom
             ? getDateRangeFilter(
@@ -175,11 +175,37 @@ controller.getLoanActivities = async (queryParams) => {
             : ""
         }`);
 
-    if (data.length == 0) {
-      return [];
-    }
+    const [events] =
+      await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, ev.event_type as action_type,
+        ev.description as commentary, e.first_name || ' ' || e.last_name as employee_name, ev.created_date
+        FROM event ev
+        JOIN loan l ON (ev.loan_id = l.loan_id)
+        JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
+        JOIN customer c ON (la.customer_id = c.customer_id)
+        JOIN jhi_user u ON (ev.created_by = u.login)
+        JOIN employee e ON (u.employee_id = e.employee_id)
+        WHERE l.status_type not in ('DELETE', 'PAID')    
+        AND ev.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'
+`);
 
-    return data;
+    // const [events] =
+    //       await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, ev.event_type as action_type,
+    //         ev.description as commentary, e.first_name || ' ' || e.last_name as employee_name, ev.created_date
+    //         FROM event ev
+    //         JOIN loan l ON (ev.loan_id = l.loan_id)
+    //         JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
+    //         JOIN customer c ON (la.customer_id = c.customer_id)
+    //         JOIN jhi_user u ON (ev.created_by = u.login)
+    //         JOIN employee e ON (u.employee_id = e.employee_id)
+    //         WHERE l.status_type not in ('DELETE', 'PAID')
+    //         AND ev.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'
+    // `);
+
+    // if (data.length == 0) {
+    //   return [];
+    // }
+
+    return [...data, ...events];
   } catch (error) {
     throw new Error(error.message);
   }

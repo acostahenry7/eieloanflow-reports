@@ -280,7 +280,7 @@ function RegisterCloseCrud() {
                 },
                 {
                   name: "Pago",
-                  selector: (row) => row.pay,
+                  selector: (row) => currencyFormat(row.pay),
                   sortable: true,
                   reorder: true,
                   omit: false,

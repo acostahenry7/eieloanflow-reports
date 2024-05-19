@@ -100,6 +100,15 @@ function generateReport(data, configParams) {
         left + colsWidth[1],
         top
       );
+      createSubTitle(
+        doc,
+        `${currencyFormat(
+          data.reduce((acc, item) => acc + parseFloat(item.credit), 0),
+          false
+        )}`,
+        left + colsWidth[2],
+        top
+      );
       //   createSubTitle(
       //     doc,
       //     `${currencyFormat(
