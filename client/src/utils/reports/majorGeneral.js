@@ -48,6 +48,12 @@ function generateReport(data, configParams) {
   createMainTitle(doc, title, right, headerTop);
   createMainSubTitle(doc, subTitle, right, headerTop + 5);
   createMainSubTitle(doc, date, right, headerTop + 10);
+  createMainSubTitle(
+    doc,
+    `Cajero: ${parsedData[0].account.employee_name}`,
+    left,
+    headerTop + 5
+  );
 
   //---------------------- TRANSACTIONS--------------------
   let counter = 0;
