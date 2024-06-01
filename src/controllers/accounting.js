@@ -270,19 +270,18 @@ controller.getMajorGeneral = async (queryParams) => {
       from general_diary_account gda
       join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
       join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
-      left join payment p on (gd.payment_id = p.payment_id and p.status_type <> 'CANCEL')
+      left join payment p on (gd.payment_id = p.payment_id )
       left join register r on (p.register_id = r.register_id)
       left JOIN jhi_user u ON (r.user_id = u.user_id)
       left JOIN employee e ON (u.employee_id = e.employee_id)
-      where r.outlet_id='${queryParams.outletId}'
+      where gd.outlet_id='${queryParams.outletId}'
       ${
         queryParams.dateFrom
-          ? `and p.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
+          ? `and gd.general_diary_date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
           : ""
       }
       and ac.number like '${queryParams.accountId || "%"}'
       and gd.status_type not in ('DELETE', 'REVERSED')
-      and p.status_type <> 'CANCEL'
       and gd.description not like '%226464%'
       and gd.description not like '%227695%'
       ${
