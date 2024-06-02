@@ -186,9 +186,11 @@ controller.getLoanActivities = async (queryParams) => {
         JOIN jhi_user u ON (ev.created_by = u.login)
         JOIN employee e ON (u.employee_id = e.employee_id)
         WHERE l.status_type not in ('DELETE', 'PAID')    
-        AND ev.created_date::date between '${queryParams.dateFrom}' and '${
-        queryParams.dateTo
-      }'
+        ${
+          queryParams.dateFrom
+            ? `AND ev.created_date::date BETWEEN '${queryParams.dateFrom}' AND '${queryParams.dateTo}'`
+            : ""
+        }
         AND ev.event_type like '${queryParams.actionType}%'
         AND l.status_type like '${queryParams.loanStatus || ""}%'
         AND la.loan_type like '${queryParams.loanType || ""}%'
@@ -204,9 +206,11 @@ JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
 JOIN customer c ON (la.customer_id = c.customer_id)
 JOIN employee e ON (alt.employee_id = e.employee_id)
 WHERE alert_type like 'CANCEL_PAYMENT'    
-AND alt.created_date::date between '${queryParams.dateFrom}' and '${
-        queryParams.dateTo
-      }'
+${
+  queryParams.dateFrom
+    ? `AND alt.created_date::date BETWEEN '${queryParams.dateFrom}' AND '${queryParams.dateTo}'`
+    : ""
+}
   AND l.status_type like '${queryParams.loanStatus || ""}%'
   AND la.loan_type like '${queryParams.loanType || ""}%'
   AND l.loan_situation like '${queryParams.loanSituation || ""}%'
@@ -228,8 +232,11 @@ AND alt.created_date::date between '${queryParams.dateFrom}' and '${
     // if (data.length == 0) {
     //   return [];
     // }
-
-    return [...data, ...events, ...alerts];
+    let response = [...data, events];
+    if (queryParams.actionType == "CANCEL_PAYMENT") {
+      response = [...response, ...alerts];
+    }
+    return response;
   } catch (error) {
     console.log(error);
     throw new Error(error.message);
