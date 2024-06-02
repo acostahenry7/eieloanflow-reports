@@ -77,6 +77,9 @@ function getLoanSituationLabel(loanSituation) {
     case "GLOBAL_DISCOUNT":
       label = "Descuento global";
       break;
+    case "CANCEL_PAYMENT":
+      label = "Pago cancelado";
+      break;
     default:
       break;
   }

@@ -169,6 +169,10 @@ function LoanActivitiesCrud() {
           label: "Descuento global",
           value: "GLOBAL_DISCOUNT",
         },
+        {
+          label: "Pago cancelado",
+          value: "CANCEL_PAYMENT",
+        },
       ],
     },
     {

@@ -195,7 +195,23 @@ controller.getLoanActivities = async (queryParams) => {
         AND l.loan_situation like '${queryParams.loanSituation || ""}%'
         AND l.outlet_id like '${queryParams.outletId}%'
 `);
-
+    const [alerts] =
+      await db.query(`select  c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, alert_type as action_type,
+left(alt.description, strpos(alt.description, '<')-1) as commentary, e.first_name || ' ' || e.last_name as employee_name, alt.created_date
+from alert alt
+JOIN loan l ON (alt.loan_id = l.loan_id)
+JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
+JOIN customer c ON (la.customer_id = c.customer_id)
+JOIN employee e ON (alt.employee_id = e.employee_id)
+WHERE alert_type like 'CANCEL_PAYMENT'    
+AND alt.created_date::date between '${queryParams.dateFrom}' and '${
+        queryParams.dateTo
+      }'
+  AND l.status_type like '${queryParams.loanStatus || ""}%'
+  AND la.loan_type like '${queryParams.loanType || ""}%'
+  AND l.loan_situation like '${queryParams.loanSituation || ""}%'
+  AND l.outlet_id like '${queryParams.outletId}%'
+`);
     // const [events] =
     //       await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, ev.event_type as action_type,
     //         ev.description as commentary, e.first_name || ' ' || e.last_name as employee_name, ev.created_date
@@ -213,7 +229,7 @@ controller.getLoanActivities = async (queryParams) => {
     //   return [];
     // }
 
-    return [...data, ...events];
+    return [...data, ...events, ...alerts];
   } catch (error) {
     console.log(error);
     throw new Error(error.message);
