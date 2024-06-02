@@ -165,15 +165,15 @@ controller.getLoanActivities = async (queryParams) => {
       JOIN employee e ON (u.employee_id = e.employee_id)
       WHERE l.status_type not in ('DELETE', 'PAID')
       ${
-        queryParams.dateFrom
-          ? `AND al.created_date::date BETWEEN '${queryParams.dateFrom}' AND '${queryParams.dateTo}'`
+        queryParams?.dateFrom != "undefined" && queryParams?.dateFrom
+          ? `AND al.created_date::date BETWEEN '${queryParams?.dateFrom}' AND '${queryParams?.dateTo}'`
           : ""
       }
-      AND al.activity_loan_type like '${queryParams.actionType}%'
-      AND l.status_type like '${queryParams.loanStatus || ""}%'
-      AND la.loan_type like '${queryParams.loanType || ""}%'
-      AND l.loan_situation like '${queryParams.loanSituation || ""}%'
-      AND l.outlet_id like '${queryParams.outletId}%'
+      AND al.activity_loan_type like '${queryParams?.actionType || ""}%'
+      AND l.status_type like '${queryParams?.loanStatus || ""}%'
+      AND la.loan_type like '${queryParams?.loanType || ""}%'
+      AND l.loan_situation like '${queryParams?.loanSituation || ""}%'
+      AND l.outlet_id like '${queryParams?.outletId || ""}%'
       `);
 
     const [events] =
@@ -187,15 +187,15 @@ controller.getLoanActivities = async (queryParams) => {
         JOIN employee e ON (u.employee_id = e.employee_id)
         WHERE l.status_type not in ('DELETE', 'PAID')    
         ${
-          queryParams.dateFrom
-            ? `AND ev.created_date::date BETWEEN '${queryParams.dateFrom}' AND '${queryParams.dateTo}'`
+          queryParams?.dateFrom != "undefined" && queryParams?.dateFrom
+            ? `AND ev.created_date::date BETWEEN '${queryParams?.dateFrom}' AND '${queryParams?.dateTo}'`
             : ""
         }
-        AND ev.event_type like '${queryParams.actionType}%'
-        AND l.status_type like '${queryParams.loanStatus || ""}%'
-        AND la.loan_type like '${queryParams.loanType || ""}%'
-        AND l.loan_situation like '${queryParams.loanSituation || ""}%'
-        AND l.outlet_id like '${queryParams.outletId}%'
+        AND ev.event_type like '${queryParams?.actionType || ""}%'
+        AND l.status_type like '${queryParams?.loanStatus || ""}%'
+        AND la.loan_type like '${queryParams?.loanType || ""}%'
+        AND l.loan_situation like '${queryParams?.loanSituation || ""}%'
+        AND l.outlet_id like '${queryParams?.outletId || ""}%'
 `);
     const [alerts] =
       await db.query(`select  c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, alert_type as action_type,
@@ -207,14 +207,14 @@ JOIN customer c ON (la.customer_id = c.customer_id)
 JOIN employee e ON (alt.employee_id = e.employee_id)
 WHERE alert_type like 'CANCEL_PAYMENT'    
 ${
-  queryParams.dateFrom
-    ? `AND alt.created_date::date BETWEEN '${queryParams.dateFrom}' AND '${queryParams.dateTo}'`
+  queryParams?.dateFrom != "undefined" && queryParams?.dateFrom
+    ? `AND alt.created_date::date BETWEEN '${queryParams?.dateFrom}' AND '${queryParams?.dateTo}'`
     : ""
 }
-  AND l.status_type like '${queryParams.loanStatus || ""}%'
-  AND la.loan_type like '${queryParams.loanType || ""}%'
-  AND l.loan_situation like '${queryParams.loanSituation || ""}%'
-  AND l.outlet_id like '${queryParams.outletId}%'
+  AND l.status_type like '${queryParams?.loanStatus || ""}%'
+  AND la.loan_type like '${queryParams?.loanType || ""}%'
+  AND l.loan_situation like '${queryParams?.loanSituation || ""}%'
+  AND l.outlet_id like '${queryParams?.outletId || ""}%'
 `);
     // const [events] =
     //       await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, ev.event_type as action_type,
