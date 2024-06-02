@@ -274,10 +274,10 @@ controller.getMajorGeneral = async (queryParams) => {
       left join register r on (p.register_id = r.register_id)
       left JOIN jhi_user u ON (r.user_id = u.user_id)
       left JOIN employee e ON (u.employee_id = e.employee_id)
-      where gd.outlet_id='${queryParams.outletId}'
+      where r.outlet_id='${queryParams.outletId}'
       ${
         queryParams.dateFrom
-          ? `and gd.general_diary_date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
+          ? `and p.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
           : ""
       }
       and ac.number like '${queryParams.accountId || "%"}'

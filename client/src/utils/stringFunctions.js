@@ -38,7 +38,7 @@ function getLoanSituationLabel(loanSituation) {
     case "EDIT":
       label = "Editado";
       break;
-    case "SEIZE":
+    case "SEIZED":
       label = "Incautado";
       break;
     case "CREATED":
@@ -61,6 +61,21 @@ function getLoanSituationLabel(loanSituation) {
       break;
     case "QUICK_LOAN":
       label = "Préstamo Rápido";
+      break;
+    case "DISCOUNT_MORA":
+      label = "Descuento de mora";
+      break;
+    case "MODIFY_MORA":
+      label = "Mora modificada";
+      break;
+    case "DISCOUNT_INTEREST":
+      label = "Descuento de interes";
+      break;
+    case "CAPITAL_PAYMENT":
+      label = "Abono a capital";
+      break;
+    case "GLOBAL_DISCOUNT":
+      label = "Descuento global";
       break;
     default:
       break;

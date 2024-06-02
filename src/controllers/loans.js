@@ -164,16 +164,17 @@ controller.getLoanActivities = async (queryParams) => {
       JOIN jhi_user u ON (al.created_by = u.login)
       JOIN employee e ON (u.employee_id = e.employee_id)
       WHERE l.status_type not in ('DELETE', 'PAID')
-
-        ${
-          queryParams.dateFrom
-            ? getDateRangeFilter(
-                "al.created_date",
-                queryParams.dateFrom,
-                queryParams.dateTo
-              )
-            : ""
-        }`);
+      ${
+        queryParams.dateFrom
+          ? `AND al.created_date::date BETWEEN '${queryParams.dateFrom}' AND '${queryParams.dateTo}'`
+          : ""
+      }
+      AND al.activity_loan_type like '${queryParams.actionType}%'
+      AND l.status_type like '${queryParams.loanStatus || ""}%'
+      AND la.loan_type like '${queryParams.loanType || ""}%'
+      AND l.loan_situation like '${queryParams.loanSituation || ""}%'
+      AND l.outlet_id like '${queryParams.outletId}%'
+      `);
 
     const [events] =
       await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, ev.event_type as action_type,
@@ -185,7 +186,14 @@ controller.getLoanActivities = async (queryParams) => {
         JOIN jhi_user u ON (ev.created_by = u.login)
         JOIN employee e ON (u.employee_id = e.employee_id)
         WHERE l.status_type not in ('DELETE', 'PAID')    
-        AND ev.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'
+        AND ev.created_date::date between '${queryParams.dateFrom}' and '${
+        queryParams.dateTo
+      }'
+        AND ev.event_type like '${queryParams.actionType}%'
+        AND l.status_type like '${queryParams.loanStatus || ""}%'
+        AND la.loan_type like '${queryParams.loanType || ""}%'
+        AND l.loan_situation like '${queryParams.loanSituation || ""}%'
+        AND l.outlet_id like '${queryParams.outletId}%'
 `);
 
     // const [events] =
@@ -207,6 +215,7 @@ controller.getLoanActivities = async (queryParams) => {
 
     return [...data, ...events];
   } catch (error) {
+    console.log(error);
     throw new Error(error.message);
   }
 };

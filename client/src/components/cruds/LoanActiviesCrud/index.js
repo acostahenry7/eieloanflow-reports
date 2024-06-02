@@ -151,7 +151,23 @@ function LoanActivitiesCrud() {
         },
         {
           label: "Incautado",
-          value: "SEIZE",
+          value: "SEIZED",
+        },
+        {
+          label: "Descuento Mora",
+          value: "DISCOUNT_MORA",
+        },
+        {
+          label: "Descuento Interest",
+          value: "DISCOUNT_INTEREST",
+        },
+        {
+          label: "Abono a capital",
+          value: "CAPITAL_PAYMENT",
+        },
+        {
+          label: "Descuento global",
+          value: "GLOBAL_DISCOUNT",
         },
       ],
     },
