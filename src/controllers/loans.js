@@ -232,7 +232,7 @@ ${
     // if (data.length == 0) {
     //   return [];
     // }
-    let response = [...data, events];
+    let response = [...data, ...events];
     if (queryParams.actionType == "CANCEL_PAYMENT") {
       response = [...response, ...alerts];
     }
