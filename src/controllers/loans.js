@@ -233,7 +233,10 @@ ${
     //   return [];
     // }
     let response = [...data, ...events];
-    if (queryParams.actionType == "CANCEL_PAYMENT") {
+    if (
+      queryParams.actionType == "CANCEL_PAYMENT" ||
+      queryParams.actionType == ""
+    ) {
       response = [...response, ...alerts];
     }
     return response;
