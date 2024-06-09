@@ -24,7 +24,7 @@ function generateReport(data, configParams) {
   let granTotalRight = 460;
   let rightTotal = right;
   let center = 80;
-  let itemsPerPage = 30;
+  let itemsPerPage = 7;
 
   //-------File settings---------
   let fileNameDate = new Date().toISOString().split("T")[0];
@@ -82,7 +82,7 @@ function generateReport(data, configParams) {
       { align: "right" }
     );
     for (let i = 0; i < formatComment(item.commentary, 10, " ")[1]; i++) {
-      top += 0.3;
+      top += 0.5;
     }
     // doc.text(`${item.arrear_percentaje}%`, left + 155, top);
     // doc.text(
