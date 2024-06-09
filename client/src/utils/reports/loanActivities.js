@@ -51,24 +51,39 @@ function generateReport(data, configParams) {
   let counter = 0;
   renderTableHeader(doc, left, top - 10);
   data.map((item) => {
+    let commentSpacing = formatComment(item.commentary, 10, " ")[1] * 0.1;
     //Adding one entry
     let customerName = `${item.customer_name
       ?.split(" ")
       .map((item, index) => (index <= 3 ? item : undefined))
       .filter((item) => item != undefined)
       .join(" ")}`;
-    doc.text(`${customerName}`, left, top);
-    doc.text(`${item.loan_number_id}`, left + colsWidth[0], top);
-    doc.text(`${item.action_type}`, left + colsWidth[1], top);
-    doc.text(`${item.commentary || "No comentario"}`, left + colsWidth[2], top);
-    doc.text(`${item.employee_name}`, left + colsWidth[3], top);
+    doc.text(`${customerName}`, left, top + commentSpacing);
+    doc.text(
+      `${item.loan_number_id}`,
+      left + colsWidth[0],
+      top + commentSpacing
+    );
+    doc.text(`${item.action_type}`, left + colsWidth[1], top + commentSpacing);
+    doc.text(
+      `${formatComment(item.commentary, 10, " ") || "No comentario"}`,
+      left + colsWidth[2],
+      top + commentSpacing
+    );
+    doc.text(
+      `${item.employee_name}`,
+      left + colsWidth[3],
+      top + commentSpacing
+    );
     doc.text(
       `${new Date(item.created_date).toLocaleString("es-Es").split(",")[0]}`,
       left + colsWidth[4] + 11,
-      top,
+      top + commentSpacing,
       { align: "right" }
     );
-
+    for (let i = 0; i < formatComment(item.commentary, 10, " ")[1]; i++) {
+      top += 0.3;
+    }
     // doc.text(`${item.arrear_percentaje}%`, left + 155, top);
     // doc.text(
     //   `${new Date(item.defeated_since).toLocaleString("es-Es").split(",")[0]}`,
@@ -105,4 +120,21 @@ function renderTableHeader(doc, pos, top) {
   // createSubTitle(doc, "Balance", pos, top, "center");
 }
 
+function formatComment(comment, aproxLimit, separator) {
+  let str = "";
+  let counter = 0;
+  let lastIterationValue = 0;
+  for (let i = 0; i < comment?.length; i++) {
+    counter++;
+    str += comment[i];
+    if (counter >= aproxLimit && comment[i + 1] == separator) {
+      counter = 0;
+      str += "\n";
+    }
+
+    lastIterationValue = i;
+  }
+
+  return [str, lastIterationValue];
+}
 export { generateReport };
