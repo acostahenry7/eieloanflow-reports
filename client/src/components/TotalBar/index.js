@@ -56,6 +56,7 @@ function TotalBar({ data, loadingStatus }) {
                 data.map(function (item) {
                   item.child
                     .filter((a) => a.status_type == "ENABLED")
+                    .filter((b) => b.employee_name != "Yoshual Aragones")
                     .map((c) => {
                       totalCash += parseFloat(c.pay);
                     });
@@ -124,6 +125,7 @@ function TotalBar({ data, loadingStatus }) {
                 data.map(function (item) {
                   item.child
                     .filter((a) => a.status_type == "ENABLED")
+                    .filter((b) => b.employee_name != "Yoshual Aragones")
                     .map((c) => {
                       totalCash += parseFloat(c.pay);
                     });

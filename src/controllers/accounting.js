@@ -281,7 +281,7 @@ controller.getMajorGeneral = async (queryParams) => {
           : ""
       }
       and ac.number like '${queryParams.accountId || "%"}'
-      and gd.status_type not in ('DELETE', 'REVERSED')
+      and gd.status_type = 'ENABLED'
       and gd.description not like '%226464%'
       and gd.description not like '%227695%'
       ${

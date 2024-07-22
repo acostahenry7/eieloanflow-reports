@@ -29,7 +29,7 @@
 // };
 
 // module.exports = {
-//   HOST: "node77274-devfinance.whelastic.net",
+//   HOST: "node84104-financedb.whelastic.net",
 //   USER: "webadmin",
 //   PASSWORD: "EDJKNOSOj6",
 //   DB: "finance",
@@ -46,6 +46,7 @@
 //   },
 // };
 
+//PRODUCCION
 module.exports = {
   HOST: "10.202.9.7",
   USER: "webadmin",
