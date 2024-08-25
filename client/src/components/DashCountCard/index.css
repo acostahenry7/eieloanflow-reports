@@ -1,0 +1,96 @@
+.item {
+  /* height: 100%; */
+  border: 2px solid rgba(196, 193, 193, 0.507);
+  border-radius: 30px;
+  background-color: transparent;
+  box-shadow: 0 1px 1px rgba(196, 193, 193, 0.507);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.card {
+  /* margin-top: auto; */
+
+  box-sizing: border-box;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.card-header .name {
+  font-size: large;
+  font-weight: 600;
+}
+.card-header .filter {
+  position: relative;
+}
+
+.card-header .filter select {
+  appearance: none;
+  height: 30px;
+  color: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(196, 193, 193, 0.507);
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+.card-header .filter select:focus {
+  outline: none;
+}
+
+.card-header .filter::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 15px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid rgba(196, 193, 193, 0.507);
+}
+
+.card-body {
+  padding-top: 18px;
+}
+
+.card-body .amount {
+  /* font-size: 1.7em; */
+  font-weight: 600;
+  line-height: 1em;
+}
+
+.card-body .amount p {
+  padding: 0;
+  margin: 0;
+  font-size: 1.7em;
+}
+
+.card-body .amount .movement {
+  font-size: small;
+  background-color: rgba(8, 253, 90, 0.26);
+  color: rgb(35, 155, 75);
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 10px;
+}
+
+.des {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1em;
+  font-size: small;
+  font-weight: 600;
+  color: rgba(196, 193, 193);
+}
+
+.des p {
+  width: 50%;
+}
+
+.des b {
+  color: rgb(133, 133, 133);
+}

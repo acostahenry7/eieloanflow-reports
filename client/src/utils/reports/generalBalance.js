@@ -341,6 +341,10 @@ function generateReport(data, configParams) {
     top
   );
 
+  if (top + sectionSpacing > height - 40) {
+    doc.addPage();
+    top = 20;
+  }
   top += sectionSpacing;
 
   createTitle(doc, "Total Capital", left, top);

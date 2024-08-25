@@ -45,6 +45,7 @@
   color: #292b2c;
   white-space: nowrap;
   font-weight: 500;
+  cursor: pointer;
 }
 
 .Sidebar-content-item-link span {

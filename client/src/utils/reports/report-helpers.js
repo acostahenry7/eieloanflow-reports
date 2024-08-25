@@ -134,7 +134,7 @@ export function generateReportSection(
   }
 
   let totalBalance = 0;
-
+  let itemCounter = 0;
   for (let i = 0; i < sectionData.length; i++) {
     let balance = mainBalances.filter(
       (item) => item.account_catalog_id == sectionData[i].account_catalog_id
@@ -162,11 +162,17 @@ export function generateReportSection(
     }
 
     if (balance > 0 || isVisible == true) {
+      itemCounter++;
       top += spacing;
       doc.text(`${sectionData[i].name}`, left, top);
       doc.text(`${currencyFormat(balance)}`, right, top, {
         align: "right",
       });
+    }
+
+    if (itemCounter == 31) {
+      doc.addPage();
+      top = 20;
     }
   }
 
@@ -223,18 +229,21 @@ export function generateResultStatusReportSection(
   let totalBalance = 0;
   let totalPrevBalance = 0;
 
+  let itemCounter = 0;
   for (let i = 0; i < sectionData.length; i++) {
     let balance = mainBalances.filter(
       (item) => item.account_catalog_id == sectionData[i].account_catalog_id
     )[0].balance;
-    let prevBalance = mainBalances.filter(
-      (item) => item.account_catalog_id == sectionData[i].account_catalog_id
-    )[0].prevBalance;
+    let prevBalance =
+      mainBalances.filter(
+        (item) => item.account_catalog_id == sectionData[i].account_catalog_id
+      )[0].prevBalance || 0;
 
     totalBalance += balance;
     totalPrevBalance += prevBalance;
 
     if (balance > 0 || prevBalance > 0) {
+      itemCounter++;
       top += spacing;
       doc.text(`${sectionData[i].name}`, left, top);
       doc.text(`${currencyFormat(balance)}`, right + 46, top, {
@@ -248,7 +257,8 @@ export function generateResultStatusReportSection(
       }
     }
 
-    if (i == 31) {
+    //console.log(i);
+    if (itemCounter == 31) {
       doc.addPage();
       top = 20;
     }

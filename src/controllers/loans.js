@@ -8,6 +8,7 @@ const { nanoid } = require("nanoid");
 const controller = {};
 
 controller.getLoanApplication = async (queryParams) => {
+  console.log(queryParams);
   try {
     const [loanApplication] = await db.query(`
     SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, c.birth_date, c.sex, c.nationality,
@@ -27,16 +28,16 @@ controller.getLoanApplication = async (queryParams) => {
     LEFT JOIN province wp_pv ON (lwp.work_place_province_id = wp_pv.province_id)
     LEFT JOIN municipality wp_mn ON (lwp.work_place_municipality_id = wp_mn.municipality_id)
     LEFT JOIN section wp_sct ON (lwp.work_place_section_id = wp_sct.section_id)
-    JOIN customer c ON (la.customer_id = c.customer_id)
+    LEFT JOIN customer c ON (la.customer_id = c.customer_id)
     LEFT JOIN province c_pv ON (c.province_id  = c_pv.province_id)
     LEFT JOIN municipality c_mn ON (c.municipality_id  = c_mn.municipality_id)
     LEFT JOIN section c_sct ON (c.section_id = c_sct.section_id)
     LEFT JOIN loan_guarantor lg ON (la.loan_application_id = lg.loan_guarantor_id)
     LEFT JOIN loan_vehicle vh ON (la.loan_application_id = vh.loan_vehicle_id)
     LEFT JOIN vehicle_brand vhb ON (vh.vehicle_brand_id = vhb.vehicle_brand_id)
-    JOIN outlet o On (la.outlet_id = o.outlet_id)
-      AND la.outlet_id LIKE '${queryParams.outletId || "%"}'
-      AND la.created_date BETWEEN '${queryParams.dateFrom}' AND '${
+    LEFT JOIN outlet o On (la.outlet_id = o.outlet_id)
+      WHERE  la.outlet_id LIKE '${queryParams.outletId || "%"}'
+      AND la.created_date::date BETWEEN '${queryParams.dateFrom}' AND '${
       queryParams.dateTo
     }'
       AND la.status_type LIKE '${queryParams.status || "%"}'
@@ -48,7 +49,71 @@ controller.getLoanApplication = async (queryParams) => {
   }
 };
 
+controller.getLoanApplicationByMonth = async (queryParams) => {
+  try {
+    console.log("HOLAAAAAAAAAAAAAAAAAAAA$$$$$$$$$$$$");
+    const [data] = await db.query(
+      `SELECT EXTRACT(MONTH FROM created_date)::integer AS month, 
+      count(loan_application_id) AS amount_of_apps
+      FROM loan_application
+      WHERE extract(year from created_date) = ${queryParams.targetYear || 2024}
+      AND outlet_id LIKE '${queryParams.outletId || "%"}'
+      GROUP BY EXTRACT(MONTH FROM created_date)
+      `
+    );
+
+    return data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+controller.getLoanByMonth = async (queryParams) => {
+  try {
+    console.log("HOLAAAAAAAAAAAAAAAAAAAA$$$$$$$$$$$$");
+    const [loans] = await db.query(
+      `SELECT EXTRACT(MONTH FROM created_date)::integer AS month, 
+      count(loan_id) AS amount_of_apps
+      FROM loan
+      WHERE extract(year from created_date) = ${queryParams.targetYear || 2024}
+      AND outlet_id LIKE '${queryParams.outletId || "%"}'
+      GROUP BY EXTRACT(MONTH FROM created_date)
+      `
+    );
+
+    const [applications] = await db.query(
+      `SELECT EXTRACT(MONTH FROM created_date)::integer AS month, 
+      count(loan_application_id) AS amount_of_apps
+      FROM loan_application
+      WHERE extract(year from created_date) = ${queryParams.targetYear || 2024}
+      AND outlet_id LIKE '${queryParams.outletId || "%"}'
+      GROUP BY EXTRACT(MONTH FROM created_date)
+      `
+    );
+
+    return { applications, loans };
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+controller.getLoanApplicationByType = async (queryParams) => {
+  try {
+    const [data] = await db.query(
+      `SELECT loan_type, 
+        count(loan_application_id) AS amount_of_apps
+        FROM loan_application
+        WHERE created_date::date BETWEEN '${queryParams.dateFrom}' AND '${queryParams.dateTo}'
+        AND outlet_id like '${queryParams.outletId}%'
+        GROUP BY loan_type`
+    );
+
+    return data;
+  } catch (error) {}
+};
+
 controller.getLoans = async (queryParams) => {
+  console.log("************************************ >>>>", queryParams);
   try {
     const [data, meta] = await db.query(
       `SELECT distinct(l.loan_number_id), l.loan_id, c.first_name || ' ' || c.last_name as customer_name, c.identification,  l.interest_rate_type, 

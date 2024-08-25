@@ -8,7 +8,12 @@ controller.signin = async (data) => {
     console.log(data);
 
     const [user, meta] = await db.query(
-      `select * from jhi_user where login = '${data.username}'`
+      `select ju.*, ath.name as role_name, ath.description, string_agg(pvl.module, ',') as allowed_modules
+      from jhi_user ju
+      left join authority ath on (ju.authority_id = ath.authority_id)
+      left join privilege pvl on (ju.authority_id = pvl.authority_id and pvl.access <> 'NONE')
+      where ju.login = '${data.username}'
+      group by ju.user_id, ath.authority_id`
     );
 
     if (user.length > 0) {

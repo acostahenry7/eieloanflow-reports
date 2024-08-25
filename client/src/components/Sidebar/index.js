@@ -1,7 +1,7 @@
 import React from "react";
-import "./index.css";
 import { SidebarContext } from "../../contexts/SidebarContext";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { AuthContext } from "../../contexts/AuthContext";
 import {
   HiOutlineDocumentDuplicate,
   HiChevronDown,
@@ -15,7 +15,7 @@ import {
   FaUsers,
   FaCoins,
 } from "react-icons/fa";
-import { BiDollar, BiBlock } from "react-icons/bi";
+import { BiDollar, BiSolidDashboard } from "react-icons/bi";
 import { AiOutlineAudit, AiTwotoneBank } from "react-icons/ai";
 import {
   TbCurrencyDollarOff,
@@ -40,11 +40,60 @@ import { IoReceiptOutline } from "react-icons/io5";
 import { RiFileExcel2Line } from "react-icons/ri";
 import { HiOutlineDocumentText } from "react-icons/hi2";
 import { GiPayMoney, GiReceiveMoney } from "react-icons/gi";
+import "./index.css";
 
 function Sidebar() {
   const { isSidebarOpened } = React.useContext(SidebarContext);
-
+  const { auth } = React.useContext(AuthContext);
+  const navigate = useNavigate();
   const [sidebarItems, setSidebarItems] = React.useState([
+    {
+      label: "Dashboards",
+      icon: (selected) => (
+        <BiSolidDashboard
+          className="Sidebar-content-item-icon"
+          color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+        />
+      ),
+      selected: false,
+      subItems: [
+        {
+          privilege: "DASHBOARD_LOAN_APPLICATION",
+          label: "Solicitudes",
+          icon: (selected) => (
+            <HiOutlineDocumentText
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/dash/loan-requests",
+          selected: false,
+        },
+        {
+          label: "Resumen Préstamos",
+          icon: (selected) => (
+            <TbBuildingBank
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/dash/loan",
+          selected: false,
+        },
+
+        {
+          label: "Resumen Contabilidad",
+          icon: (selected) => (
+            <HiOutlineCalculator
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/dash/accounting",
+          selected: false,
+        },
+      ],
+    },
     {
       label: "Clientes",
       icon: (selected) => (
@@ -57,6 +106,7 @@ function Sidebar() {
       selected: false,
       subItems: [
         {
+          privilege: "",
           label: "Clientes (prestamos)",
           icon: (selected) => (
             <FaUsers
@@ -92,6 +142,7 @@ function Sidebar() {
       selected: false,
       subItems: [
         {
+          privilege: "",
           label: "Cierre de caja",
           icon: (selected) => (
             <BsFolderCheck
@@ -204,6 +255,7 @@ function Sidebar() {
       selected: false,
       subItems: [
         {
+          privilege: "",
           label: "Solicitudes de préstamos",
           icon: (selected) => (
             <HiOutlineDocumentText
@@ -305,6 +357,7 @@ function Sidebar() {
       selected: false,
       subItems: [
         {
+          privilege: "",
           label: "Catálogo de cuentas",
           icon: (selected) => (
             <FaChartBar
@@ -495,6 +548,7 @@ function Sidebar() {
       selected: false,
       subItems: [
         {
+          privilege: "EMPLOYEES",
           label: "Empleados",
           icon: (selected) => (
             <FaUsers
@@ -503,9 +557,10 @@ function Sidebar() {
             />
           ),
           route: "/reports/rrhh-employees",
-          selected: true,
+          selected: false,
         },
         {
+          privilege: "PAYROLLS",
           label: "Reporte comisión cobrador",
           icon: (selected) => (
             <FaChartBar
@@ -514,13 +569,24 @@ function Sidebar() {
             />
           ),
           route: "/reports/rrhh-collector-commission",
-          selected: true,
+          selected: false,
         },
       ],
     },
   ]);
 
   const selectItem = (label) => {
+    //Validae if user has access to this module
+    // const userPermissions = auth.allowed_modules.split(",");
+    // const userHasAccess = userPermissions.find((item) => item == privilege);
+    // console.log(userHasAccess);
+    // if (!isParent) {
+    //   if (!userHasAccess) {
+    //     console.log("YOU DON'T HAVE ACCESS TO THIS MODULE");
+    //     return;
+    //   }
+    // }
+
     const arr = [...sidebarItems];
 
     arr.forEach((item) => {
@@ -560,7 +626,8 @@ function Sidebar() {
                 }}
               >
                 <span>
-                  {sbItem.label} - {`(${sbItem.subItems.length})`}
+                  {sbItem.label}
+                  {/* - {`(${sbItem.subItems.length})`} */}
                 </span>
               </div>
               {sbItem.subItems.length > 0 && (

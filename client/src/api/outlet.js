@@ -1,8 +1,12 @@
 import { request } from "../utils/request";
 
-async function getOutletsApi() {
+async function getOutletsApi(queryParams) {
   try {
-    const outlets = await request({ method: "GET", path: "/outlet" });
+    const outlets = await request({
+      method: "GET",
+      path: "/outlet",
+      urlParams: queryParams || {},
+    });
 
     return outlets;
   } catch (error) {

@@ -1,6 +1,12 @@
 import React from "react";
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { LoginScreen } from "./screens/LoginScreen";
 import { HomeScreen } from "./screens/HomeScreen";
 import { AuthContext } from "./contexts/AuthContext";
@@ -40,14 +46,31 @@ import { PaidInterestScreen } from "./screens/PaidInterestScreen";
 import { CustomerLoanScreen } from "./screens/CustomerLoanScreen";
 import { GroupedRegisterCloseScreen } from "./screens/GroupedRegisterCloseScreen";
 import { BoxMajorScreen } from "./screens/BoxMajorScreen";
+import { LoanRequest } from "./screens/Dashboards/LoanRequest";
+import { LoanDash } from "./screens/Dashboards/Loan";
+import { validateifUserHasAccess } from "./utils/auth-helpers";
+import { NoAccessMessage } from "./components/NoAccessMessage";
+import { AccountingDash } from "./screens/Dashboards/AccountingDash";
+import { MantainingMessage } from "./components/MantainingMessage";
 
 function App() {
-  const { token, logout } = React.useContext(AuthContext);
+  const { token, auth, logout } = React.useContext(AuthContext);
   const { isSidebarOpened } = React.useContext(SidebarContext);
 
   if (!token) {
     return <LoginScreen />;
   }
+
+  let checkRole = (moduleRole, component) => {
+    if (
+      validateifUserHasAccess(moduleRole, auth.allowed_modules) ||
+      auth.role_name == "ROLE_ADMIN"
+    ) {
+      return component;
+    } else {
+      return <NoAccessMessage role={moduleRole} />;
+    }
+  };
 
   return (
     <div className="App">
@@ -59,127 +82,207 @@ function App() {
             <Routes>
               <Route path="/" element={<HomeScreen />} />
               <Route
+                path="/dash/loan-requests"
+                element={checkRole(
+                  "DASHBOARD_LOAN_APPLICATION",
+                  <LoanRequest />
+                )}
+              />
+              <Route
+                path="/dash/loan"
+                element={checkRole("DASHBOARD_LOAN", <LoanDash />)}
+              />
+              <Route
+                path="/dash/accounting"
+                element={checkRole(
+                  "ACCOUNT_CATALOGS",
+                  <MantainingMessage /> /*<AccountingDash />*/
+                )}
+              />
+              <Route
                 path="/reports/arrear-customers"
-                element={<CustomerReportScreen />}
+                element={checkRole("CUSTOMERS", <CustomerReportScreen />)}
               />
               <Route
                 path="/reports/customer-loan"
-                element={<CustomerLoanScreen />}
+                element={checkRole("CUSTOMERS", <CustomerLoanScreen />)}
               />
-              <Route
-                path="/reports/today-payments"
-                element={<TodayPaymentScreen />}
-              />
-              <Route
-                path="/reports/canceled-payments"
-                element={<CanceledPaymentScreen />}
-              />
-              <Route
-                path="/reports/received-payments"
-                element={<ReceivedPaymentScreen />}
-              />
-              <Route
-                path="/reports/payment-proyection"
-                element={<PaymentProyectionScreen />}
-              />
-              <Route
-                path="/reports/payment-control-history"
-                element={<PaymentControlHistoryScreen />}
-              />
-              <Route path="/reports/paid-mora" element={<PaidMoraScreen />} />
-              <Route
-                path="/reports/receipt-detail"
-                element={<ReceiptsDetailScreen />}
-              />
-              <Route
-                path="/reports/loan-application"
-                element={<LoanApplicationScreen />}
-              />
-              <Route
-                path="/reports/loan-detail"
-                element={<LoanDetailScreen />}
-              />
-              <Route
-                path="/reports/loan-activities"
-                element={<LoanActivitiesScreen />}
-              />
+
               <Route
                 path="/reports/register-close"
-                element={<RegisterCloseScreen />}
+                element={checkRole(
+                  "REPORT_REGISTER_CLOSE",
+                  <RegisterCloseScreen />
+                )}
               />
               <Route
                 path="/reports/grouped-register-close"
-                element={<GroupedRegisterCloseScreen />}
+                element={checkRole(
+                  "REPORT_REGISTER_CLOSE",
+                  <GroupedRegisterCloseScreen />
+                )}
               />
               <Route
-                path="/reports/loan-movement"
-                element={<LoanMovementScreen />}
+                path="/reports/today-payments"
+                element={checkRole("REPORT_PAYMENTS", <TodayPaymentScreen />)}
               />
               <Route
-                path="/reports/loan-discounts"
-                element={<LoanDiscountsScreen />}
+                path="/reports/canceled-payments"
+                element={checkRole(
+                  "REPORT_PAYMENTS",
+                  <CanceledPaymentScreen />
+                )}
               />
               <Route
-                path="/reports/datacredit"
-                element={<DatacreditScreen />}
+                path="/reports/received-payments"
+                element={checkRole(
+                  "REPORT_PAYMENTS",
+                  <ReceivedPaymentScreen />
+                )}
               />
               <Route
-                path="/reports/loan-amortization"
-                element={<AmortizationTableScreen />}
+                path="/reports/payment-proyection"
+                element={checkRole(
+                  "REPORT_PAYMENTS",
+                  <PaymentProyectionScreen />
+                )}
               />
               <Route
-                path="/reports/accounting-catalog"
-                element={<AccountCatalogSCreen />}
+                path="/reports/payment-control-history"
+                element={checkRole(
+                  "REPORT_PAYMENTS",
+                  <PaymentControlHistoryScreen />
+                )}
               />
               <Route
-                path="/reports/accounting-general-balance"
-                element={<GeneralBalanceScreen />}
-              />
-              <Route
-                path="/reports/accounting-result-status"
-                element={<ResultStatusScreen />}
+                path="/reports/paid-mora"
+                element={checkRole("REPORT_PAYMENTS", <PaidMoraScreen />)}
               />
               <Route
                 path="/reports/payment-visits"
-                element={<CollectorVisitsScreen />}
+                element={checkRole(
+                  "REPORT_PAYMENTS",
+                  <CollectorVisitsScreen />
+                )}
               />
+
+              <Route
+                path="/reports/loan-application"
+                element={checkRole(
+                  "LOAN_APPLICATIONS",
+                  <LoanApplicationScreen />
+                )}
+              />
+              <Route
+                path="/reports/loan-detail"
+                element={checkRole("LOANS", <LoanDetailScreen />)}
+              />
+              <Route
+                path="/reports/loan-activities"
+                element={checkRole("LOANS", <LoanActivitiesScreen />)}
+              />
+
+              <Route
+                path="/reports/loan-movement"
+                element={checkRole("LOANS", <LoanMovementScreen />)}
+              />
+              <Route
+                path="/reports/loan-discounts"
+                element={checkRole("LOANS", <LoanDiscountsScreen />)}
+              />
+              <Route
+                path="/reports/datacredit"
+                element={checkRole("REPORT_CREDIT_DATA", <DatacreditScreen />)}
+              />
+              <Route
+                path="/reports/loan-amortization"
+                element={checkRole("LOANS", <AmortizationTableScreen />)}
+              />
+
+              <Route
+                path="/reports/accounting-catalog"
+                element={checkRole(
+                  "ACCOUNT_CATALOGS",
+                  <AccountCatalogSCreen />
+                )}
+              />
+              <Route
+                path="/reports/accounting-general-balance"
+                element={checkRole(
+                  "ACCOUNT_CATALOGS",
+                  <GeneralBalanceScreen />
+                )}
+              />
+              <Route
+                path="/reports/accounting-result-status"
+                element={checkRole("ACCOUNT_CATALOGS", <ResultStatusScreen />)}
+              />
+
               <Route
                 path="/reports/accouting-validation-balance"
-                element={<ValidationBalanceScreen />}
+                element={checkRole(
+                  "REPORT_CHECKING_BALANCE",
+                  <ValidationBalanceScreen />
+                )}
               />
-              <Route path="/reports/accouting-606" element={<DGI606Screen />} />
-              <Route path="/reports/accouting-607" element={<DGI607Screen />} />
+              <Route
+                path="/reports/accouting-606"
+                element={checkRole("ACCOUNT_CATALOGS", <DGI606Screen />)}
+              />
+              <Route
+                path="/reports/accouting-607"
+                element={checkRole("ACCOUNT_CATALOGS", <DGI607Screen />)}
+              />
               <Route
                 path="/reports/accouting-major-general"
-                element={<GeneralMajor />}
+                element={checkRole("ACCOUNT_CATALOGS", <GeneralMajor />)}
               />
               <Route
                 path="/reports/accounting-box-major"
-                element={<BoxMajorScreen />}
+                element={checkRole("ACCOUNT_CATALOGS", <BoxMajorScreen />)}
               />
               <Route
                 path="/reports/accounting-account-payable"
-                element={<AccountPayableScren />}
+                element={checkRole(
+                  "REPORT_ACCOUNT_PAYABLE",
+                  <AccountPayableScren />
+                )}
               />
               <Route
                 path="/reports/charge-account"
-                element={<ToChargeAccountScreen />}
+                element={checkRole(
+                  "ACCOUNT_CATALOGS",
+                  <ToChargeAccountScreen />
+                )}
               />
               <Route
                 path="/reports/paid-interest"
-                element={<PaidInterestScreen />}
+                element={checkRole("ACCOUNT_CATALOGS", <PaidInterestScreen />)}
+              />
+              <Route
+                path="/reports/receipt-detail"
+                element={checkRole(
+                  "ACCOUNT_CATALOGS",
+                  <ReceiptsDetailScreen />
+                )}
               />
               <Route
                 path="/reports/detailed-accouting-major-general"
-                element={<DetailedGeneralMajor />}
+                element={checkRole(
+                  "ACCOUNT_CATALOGS",
+                  <DetailedGeneralMajor />
+                )}
               />
               <Route
                 path="/reports/rrhh-employees"
-                element={<EmployeeScreen />}
+                element={checkRole("EMPLOYEES", <EmployeeScreen />)}
               />
               <Route
                 path="/reports/rrhh-collector-commission"
-                element={<CollectorCommissionScreen />}
+                element={checkRole(
+                  "REPORT_COMMISSION",
+                  <CollectorCommissionScreen />
+                )}
               />
             </Routes>
           </div>

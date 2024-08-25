@@ -106,14 +106,17 @@ function generateReport(data, configParams) {
   createTitle(
     doc,
     currencyFormat(prevBalanceIngresos - prevBalanceGastos),
-    right - 22,
+    right - 13,
     top
   );
   createTitle(
     doc,
     currencyFormat(balanceIngresos - balanceGastos),
-    right + 20,
-    top
+    right + 47,
+    top,
+    {
+      align: "right",
+    }
   );
 
   doc.save("reporte-estado-de-resultado.pdf");
@@ -127,13 +130,13 @@ function renderTableHeader(doc, pos, top, configParams) {
     configParams.fixedDate.toISOString().split("T")[0].split("-")[1]
   );
 
-  pos += 104;
+  pos += 110;
   createSubTitle(
     doc,
     `${monthsOfYear[currentMonth].toUpperCase()}`,
     pos,
     top,
-    "center"
+    "right"
   );
   pos += 35;
   createSubTitle(
