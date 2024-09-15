@@ -235,18 +235,24 @@ function LoanRequest() {
             </div>
           </div>
         </div>
+
         <div className="list">
           <DashCountCard
             cardName={"Solicitudes"}
             amount={currencyFormat(countData.length, false)}
-            movementPct={8.6}
+            movementPct={(
+              countData.length /
+              lineChartData
+                .map((item) => item.amount_of_apps)
+                .reduce((acc, item) => acc + parseFloat(item), 0)
+            ).toFixed(3)}
             movementAmount={4000}
             setSearchParams={setSearchCountParams}
             isLoading={isCountLoading}
           />
 
           <DashCountCard
-            cardName={"Total solicitado"}
+            cardName={"Monto solicitado"}
             amount={currencyFormat(
               amountData.reduce(
                 (acc, item) => acc + parseFloat(item.requested_amount),
@@ -259,7 +265,7 @@ function LoanRequest() {
             isLoading={isAmountLoading}
           />
           <DashCountCard
-            cardName={"Solicitudes pendientes"}
+            cardName={"Pendientes"}
             amount={currencyFormat(
               pendingData.filter((item) => item.status_type === "CREATED")
                 .length,
@@ -267,7 +273,8 @@ function LoanRequest() {
             )}
             movementPct={8.6}
             movementAmount={4000}
-            setSearchParams={{}}
+            setSearchParams={setSearchPendingParams}
+            isLoading={isPendingLoading}
           />
 
           <div className="item">
@@ -289,7 +296,7 @@ function LoanRequest() {
                     );
                   })}
                 </select>
-                <select>
+                {/* <select>
                   <option>Todos</option>
                   <option>Personal</option>
                   <option>Vehículos</option>
@@ -297,7 +304,7 @@ function LoanRequest() {
                   <option>Pymes</option>
                   <option>Micro</option>
                   <option>Seguro</option>
-                </select>
+                </select> */}
               </div>
             </div>
 
@@ -391,6 +398,8 @@ function LoanRequest() {
                     Último año
                   </option>
                 </select>
+
+                {/* <input type="date" value={tdate.toLocaleDateString("en-CA")} /> */}
               </div>
             </div>
             {isPieChartLoading ? (
@@ -438,7 +447,7 @@ function LoanRequest() {
                     );
                   })}
                 </select>
-                <select>
+                {/* <select>
                   <option>Todos</option>
                   <option>Personal</option>
                   <option>Vehículos</option>
@@ -447,7 +456,7 @@ function LoanRequest() {
                   <option>Micro</option>
                   <option>Seguro</option>
                   <option>Empleado</option>
-                </select>
+                </select> */}
               </div>
             </div>
             {isBarChartLoading ? (

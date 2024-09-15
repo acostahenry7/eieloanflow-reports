@@ -410,25 +410,29 @@ function LoanDetailSummary({ data }) {
   return (
     <div className="LoanDetailSummary-container">
       {isLoading && <ThreeDots width={36} color="#166fd7" />}
-      {Object.entries(detail)?.map((item, index) => (
-        <div className="LoanDetailSummary-item">
-          <p>{fields[index] || "key"} :</p>
-          <p>
-            {" "}
-            {currencyFormat(item[1]).toLocaleLowerCase().includes("nan") ||
-            fields[index].toLowerCase().includes("cuotas") ||
-            fields[index].toLowerCase().includes("tasa") ||
-            fields[index].toLowerCase().includes("préstamo")
-              ? fields[index].toLowerCase().includes("tasa interés")
-                ? item[1]?.toFixed(1)
-                : fields[index].toLowerCase().includes("fecha")
-                ? new Date(item[1]).toLocaleString("es-Es").split(",")[0]
-                : item[1]
-              : currencyFormat(item[1])}
-            {fields[index].toLowerCase().includes("tasa") && "%"}
-          </p>
-        </div>
-      ))}
+      {detail == undefined ? (
+        <>A este prestamo aún no se le han generado cuotas</>
+      ) : (
+        Object.entries(detail)?.map((item, index) => (
+          <div className="LoanDetailSummary-item">
+            <p>{fields[index] || "key"} :</p>
+            <p>
+              {" "}
+              {currencyFormat(item[1]).toLocaleLowerCase().includes("nan") ||
+              fields[index].toLowerCase().includes("cuotas") ||
+              fields[index].toLowerCase().includes("tasa") ||
+              fields[index].toLowerCase().includes("préstamo")
+                ? fields[index].toLowerCase().includes("tasa interés")
+                  ? item[1]?.toFixed(1)
+                  : fields[index].toLowerCase().includes("fecha")
+                  ? new Date(item[1]).toLocaleString("es-Es").split(",")[0]
+                  : item[1]
+                : currencyFormat(item[1])}
+              {fields[index].toLowerCase().includes("tasa") && "%"}
+            </p>
+          </div>
+        ))
+      )}
     </div>
   );
 }

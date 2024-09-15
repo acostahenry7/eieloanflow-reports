@@ -32,7 +32,22 @@
   box-sizing: border-box;
 }
 
+.loan-requests input {
+  appearance: none;
+  height: 30px;
+  color: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(196, 193, 193, 0.507);
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
 .loan-requests .filter select:focus {
+  outline: none;
+}
+
+.loan-requests input:focus {
   outline: none;
 }
 
@@ -61,7 +76,17 @@
   height: 100%;
   display: grid;
   grid-template: max-content repeat(2, 1fr) / repeat(3, 1fr);
-  gap: 1em;
+  gap: 0.8em;
+}
+
+.counter-list {
+  display: grid;
+  grid-template: max-content repeat(2, 1fr) / repeat(3, 1fr);
+  gap: 0.8em;
+  row-gap: 0.4em;
+}
+
+.counter-list > * {
 }
 
 .list .item:nth-child(4) {

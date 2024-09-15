@@ -52,6 +52,7 @@ import { validateifUserHasAccess } from "./utils/auth-helpers";
 import { NoAccessMessage } from "./components/NoAccessMessage";
 import { AccountingDash } from "./screens/Dashboards/AccountingDash";
 import { MantainingMessage } from "./components/MantainingMessage";
+import { PaymentsDash } from "./screens/Dashboards/Payments";
 
 function App() {
   const { token, auth, logout } = React.useContext(AuthContext);
@@ -98,6 +99,10 @@ function App() {
                   "ACCOUNT_CATALOGS",
                   <MantainingMessage /> /*<AccountingDash />*/
                 )}
+              />
+              <Route
+                path="/dash/payments"
+                element={checkRole("REPORT_PAYMENTS", <PaymentsDash />)}
               />
               <Route
                 path="/reports/arrear-customers"

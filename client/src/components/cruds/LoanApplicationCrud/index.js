@@ -22,8 +22,8 @@ function LoanApplicationCrud() {
   const [searchedText, setSearchedText] = React.useState("");
   const [currentLoanId, setCurrentLoanId] = React.useState("");
   const [searchParams, setSearchParams] = React.useState({
-    dateFrom: new Date().toISOString().split("T")[0],
-    dateTo: new Date().toISOString().split("T")[0],
+    // dateFrom: new Date().toISOString().split("T")[0],
+    // dateTo: new Date().toISOString().split("T")[0],
   });
 
   React.useEffect(() => {
@@ -185,6 +185,8 @@ function LoanApplicationCrud() {
       field: "date",
       type: "dateRange",
       isActive: true,
+      // from: new Date().toISOString().split("T")[0],
+      // to: new Date().toISOString().split("T")[0],
     },
     {
       label: "Estatus",
@@ -194,6 +196,10 @@ function LoanApplicationCrud() {
         {
           label: "Todos",
           value: "",
+        },
+        {
+          label: "Pendientes",
+          value: "CREATED",
         },
         {
           label: "Préstmo",

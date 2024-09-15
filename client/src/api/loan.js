@@ -14,6 +14,20 @@ async function getLoanApplication(queryParams) {
   }
 }
 
+async function getPendingLoanApplication(queryParams) {
+  try {
+    const loanApplication = await request({
+      method: "GET",
+      path: "/loan-application-pending",
+      urlParams: { ...queryParams } || {},
+    });
+
+    return loanApplication;
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function getLoanApplicationByMonth(queryParams) {
   try {
     const loanApplication = await request({
@@ -28,6 +42,33 @@ async function getLoanApplicationByMonth(queryParams) {
   }
 }
 
+async function getLoanArrear(queryParams) {
+  try {
+    const loan = await request({
+      method: "GET",
+      path: "/loan-arrear",
+      urlParams: { ...queryParams } || {},
+    });
+
+    return loan;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getLoanPaid(queryParams) {
+  try {
+    const loan = await request({
+      method: "GET",
+      path: "/loan-paid",
+      urlParams: { ...queryParams } || {},
+    });
+
+    return loan;
+  } catch (error) {
+    throw error;
+  }
+}
 async function getLoanApplicationByType(queryParams) {
   try {
     const loanApplication = await request({
@@ -185,6 +226,7 @@ async function getAmortizationTable(queryParams) {
 
 export {
   getLoanApplication,
+  getPendingLoanApplication,
   getLoanApplicationByMonth,
   getLoanApplicationByType,
   getLoansByMonth,
@@ -197,4 +239,6 @@ export {
   generateDatacredit,
   getDatacreditLoans,
   getAmortizationTable,
+  getLoanArrear,
+  getLoanPaid,
 };

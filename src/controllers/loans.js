@@ -37,15 +37,38 @@ controller.getLoanApplication = async (queryParams) => {
     LEFT JOIN vehicle_brand vhb ON (vh.vehicle_brand_id = vhb.vehicle_brand_id)
     LEFT JOIN outlet o On (la.outlet_id = o.outlet_id)
       WHERE  la.outlet_id LIKE '${queryParams.outletId || "%"}'
-      AND la.created_date::date BETWEEN '${queryParams.dateFrom}' AND '${
-      queryParams.dateTo
-    }'
+      ${getDateRangeFilter(
+        "la.created_date",
+        queryParams.dateFrom,
+        queryParams.dateTo
+      )}
       AND la.status_type LIKE '${queryParams.status || "%"}'
-      AND la.loan_type LIKE '${queryParams.loanType || "%"}'`);
+      AND la.loan_type LIKE '${queryParams.loanType || "%"}'
+      AND la.status_type NOT LIKE 'DELETE'`);
 
     return loanApplication;
   } catch (error) {
     console.log(error);
+  }
+};
+
+controller.getPendingLoanApplication = async (queryParams) => {
+  try {
+    const [data] = await db.query(`
+    select count(loan_application_id)
+    from loan_application
+    where status_type like 'CREATED'
+    and outlet_id like '${queryParams.outletId}'
+    ${getDateRangeFilter(
+      "created_date",
+      queryParams.dateFrom,
+      queryParams.dateTo
+    )}
+    `);
+
+    return data;
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -133,9 +156,11 @@ controller.getLoans = async (queryParams) => {
 	  AND l.status_type like '${queryParams.loanStatus || ""}%'
 	  AND la.loan_type like '${queryParams.loanType || ""}%'
 	  AND l.loan_situation like '${queryParams.loanSituation || ""}%'
-    AND l.created_date::date BETWEEN '${queryParams.dateFrom}' AND '${
-        queryParams.dateTo
-      }'
+    ${getDateRangeFilter(
+      "l.created_date",
+      queryParams.dateFrom,
+      queryParams.dateTo
+    )}
     AND l.status_type NOT LIKE 'DELETE'
     GROUP BY  c.first_name, c.last_name , c.identification, l.loan_number_id, l.interest_rate_type, 
     l.amount_approved, l.number_of_installments,l.frequency_of_payment, lp.name, l.status_type,
@@ -153,6 +178,94 @@ controller.getLoans = async (queryParams) => {
   } catch (error) {
     console.log(error);
     throw new Error(error.message);
+  }
+};
+
+controller.getTotalActive = async (queryParams) => {
+  try {
+    const [data] = await db.query(`
+    select count(loan_number_id)amount_of_loans,coalesce(sum(total_arrear),0)as total
+    from (
+    SELECT l.loan_number_id, COALESCE(SUM(a.amount_of_fee) filter(where a.status_type <> 'DELETE'), 0)   as total_arrear
+    FROM amortization a
+    RIGHT JOIN loan l ON (l.loan_id = a.loan_id)
+    JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
+    JOIN customer c ON (la.customer_id = c.customer_id)
+    JOIN late_payment lp ON (l.late_payment_id = lp.late_payment_id)
+    LEFT JOIN interest_rate ir ON (l.interest_rate_id = ir.interest_rate_id)
+    WHERE l.outlet_id like '${
+      queryParams.outletId && queryParams.outletId != "null"
+        ? queryParams.outletId
+        : "%"
+    }'
+    AND l.status_type NOT LIKE 'DELETE'
+    ${getDateRangeFilter(
+      "a.payment_date",
+      queryParams.dateFrom,
+      queryParams.dateTo
+    )}
+    GROUP BY l.loan_id
+    ORDER BY l.created_date DESC) as t1
+      `);
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+controller.getTotalArrears = async (queryParams) => {
+  try {
+    const [data] = await db.query(`
+      select count(loan_number_id)amount_of_loans,coalesce(sum(total_arrear),0)as total_arrear
+      from (
+      SELECT l.loan_number_id, COALESCE(SUM(a.amount_of_fee) filter(where a.status_type = 'DEFEATED'), 0)  as total_arrear
+      FROM amortization a
+      RIGHT JOIN loan l ON (l.loan_id = a.loan_id)
+      JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
+      JOIN customer c ON (la.customer_id = c.customer_id)
+      JOIN late_payment lp ON (l.late_payment_id = lp.late_payment_id)
+      LEFT JOIN interest_rate ir ON (l.interest_rate_id = ir.interest_rate_id)
+      WHERE l.outlet_id like '${
+        queryParams.outletId && queryParams.outletId != "null"
+          ? queryParams.outletId
+          : "%"
+      }'
+      AND a.status_type NOT LIKE 'DELETE'
+      AND l.status_type NOT LIKE 'DELETE'
+      ${getDateRangeFilter(
+        "a.payment_date",
+        queryParams.dateFrom,
+        queryParams.dateTo
+      )}
+      GROUP BY l.loan_id
+      HAVING COALESCE(SUM(a.amount_of_fee) filter(where a.status_type = 'DEFEATED'), 0) > 0
+      ORDER BY l.created_date DESC) as t1
+      `);
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+controller.getTotalPaid = async (queryParams) => {
+  console.log(queryParams);
+  try {
+    const [data] = await db.query(`
+    SELECT count(loan_id)
+    FROM loan 
+    WHERE outlet_id like '${queryParams.outletId}'
+    AND status_type LIKE 'PAID'
+    ${getDateRangeFilter(
+      "created_date",
+      queryParams.dateFrom,
+      queryParams.dateTo
+    )}`);
+
+    return data;
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -185,7 +298,8 @@ controller.getLoanDetails = async (req) => {
             COALESCE(SUM(a.capital) filter(where a.paid = 'false'), 0)  as pending_capital,
             COALESCE(SUM(a.interest) filter(where a.paid = 'false'), 0)  as pending_interest,
             COALESCE(SUM(a.mora) filter(where a.paid = 'false'), 0) pending_mora,
-            COALESCE(SUM(lc.amount),0) as charges,
+            --COALESCE(SUM(lc.amount),0) as charges,
+            0,
             COALESCE(COUNT(a.amortization_id) filter(where a.paid = 'false'), 0) pending_dues,
             COALESCE(COUNT(a.amortization_id) filter(where a.status_type = 'DEFEATED'), 0) arrear_dues
             FROM amortization a
@@ -193,7 +307,7 @@ controller.getLoanDetails = async (req) => {
           JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
           JOIN customer c ON (la.customer_id = c.customer_id)
           JOIN late_payment lp ON (l.late_payment_id = lp.late_payment_id)
-          LEFT JOIN loan_charge lc ON (l.loan_id = lc.loan_id)
+          --LEFT JOIN loan_charge lc ON (l.loan_id = lc.loan_id)
       LEFT JOIN interest_rate ir ON (l.interest_rate_id = ir.interest_rate_id)
           WHERE a.loan_id = '${req.params.id}'
       AND a.status_type NOT LIKE 'DELETE'

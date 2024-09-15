@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useDebugValue } from "react";
 import { DashCountCard } from "../../components/DashCountCard";
 import { DoughnutChart } from "../../components/DoughnutChart";
 import { LineChart } from "../../components/LineChart";
@@ -9,6 +9,8 @@ import {
   getLoanApplicationByMonth,
   getLoanApplicationByType,
   getLoansByMonth,
+  getLoanArrear,
+  getLoanPaid,
 } from "../../api/loan";
 import { getOutletsApi } from "../../api/outlet";
 import { daysInMonth, getPreviousDateByDays } from "../../utils/dateFunctions";
@@ -22,12 +24,16 @@ import { AuthContext } from "../../contexts/AuthContext";
 function LoanDash() {
   const [outlets, setOutlets] = React.useState([]);
   const [countData, setCountData] = React.useState([]);
+  const [countArrearLoans, setCountArrearLoans] = React.useState([]);
+  const [countPaidLoans, setCountPaidLoans] = React.useState([]);
   const [amountData, setAmountData] = React.useState([]);
   const [pendingData, setPendingData] = React.useState([]);
   const [lineChartData, setLineChartData] = React.useState([]);
   const [barChartData, setBarChartData] = React.useState({});
   const [pieChartData, setPieChartData] = React.useState([]);
   const [isCountLoading, setCountIsLoading] = React.useState(false);
+  const [isCountArrearLoading, setIsCountArrearLoading] = React.useState(false);
+  const [isCountPaidLoading, setIsCountPaidLoading] = React.useState(false);
   const [isAmountLoading, setAmountIsLoading] = React.useState(false);
   const [isPendingLoading, setPendingIsLoading] = React.useState(false);
   const [isLineChartLoading, setLineChartIsLoading] = React.useState(false);
@@ -43,13 +49,22 @@ function LoanDash() {
 
   const [outletParam, setOutletParam] = React.useState("");
   const [searchCountParams, setSearchCountParams] = React.useState({
-    dateFrom: getPreviousDateByDays(0),
-    dateTo: getPreviousDateByDays(0),
+    dateFrom: undefined,
+    dateTo: undefined,
   });
 
   const [searchAmountParams, setSearchAmountParams] = React.useState({
-    dateFrom: getPreviousDateByDays(0),
-    dateTo: getPreviousDateByDays(0),
+    dateFrom: undefined,
+    dateTo: undefined,
+  });
+
+  const [searchArrearLoanParamas, setSearchArrearLoanParamas] = React.useState({
+    dateFrom: undefined,
+    dateTo: undefined,
+  });
+  const [searchPaidLoanParamas, setSearchPaidLoanParamas] = React.useState({
+    dateFrom: undefined,
+    dateTo: undefined,
   });
 
   const [searchPendingParams, setSearchPendingParams] = React.useState({
@@ -92,6 +107,52 @@ function LoanDash() {
       setCountIsLoading(false);
     })();
   }, [outletParam, searchCountParams]);
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        setIsCountArrearLoading(true);
+        const outlets = await getOutletsApi({ outletId: auth.outlet_id });
+        const arrearLoans = await getLoanArrear({
+          outletId: outletParam,
+          ...searchArrearLoanParamas,
+          //dateTo: tdate.toISOString().split("T")[0],
+        });
+        if (arrearLoans.error == true) {
+          throw new Error(arrearLoans.body);
+        }
+
+        setOutlets(outlets.body);
+        setCountArrearLoans(arrearLoans.body);
+      } catch (error) {
+        console.log(error.message);
+      }
+      setIsCountArrearLoading(false);
+    })();
+  }, [outletParam, searchArrearLoanParamas]);
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        setIsCountPaidLoading(true);
+        const outlets = await getOutletsApi({ outletId: auth.outlet_id });
+        const arrearLoans = await getLoanPaid({
+          outletId: outletParam,
+          ...searchPaidLoanParamas,
+          //dateTo: tdate.toISOString().split("T")[0],
+        });
+        if (arrearLoans.error == true) {
+          throw new Error(arrearLoans.body);
+        }
+
+        setOutlets(outlets.body);
+        setCountPaidLoans(arrearLoans.body);
+      } catch (error) {
+        console.log(error.message);
+      }
+      setIsCountPaidLoading(false);
+    })();
+  }, [outletParam, searchPaidLoanParamas]);
 
   React.useEffect(() => {
     (async () => {
@@ -234,31 +295,81 @@ function LoanDash() {
             </div>
           </div>
         </div>
+
+        <div className="counter-list" style={{}}>
+          <DashCountCard
+            cardName={"Activos"}
+            amount={currencyFormat(countData.length, false)}
+            movementPct={(
+              countData.length /
+              lineChartData
+                .map((item) => item.amount_of_apps)
+                .reduce((acc, item) => acc + parseFloat(item), 0)
+            ).toFixed(3)}
+            movementAmount={4000}
+            setSearchParams={setSearchCountParams}
+            isLoading={isCountLoading}
+          />
+          <DashCountCard
+            cardName={"En atraso"}
+            amount={currencyFormat(
+              parseInt(countArrearLoans[0]?.amount_of_loans),
+              false
+            )}
+            movementPct={(
+              countArrearLoans.length /
+              lineChartData
+                .map((item) => item.amount_of_apps)
+                .reduce((acc, item) => acc + parseFloat(item), 0)
+            ).toFixed(3)}
+            movementAmount={4000}
+            setSearchParams={setSearchArrearLoanParamas}
+            isLoading={isCountArrearLoading}
+          />
+          <DashCountCard
+            cardName={"Saldados"}
+            amount={currencyFormat(parseInt(countPaidLoans[0]?.count), false)}
+            movementPct={(
+              countData.length /
+              lineChartData
+                .map((item) => item.amount_of_apps)
+                .reduce((acc, item) => acc + parseFloat(item), 0)
+            ).toFixed(3)}
+            movementAmount={4000}
+            setSearchParams={setSearchPaidLoanParamas}
+            isLoading={isCountPaidLoading}
+          />
+        </div>
         <div className="list">
           <DashCountCard
-            cardName={"Préstamos"}
-            amount={currencyFormat(countData.length, false)}
+            cardName={"Monto aprovado"}
+            amount={currencyFormat(
+              countData
+                .filter((item) => item.status_type == "CREATED")
+                .reduce(
+                  (acc, item) => acc + parseFloat(item.amount_approved),
+                  0
+                ),
+              true
+            )}
             movementPct={8.6}
             movementAmount={12}
             setSearchParams={setSearchCountParams}
             isLoading={isCountLoading}
+            filterActive={false}
           />
 
           <DashCountCard
-            cardName={"Total solicitado"}
-            amount={currencyFormat(
-              amountData.reduce(
-                (acc, item) => acc + parseFloat(item.amount_approved),
-                0
-              )
-            )}
+            cardName={"Monto en atraso"}
+            amount={currencyFormat(parseInt(countArrearLoans[0]?.total_arrear))}
             movementPct={4}
             movementAmount={12}
             setSearchParams={setSearchAmountParams}
-            isLoading={isAmountLoading}
+            isLoading={isCountArrearLoading}
+            filterActive={false}
           />
           <DashCountCard
-            cardName={"Préstamos pendientes"}
+            cardName={"Refinanciados, Renegociados, Transferidos . . ."}
             amount={currencyFormat(
               pendingData.filter((item) => item.status_type === "CREATED")
                 .length,

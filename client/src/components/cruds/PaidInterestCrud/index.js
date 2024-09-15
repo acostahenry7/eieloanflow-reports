@@ -54,14 +54,16 @@ function PaidInterestCrud() {
     {
       name: "Cliente",
       width: "250px",
-      selector: (row) => (
-        <div>
-          <p style={{ margin: 0, fontWeight: 500 }}>
-            {formatClientName(row.customer_name)}
-          </p>
-          <span style={{ fontSize: 12 }}>{row.identification}</span>
-        </div>
-      ),
+      selector: (row) => row.customer_name,
+      sortable: true,
+      reorder: true,
+      wrap: true,
+      omit: false,
+    },
+    {
+      name: "Cédula",
+      width: "140px",
+      selector: (row) => row.identification,
       sortable: true,
       reorder: true,
       wrap: true,
@@ -321,11 +323,12 @@ function PaidInterestCrud() {
       isActive: true,
     },
   ]);
-  const filterData = data.filter((item) => {
+  const filterData = data?.filter((item) => {
     let searchText = `customerName${item.customer_name}identification${item.identification}loanNumber${item.loan_number_id}`;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
 
+  console.log("filterData", data);
   const exportPDF = () => {
     let reportDate = new Date(searchParams.dateTo);
 
@@ -363,6 +366,43 @@ function PaidInterestCrud() {
         data={filterData}
         isLoading={isLoading}
         marginTopPagination={100}
+        dtOptions={{
+          onSort: (params, order) => {
+            console.log(
+              params.selector?.toString().split("=>")[1].split(".")[1]
+            );
+            let fieldName = params.selector
+              ?.toString()
+              .split("=>")[1]
+              .split(".")[1];
+
+            console.log(fieldName);
+            setData(
+              filterData.sort((a, b) => {
+                const nameA = a[fieldName].toUpperCase(); // ignore upper and lowercase
+                const nameB = b[fieldName].toUpperCase(); // ignore upper and lowercase
+                if (nameA < nameB) {
+                  if (order == "desc") {
+                    return 1;
+                  } else {
+                    return -1;
+                  }
+                }
+                if (nameA > nameB) {
+                  if (order == "desc") {
+                    return -1;
+                  } else {
+                    return 1;
+                  }
+                }
+
+                // names must be equal
+                return 0;
+              })
+            );
+          },
+        }}
+
         // dtOptions={{
         //   expandableRows: true,
         //   expandableRowsComponent: ({ data }) => {
@@ -383,7 +423,7 @@ function PaidInterestCrud() {
           }}
         >
           <span style={{ paddingLeft: 15 }}>Totales</span>
-          <p style={{ marginLeft: 467, width: 130 }}>
+          <p style={{ marginLeft: 600, width: 130 }}>
             {currencyFormat(
               filterData.reduce(
                 (acc, item) => acc + parseFloat(item.total_due),

@@ -15,6 +15,39 @@ module.exports = (app) => {
       });
   });
 
+  router.get("/api/loan-arrear", (req, res) => {
+    loanCtrl
+      .getTotalArrears(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  router.get("/api/loan-paid", (req, res) => {
+    loanCtrl
+      .getTotalPaid(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  router.get("/api/loan-application-pending", (req, res) => {
+    loanCtrl
+      .getPendingLoanApplication(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   router.get("/api/loan-application-by-month", (req, res) => {
     loanCtrl
       .getLoanApplicationByMonth(req.query)

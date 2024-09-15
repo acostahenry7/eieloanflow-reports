@@ -6,6 +6,7 @@
   box-shadow: 0 1px 1px rgba(196, 193, 193, 0.507);
   padding: 20px;
   box-sizing: border-box;
+  min-height: 227px;
 }
 
 .card {

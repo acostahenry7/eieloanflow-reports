@@ -59,7 +59,7 @@ function Sidebar() {
       subItems: [
         {
           privilege: "DASHBOARD_LOAN_APPLICATION",
-          label: "Solicitudes",
+          label: "- Solicitudes",
           icon: (selected) => (
             <HiOutlineDocumentText
               className="Sidebar-content-item-icon"
@@ -70,7 +70,7 @@ function Sidebar() {
           selected: false,
         },
         {
-          label: "Resumen Préstamos",
+          label: "- Préstamos",
           icon: (selected) => (
             <TbBuildingBank
               className="Sidebar-content-item-icon"
@@ -82,7 +82,7 @@ function Sidebar() {
         },
 
         {
-          label: "Resumen Contabilidad",
+          label: "- Contabilidad",
           icon: (selected) => (
             <HiOutlineCalculator
               className="Sidebar-content-item-icon"
@@ -90,6 +90,17 @@ function Sidebar() {
             />
           ),
           route: "/dash/accounting",
+          selected: false,
+        },
+        {
+          label: "- Cobros",
+          icon: (selected) => (
+            <TbBuildingBank
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/dash/payments",
           selected: false,
         },
       ],

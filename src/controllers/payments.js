@@ -59,8 +59,8 @@ controller.getCanceledPayments = async (queryParams) => {
       JOIN customer c ON (cl.customer_id = c.customer_id)
       JOIN loan l ON (p.loan_id = l.loan_id)
       JOIN receipt r ON (r.payment_id = p.payment_id)
-      JOIN jhi_user ju ON (p.created_by = ju.login)
-      LEFT JOIN employee e ON (p.employee_reverse_id = e.employee_id)
+      JOIN jhi_user ju ON (p.last_modified_by = ju.login)
+      LEFT JOIN employee e ON (ju.employee_id = e.employee_id)
       WHERE p.status_type = 'CANCEL' 
       AND l.status_type not in ('DELETE', 'PAID')
       ${generateWhereStatement(queryParams)}

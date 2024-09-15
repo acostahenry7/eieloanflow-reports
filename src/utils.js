@@ -27,7 +27,24 @@ function generateWhereStatement(queryParams, whereClause) {
 }
 
 function getDateRangeFilter(field, fromDate, toDate) {
-  let condition = `AND ${field} BETWEEN '${fromDate}' AND '${toDate}'`;
+  let condition = "";
+
+  fromDate == "undefined" ? (fromDate = undefined) : fromDate;
+  toDate == "undefined" ? (toDate = undefined) : toDate;
+
+  if (!fromDate && !toDate) {
+    condition = "";
+  } else {
+    if (!fromDate) {
+      condition = `AND ${field} <= '${toDate}'`;
+    } else {
+      if (!toDate) {
+        condition = `AND ${field} >= '${fromDate}'`;
+      } else {
+        condition = `AND ${field}::date BETWEEN '${fromDate}' AND '${toDate}'`;
+      }
+    }
+  }
 
   return condition;
 }
