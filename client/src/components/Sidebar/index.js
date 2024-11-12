@@ -524,6 +524,17 @@ function Sidebar() {
           selected: false,
         },
         {
+          label: "Conciliación bancaria",
+          icon: (selected) => (
+            <MdInsertChart
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/accounting-conciliation",
+          selected: false,
+        },
+        {
           label: "Mayor Caja (cajeros)",
           icon: (selected) => (
             <TbReport

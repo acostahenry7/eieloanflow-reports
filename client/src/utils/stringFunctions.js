@@ -181,6 +181,19 @@ function getCustomerEstatusLabel(key) {
   return result;
 }
 
+export function getPaymentTotalByType(arr, type) {
+  let totalCash = 0;
+  arr.map(function (item) {
+    item.child
+      .filter((a) => a.status_type == "ENABLED" && a.payment_type == type)
+      .map((c) => {
+        totalCash += parseFloat(c.pay);
+      });
+  });
+
+  return totalCash;
+}
+
 export {
   formatClientName,
   getLoanSituationLabel,

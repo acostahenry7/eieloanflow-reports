@@ -14,6 +14,20 @@ async function getLoanApplication(queryParams) {
   }
 }
 
+async function getLoanApplicationCounter(queryParams) {
+  try {
+    const loanApplicationCounter = await request({
+      method: "GET",
+      path: "/loan-application-counter",
+      urlParams: { ...queryParams } || {},
+    });
+
+    return loanApplicationCounter;
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function getPendingLoanApplication(queryParams) {
   try {
     const loanApplication = await request({
@@ -106,6 +120,20 @@ async function getLoans(queryParams, loanId) {
     });
 
     return loans;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getLoanCounter(queryParams) {
+  try {
+    const loanCounter = await request({
+      method: "GET",
+      path: "/loan-counter",
+      urlParams: { ...queryParams } || {},
+    });
+
+    return loanCounter;
   } catch (error) {
     throw error;
   }
@@ -226,11 +254,13 @@ async function getAmortizationTable(queryParams) {
 
 export {
   getLoanApplication,
+  getLoanApplicationCounter,
   getPendingLoanApplication,
   getLoanApplicationByMonth,
   getLoanApplicationByType,
   getLoansByMonth,
   getLoans,
+  getLoanCounter,
   getLoanActivities,
   getLoanDiscounts,
   getRegisterClose,

@@ -9,6 +9,7 @@ import {
   generateReportSection,
   spacing,
   sectionSpacing,
+  getDiaryDescription,
 } from "./report-helpers";
 
 let colsWidth = [30, 92, 27, 27];
@@ -84,13 +85,19 @@ function generateReport(data, configParams) {
     pd.transactions.map((transaction, index) => {
       counter += 1;
       let description = transaction.description.split(" ");
+
       doc.text(transaction.created_date.split("T")[0], left + 3, top);
+      // doc.text(
+      //   `${description[0] || ""} ${description[1] || ""} ${
+      //     description[2] || ""
+      //   } ${description[3] || ""}${description[4] || ""}  ${
+      //     description[5] || ""
+      //   } ${description[6] || ""}`,
+      //   left + colsWidth[0] + 3,
+      //   top
+      // );
       doc.text(
-        `${description[0] || ""} ${description[1] || ""} ${
-          description[2] || ""
-        } ${description[3] || ""}${description[4] || ""}  ${
-          description[5] || ""
-        } ${description[6] || ""}`,
+        getDiaryDescription(transaction.description),
         left + colsWidth[0] + 3,
         top
       );

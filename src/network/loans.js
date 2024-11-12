@@ -37,6 +37,17 @@ module.exports = (app) => {
       });
   });
 
+  router.get("/api/loan-application-counter", (req, res) => {
+    loanCtrl
+      .getLoanApplicationCounter(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   router.get("/api/loan-application-pending", (req, res) => {
     loanCtrl
       .getPendingLoanApplication(req.query)
@@ -84,6 +95,17 @@ module.exports = (app) => {
   router.get("/api/loan", (req, res) => {
     loanCtrl
       .getLoans(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
+  router.get("/api/loan-counter", (req, res) => {
+    loanCtrl
+      .getLoanCounter(req.query)
       .then((msg) => {
         response.success(req, res, msg, 200);
       })

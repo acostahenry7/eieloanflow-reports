@@ -271,15 +271,15 @@ controller.getMajorGeneral = async (queryParams) => {
       join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
       join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
       left join payment p on (gd.payment_id = p.payment_id )
-      left join register r on (p.register_id = r.register_id)
-      left JOIN jhi_user u ON (r.user_id = u.user_id)
+      --left join register r on (p.register_id = r.register_id)
+      left JOIN jhi_user u ON (gd.created_by = u.login)
       left JOIN employee e ON (u.employee_id = e.employee_id)
-      where r.outlet_id='${queryParams.outletId}'
-      ${
-        queryParams.dateFrom
-          ? `and p.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
-          : ""
-      }
+      where gd.outlet_id='${queryParams.outletId}'
+      ${getDateRangeFilter(
+        "gd.general_diary_date",
+        queryParams.dateFrom,
+        queryParams.dateTo
+      )}
       and ac.number like '${queryParams.accountId || "%"}'
       and gd.status_type = 'ENABLED'
       and gd.description not like '%226464%'
@@ -292,7 +292,7 @@ controller.getMajorGeneral = async (queryParams) => {
         `
           : ""
       }
-      
+      and u.login not in ('y.aragonez')
       group by gd.payment_id, ac.number, ac.name,gd.description,gd.general_diary_date, e.first_name, e.last_name
       order by gd.general_diary_date asc`
     );
@@ -678,8 +678,6 @@ controller.generate606 = async (req, res, queryParams) => {
     await workbook.toFileAsync(`${filePath}/${fileName}`);
     return `http://${req.headers.host}/static/reports/${fileName}`;
   });
-
-  return "ok";
 };
 
 controller.generate607 = async (req, res, queryParams) => {

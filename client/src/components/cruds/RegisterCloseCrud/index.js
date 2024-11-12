@@ -2,7 +2,10 @@ import React from "react";
 import { SearchBar } from "../../SearchBar";
 import { Datatable } from "../../Datatable";
 import { getRegisterClose } from "../../../api/loan";
-import { formatClientName } from "../../../utils/stringFunctions";
+import {
+  formatClientName,
+  getPaymentTotalByType,
+} from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import { Margin, usePDF } from "react-to-pdf";
 import { tableUIHelper } from "../../../utils/ui-helpers";
@@ -55,6 +58,7 @@ function RegisterCloseCrud() {
     })();
   }, [reqToggle, searchParams]);
 
+  let totalsLabel = "Totales";
   const [columns, setColumns] = React.useState([
     {
       name: "Empleado",
@@ -62,7 +66,11 @@ function RegisterCloseCrud() {
       selector: (row) => (
         <div>
           <p style={{ margin: 0, fontWeight: 500 }}>
-            {formatClientName(row.register.employee_name)}
+            {row.register.employee_name == totalsLabel ? (
+              <b>{formatClientName(row.register.employee_name)}</b>
+            ) : (
+              formatClientName(row.register.employee_name)
+            )}
           </p>
           {/* <span style={{ fontSize: 12 }}>{row.identification}</span> */}
         </div>
@@ -75,7 +83,12 @@ function RegisterCloseCrud() {
     {
       name: "Cant. Transacciones",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => row.child.length,
+      selector: (row) =>
+        row.register.employee_name == totalsLabel ? (
+          <b>{row.register.transactions}</b>
+        ) : (
+          row.child.length
+        ),
       sortable: true,
       reorder: true,
       omit: false,
@@ -83,7 +96,10 @@ function RegisterCloseCrud() {
     {
       name: "Total apertura",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.amount),
+      selector: (row) =>
+        row.register.employee_name == totalsLabel
+          ? row.register.total_opening
+          : currencyFormat(row.register.amount, false),
       sortable: true,
       reorder: true,
       omit: false,
@@ -91,7 +107,7 @@ function RegisterCloseCrud() {
     {
       name: "Total de efectivo",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.total_cash),
+      selector: (row) => currencyFormat(row.register.total_cash, false),
       sortable: true,
       reorder: true,
       omit: false,
@@ -100,7 +116,7 @@ function RegisterCloseCrud() {
     {
       name: "Total de cheques",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.total_check),
+      selector: (row) => currencyFormat(row.register.total_check, false),
       sortable: true,
       reorder: true,
       omit: false,
@@ -108,7 +124,7 @@ function RegisterCloseCrud() {
     {
       name: "Total de transferencia",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.total_transfer),
+      selector: (row) => currencyFormat(row.register.total_transfer, false),
       sortable: true,
       reorder: true,
       omit: false,
@@ -116,7 +132,7 @@ function RegisterCloseCrud() {
     {
       name: "Descuento",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.total_discount),
+      selector: (row) => currencyFormat(row.register.total_discount, false),
       sortable: true,
       reorder: true,
       omit: false,
@@ -124,7 +140,7 @@ function RegisterCloseCrud() {
     {
       name: "Total pagado",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.total_pay),
+      selector: (row) => currencyFormat(row.register.total_pay, false),
       sortable: true,
       reorder: true,
       omit: false,
@@ -132,13 +148,15 @@ function RegisterCloseCrud() {
     {
       name: "Fecha de apertura",
       selector: (row) =>
-        new Date(row.register.opening_date)
-          .toLocaleString("es-ES", {
-            day: "2-digit",
-            month: "numeric",
-            year: "numeric",
-          })
-          .split(",")[0],
+        row.register.opening_date
+          ? new Date(row.register.opening_date)
+              .toLocaleString("es-ES", {
+                day: "2-digit",
+                month: "numeric",
+                year: "numeric",
+              })
+              .split(",")[0]
+          : row.register.opening_date,
       sortable: true,
       reorder: true,
       omit: false,
@@ -146,13 +164,15 @@ function RegisterCloseCrud() {
     {
       name: "Fecha de cierre",
       selector: (row) =>
-        new Date(row.register.last_modified_date)
-          .toLocaleString("es-ES", {
-            day: "2-digit",
-            month: "numeric",
-            year: "numeric",
-          })
-          .split(",")[0],
+        row.register.last_modified_date
+          ? new Date(row.register.last_modified_date)
+              .toLocaleString("es-ES", {
+                day: "2-digit",
+                month: "numeric",
+                year: "numeric",
+              })
+              .split(",")[0]
+          : row.register.last_modified_date,
       sortable: true,
       reorder: true,
       omit: false,
@@ -171,6 +191,18 @@ function RegisterCloseCrud() {
     //   omit: false,
     // },
   ]);
+  const conditionalRowStyles = [
+    {
+      when: (row) =>
+        filterData[0]?.register?.register_id === row?.register?.register_id &&
+        row?.register?.register_id.includes("total"), // Condición para la última fila
+      style: {
+        backgroundColor: "#dee2e6",
+        fontWeight: "bold",
+        fontSize: 14,
+      },
+    },
+  ];
 
   const mainFilters = [
     {
@@ -240,6 +272,31 @@ function RegisterCloseCrud() {
     generateReport(filterData, conf);
   };
 
+  console.log(filterData);
+  filterData.unshift({
+    register: {
+      register_id: "total_id",
+      employee_name: totalsLabel,
+      opening_date: "",
+      transactions: filterData.reduce((acc, i) => acc + i.child.length, 0),
+      total_opening: currencyFormat(
+        filterData.reduce((acc, i) => acc + parseFloat(i.register.amount), 0),
+        false
+      ),
+      total_cash: getPaymentTotalByType(filterData, "CASH"),
+      total_check: getPaymentTotalByType(filterData, "CHECK"),
+      total_transfer: getPaymentTotalByType(filterData, "TRANSFER"),
+      total_discount: filterData.reduce(
+        (acc, item) => acc + parseFloat(item.register.total_discount || 0),
+        0
+      ),
+      total_pay:
+        getPaymentTotalByType(filterData, "CASH") +
+        getPaymentTotalByType(filterData, "CHECK") +
+        getPaymentTotalByType(filterData, "TRANSFER"),
+    },
+    child: [],
+  });
   return (
     <div className="crud-container">
       <SearchBar
@@ -257,7 +314,7 @@ function RegisterCloseCrud() {
       <div ref={targetRef}>
         <Datatable
           columns={columns}
-          data={filterData}
+          data={[...filterData]}
           isLoading={isLoading}
           dtOptions={{
             expandableRows: true,
@@ -381,12 +438,16 @@ function RegisterCloseCrud() {
               );
             },
             fixedHeader: true,
+            expandableRowDisabled: (row) =>
+              filterData[0]?.register?.register_id ===
+              row?.register?.register_id,
+            conditionalRowStyles: conditionalRowStyles,
           }}
-          marginTopPagination={100}
+          marginTopPagination={0}
         />
-        {filterData.length > 0 && (
+        {/* {filterData.length > 0 && (
           <TotalBar data={filterData} loadingStatus={isLoading} />
-        )}
+        )} */}
       </div>
     </div>
   );

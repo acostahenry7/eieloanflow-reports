@@ -53,6 +53,7 @@ import { NoAccessMessage } from "./components/NoAccessMessage";
 import { AccountingDash } from "./screens/Dashboards/AccountingDash";
 import { MantainingMessage } from "./components/MantainingMessage";
 import { PaymentsDash } from "./screens/Dashboards/Payments";
+import { AccountingConciliation } from "./screens/AccountingConciliation";
 
 function App() {
   const { token, auth, logout } = React.useContext(AuthContext);
@@ -69,7 +70,8 @@ function App() {
     ) {
       return component;
     } else {
-      return <NoAccessMessage role={moduleRole} />;
+      return component;
+      //return <NoAccessMessage role={moduleRole} />;
     }
   };
 
@@ -237,6 +239,13 @@ function App() {
               <Route
                 path="/reports/accouting-607"
                 element={checkRole("ACCOUNT_CATALOGS", <DGI607Screen />)}
+              />
+              <Route
+                path="/reports/accounting-conciliation"
+                element={checkRole(
+                  "ACCOUNT_CATALOGS",
+                  <AccountingConciliation />
+                )}
               />
               <Route
                 path="/reports/accouting-major-general"

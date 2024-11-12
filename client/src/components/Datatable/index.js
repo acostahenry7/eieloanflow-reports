@@ -104,6 +104,7 @@ function Datatable({
         selectAllRowsItemText: "Todos",
       }}
       {...dtOptions}
+      //expandOnRowClicked
     />
   );
 }

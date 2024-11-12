@@ -7,6 +7,7 @@ import {
   getLoanApplication,
   getLoanApplicationByMonth,
   getLoanApplicationByType,
+  getLoanApplicationCounter,
   getLoansByMonth,
 } from "../../api/loan";
 import { getOutletsApi } from "../../api/outlet";
@@ -21,13 +22,11 @@ import { AuthContext } from "../../contexts/AuthContext";
 function LoanRequest() {
   const [outlets, setOutlets] = React.useState([]);
   const [countData, setCountData] = React.useState([]);
-  const [amountData, setAmountData] = React.useState([]);
   const [pendingData, setPendingData] = React.useState([]);
   const [lineChartData, setLineChartData] = React.useState([]);
   const [barChartData, setBarChartData] = React.useState({});
   const [pieChartData, setPieChartData] = React.useState([]);
   const [isCountLoading, setCountIsLoading] = React.useState(false);
-  const [isAmountLoading, setAmountIsLoading] = React.useState(false);
   const [isPendingLoading, setPendingIsLoading] = React.useState(false);
   const [isLineChartLoading, setLineChartIsLoading] = React.useState(false);
   const [isBarChartLoading, setBarChartIsLoading] = React.useState(false);
@@ -42,13 +41,8 @@ function LoanRequest() {
 
   const [outletParam, setOutletParam] = React.useState("");
   const [searchCountParams, setSearchCountParams] = React.useState({
-    dateFrom: getPreviousDateByDays(0),
-    dateTo: getPreviousDateByDays(0),
-  });
-
-  const [searchAmountParams, setSearchAmountParams] = React.useState({
-    dateFrom: getPreviousDateByDays(0),
-    dateTo: getPreviousDateByDays(0),
+    // dateFrom: getPreviousDateByDays(0),
+    // dateTo: getPreviousDateByDays(0),
   });
 
   const [searchPendingParams, setSearchPendingParams] = React.useState({
@@ -65,8 +59,8 @@ function LoanRequest() {
   });
 
   const [searchPieChartParams, setSearchPieChartParams] = React.useState({
-    dateFrom: getPreviousDateByDays(0),
-    dateTo: getPreviousDateByDays(0),
+    // dateFrom: getPreviousDateByDays(0),
+    // dateTo: getPreviousDateByDays(0),
   });
 
   React.useEffect(() => {
@@ -74,8 +68,14 @@ function LoanRequest() {
       try {
         setCountIsLoading(true);
         const outlets = await getOutletsApi({ outletId: auth.outlet_id });
-        const loanApplication = await getLoanApplication({
-          outletId: outletParam,
+        //console.log(outlets.body.map((item) => item.outlet_id).join());
+        let defaultOutlets = outlets.body
+          .map((item) => "'" + item.outlet_id + "'")
+          .join();
+        console.log("ll", outletParam);
+        const loanApplication = await getLoanApplicationCounter({
+          outletId:
+            !outletParam || outletParam == "" ? defaultOutlets : outletParam,
           ...searchCountParams,
           //dateTo: tdate.toISOString().split("T")[0],
         });
@@ -84,6 +84,7 @@ function LoanRequest() {
         }
 
         setOutlets(outlets.body);
+        console.log(loanApplication.body);
         setCountData(loanApplication.body);
       } catch (error) {
         console.log(error.message);
@@ -91,28 +92,6 @@ function LoanRequest() {
       setCountIsLoading(false);
     })();
   }, [outletParam, searchCountParams]);
-
-  React.useEffect(() => {
-    (async () => {
-      try {
-        setAmountIsLoading(true);
-
-        const loanApplication = await getLoanApplication({
-          outletId: outletParam,
-          ...searchAmountParams,
-          // dateTo: tdate.toISOString().split("T")[0],
-        });
-        if (loanApplication.error == true) {
-          throw new Error(loanApplication.body);
-        }
-
-        setAmountData(loanApplication.body);
-      } catch (error) {
-        console.log(error.message);
-      }
-      setAmountIsLoading(false);
-    })();
-  }, [outletParam, searchAmountParams]);
 
   React.useEffect(() => {
     (async () => {
@@ -223,9 +202,7 @@ function LoanRequest() {
                   setOutletParam(e.target.value);
                 }}
               >
-                <option value={outlets.map((item) => item.outlet_id).join(",")}>
-                  Todas las sucursales
-                </option>
+                <option value={""}>Todas las sucursales</option>
                 {outlets.map((item, index) => (
                   <option key={index} value={item.outlet_id}>
                     {item.name}
@@ -239,30 +216,26 @@ function LoanRequest() {
         <div className="list">
           <DashCountCard
             cardName={"Solicitudes"}
-            amount={currencyFormat(countData.length, false)}
+            amount={currencyFormat(countData[0]?.count, false)}
             movementPct={(
               countData.length /
               lineChartData
                 .map((item) => item.amount_of_apps)
                 .reduce((acc, item) => acc + parseFloat(item), 0)
             ).toFixed(3)}
-            movementAmount={4000}
+            movementAmount={10}
             setSearchParams={setSearchCountParams}
             isLoading={isCountLoading}
           />
 
           <DashCountCard
             cardName={"Monto solicitado"}
-            amount={currencyFormat(
-              amountData.reduce(
-                (acc, item) => acc + parseFloat(item.requested_amount),
-                0
-              )
-            )}
+            amount={currencyFormat(countData[0]?.amount)}
             movementPct={4}
-            movementAmount={4000}
-            setSearchParams={setSearchAmountParams}
-            isLoading={isAmountLoading}
+            movementAmount={10}
+            setSearchParams={setSearchCountParams}
+            isLoading={isCountLoading}
+            filterActive={false}
           />
           <DashCountCard
             cardName={"Pendientes"}
@@ -272,7 +245,7 @@ function LoanRequest() {
               false
             )}
             movementPct={8.6}
-            movementAmount={4000}
+            movementAmount={10}
             setSearchParams={setSearchPendingParams}
             isLoading={isPendingLoading}
           />
@@ -339,18 +312,28 @@ function LoanRequest() {
               <div className="filter">
                 <select
                   onChange={(e) => {
-                    let { days, isPrev } = JSON.parse(e.target.value);
-                    let daysTo = isPrev == true ? days - 1 : days;
+                    if (e.target.value.length > 0) {
+                      console.log("klk");
+                      let { days, isPrev } = JSON.parse(e.target.value);
+                      let daysTo = isPrev == true ? days - 1 : days;
 
-                    let currentDays = new Date().getDate();
-                    if (currentDays == days) days--;
+                      let currentDays = new Date().getDate();
 
-                    setSearchPieChartParams({
-                      dateFrom: getPreviousDateByDays(days),
-                      dateTo: getPreviousDateByDays(daysTo, true),
-                    });
+                      if (currentDays == days) days--;
+
+                      setSearchPieChartParams({
+                        dateFrom: getPreviousDateByDays(days),
+                        dateTo: getPreviousDateByDays(daysTo, true),
+                      });
+                    } else {
+                      setSearchPieChartParams({
+                        dateFrom: undefined,
+                        dateTo: undefined,
+                      });
+                    }
                   }}
                 >
+                  <option value={""}>Todo el tiempo</option>
                   <option value={JSON.stringify({ days: 0, isPrev: false })}>
                     Hoy
                   </option>
@@ -416,12 +399,12 @@ function LoanRequest() {
             ) : (
               <DoughnutChart
                 labels={[
-                  ...pieChartData.map((item) =>
+                  ...pieChartData?.map((item) =>
                     getLoanTypeLabel(item.loan_type)
                   ),
                 ]}
                 data={[
-                  ...pieChartData.map((item) => parseInt(item.amount_of_apps)),
+                  ...pieChartData?.map((item) => parseInt(item.amount_of_apps)),
                 ]}
                 dataLabels={[]}
               />

@@ -16,6 +16,7 @@ function TotalBar({ data, loadingStatus }) {
         marginTop: "-150px",
         // justifyContent: "space-between",
         width: "100%",
+        overflowX: "hidden",
       }}
     >
       <div>Total</div>

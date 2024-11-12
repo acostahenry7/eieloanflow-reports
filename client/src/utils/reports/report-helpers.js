@@ -91,13 +91,45 @@ export function createDate(doc, text, left, top, props) {
 }
 
 export function currencyFormat(number, showCurrencySign) {
-  let options = { style: "currency", currency: "DOP" };
+  let options = {
+    style: "currency",
+    currency: "DOP",
+    minimumFractionDigits: 2,
+  };
 
   if (showCurrencySign == false) {
-    options = {};
+    options.style = undefined;
+    options.currency = undefined;
   }
 
   return new Intl.NumberFormat("es-DO", options).format(number);
+}
+
+export function getDiaryDescription(description) {
+  console.log(description);
+  let result = "";
+  let keywords = description.split(" ");
+  if (keywords.some((word) => word === "desembolso")) {
+    result = `${keywords[2]} ${keywords[7]} ${keywords[8]}`;
+  } else if (
+    keywords.some((word) => word.toLowerCase() === "prestamo") &&
+    keywords.some((word) => word.toLowerCase() === "pago") &&
+    keywords.some((word) => word.toLowerCase() === "tipo")
+  ) {
+    let loanIndex = keywords.lastIndexOf("-") + 1;
+    result = `${keywords[0]} ${keywords[1]} ${keywords[2]} ${keywords[3]} ${keywords[5]} ${keywords[loanIndex]}`;
+  } else if (
+    keywords.some((word) => word.toLowerCase() === "prestamo") &&
+    keywords.some((word) => word.toLowerCase() === "pago")
+  ) {
+    result = `${keywords[0]} ${keywords[1]} ${keywords[2]} ${keywords[3]} ${keywords[5]} ${keywords[6]}`;
+  } else {
+    result = description;
+  }
+
+  result = result.charAt(0).toUpperCase() + result.slice(1);
+
+  return result;
 }
 
 export function generateReportSection(

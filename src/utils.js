@@ -49,7 +49,23 @@ function getDateRangeFilter(field, fromDate, toDate) {
   return condition;
 }
 
+function getOutletFilter(field, value) {
+  if (!value || value === "null" || value == "undefined") {
+    return `AND ${field} LIKE '%'`;
+  }
+
+  console.log(value?.split(","));
+
+  if (value?.split(",").length > 1) {
+    console.log("VALUE %%%%%%%%%%%%", value);
+    return `AND ${field} IN (${value})`;
+  } else {
+    return `AND ${field} LIKE '${value}'`;
+  }
+}
+
 module.exports = {
   generateWhereStatement,
   getDateRangeFilter,
+  getOutletFilter,
 };

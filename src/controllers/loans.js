@@ -1,7 +1,11 @@
 const db = require("../models");
 const path = require("path");
 const XlsxPopulate = require("xlsx-populate");
-const { generateWhereStatement, getDateRangeFilter } = require("../utils");
+const {
+  generateWhereStatement,
+  getDateRangeFilter,
+  getOutletFilter,
+} = require("../utils");
 var _ = require("lodash");
 const { nanoid } = require("nanoid");
 
@@ -52,6 +56,27 @@ controller.getLoanApplication = async (queryParams) => {
   }
 };
 
+controller.getLoanApplicationCounter = async (queryParams) => {
+  try {
+    const [data] = await db.query(`
+    SELECT count(loan_application_id) count, sum(requested_amount) amount
+    FROM loan_application 
+    WHERE status_type <> 'DELETE'
+    ${getOutletFilter("outlet_id", queryParams.outletId)}
+    ${getDateRangeFilter(
+      "created_date",
+      queryParams.dateFrom,
+      queryParams.dateTo
+    )}
+    `);
+
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 controller.getPendingLoanApplication = async (queryParams) => {
   try {
     const [data] = await db.query(`
@@ -91,6 +116,26 @@ controller.getLoanApplicationByMonth = async (queryParams) => {
   }
 };
 
+controller.getLoanApplicationByType = async (queryParams) => {
+  try {
+    const [data] = await db.query(
+      `SELECT loan_type, 
+        count(loan_application_id) AS amount_of_apps
+        FROM loan_application
+        WHERE status_type <> 'DELETE'
+        AND outlet_id like '${queryParams.outletId}%'
+        ${getDateRangeFilter(
+          "created_date",
+          queryParams.dateFrom,
+          queryParams.dateTo
+        )}
+        GROUP BY loan_type`
+    );
+
+    return data;
+  } catch (error) {}
+};
+
 controller.getLoanByMonth = async (queryParams) => {
   try {
     console.log("HOLAAAAAAAAAAAAAAAAAAAA$$$$$$$$$$$$");
@@ -118,21 +163,6 @@ controller.getLoanByMonth = async (queryParams) => {
   } catch (err) {
     console.log(err);
   }
-};
-
-controller.getLoanApplicationByType = async (queryParams) => {
-  try {
-    const [data] = await db.query(
-      `SELECT loan_type, 
-        count(loan_application_id) AS amount_of_apps
-        FROM loan_application
-        WHERE created_date::date BETWEEN '${queryParams.dateFrom}' AND '${queryParams.dateTo}'
-        AND outlet_id like '${queryParams.outletId}%'
-        GROUP BY loan_type`
-    );
-
-    return data;
-  } catch (error) {}
 };
 
 controller.getLoans = async (queryParams) => {
@@ -181,6 +211,29 @@ controller.getLoans = async (queryParams) => {
   }
 };
 
+controller.getLoanCounter = async (queryParams) => {
+  try {
+    const [data] = await db.query(`
+    SELECT count(loan_id) count, sum(amount_approved + (amount_approved * abs(percent/100))) amount
+    FROM loan 
+    WHERE status_type <> 'DELETE'
+    AND status_type like '${queryParams.status || "%"}'
+    AND loan_situation like '${queryParams.situation || "%"}' 
+    ${getOutletFilter("outlet_id", queryParams.outletId)}
+    ${getDateRangeFilter(
+      "created_date",
+      queryParams.dateFrom,
+      queryParams.dateTo
+    )}
+    `);
+
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 controller.getTotalActive = async (queryParams) => {
   try {
     const [data] = await db.query(`
@@ -226,18 +279,16 @@ controller.getTotalArrears = async (queryParams) => {
       JOIN customer c ON (la.customer_id = c.customer_id)
       JOIN late_payment lp ON (l.late_payment_id = lp.late_payment_id)
       LEFT JOIN interest_rate ir ON (l.interest_rate_id = ir.interest_rate_id)
-      WHERE l.outlet_id like '${
-        queryParams.outletId && queryParams.outletId != "null"
-          ? queryParams.outletId
-          : "%"
-      }'
-      AND a.status_type NOT LIKE 'DELETE'
+      WHERE a.status_type NOT LIKE 'DELETE'
+      ${getOutletFilter("l.outlet_id", queryParams.outletId)}
       AND l.status_type NOT LIKE 'DELETE'
       ${getDateRangeFilter(
         "a.payment_date",
         queryParams.dateFrom,
         queryParams.dateTo
       )}
+      AND l.status_type like 'CREATED'
+      AND l.loan_situation = 'ARREARS'
       GROUP BY l.loan_id
       HAVING COALESCE(SUM(a.amount_of_fee) filter(where a.status_type = 'DEFEATED'), 0) > 0
       ORDER BY l.created_date DESC) as t1
@@ -505,12 +556,13 @@ controller.getRegisterClose = async (queryParams) => {
       JOIN outlet o ON (l.outlet_id = o.outlet_id)
       --WHERE l.status_type NOT IN ('DELETE')
       WHERE p.status_type = 'ENABLED'
-      AND r.outlet_id like '${queryParams.outletId || ""}%'
+      AND p.outlet_id like '${queryParams.outletId || ""}%'
       ${
         queryParams.dateFrom && queryParams.dateTo
           ? `AND p.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
           : ""
       }
+      AND u.login <> 'y.aragonez' 
       ORDER BY r.created_date desc,  p.register_id`);
 
     if (data.length == 0) {

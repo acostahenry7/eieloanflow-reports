@@ -11,6 +11,7 @@ import {
   getLoansByMonth,
   getLoanArrear,
   getLoanPaid,
+  getLoanCounter,
 } from "../../api/loan";
 import { getOutletsApi } from "../../api/outlet";
 import { daysInMonth, getPreviousDateByDays } from "../../utils/dateFunctions";
@@ -88,18 +89,36 @@ function LoanDash() {
   React.useEffect(() => {
     (async () => {
       try {
-        setCountIsLoading(true);
         const outlets = await getOutletsApi({ outletId: auth.outlet_id });
-        const loanApplication = await getLoans({
-          outletId: outletParam,
+
+        setOutlets(outlets.body);
+      } catch (error) {
+        console.log(error.message);
+      }
+    })();
+  }, [outletParam]);
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        setCountIsLoading(true);
+        //const outlets = await getOutletsApi({ outletId: auth.outlet_id });
+        let defaultOutlets = outlets
+          .map((item) => "'" + item.outlet_id + "'")
+          .join();
+        const loanApplication = await getLoanCounter({
+          outletId:
+            !outletParam || outletParam == "" ? defaultOutlets : outletParam,
           ...searchCountParams,
+          status: "CREATED",
           //dateTo: tdate.toISOString().split("T")[0],
         });
         if (loanApplication.error == true) {
           throw new Error(loanApplication.body);
         }
 
-        setOutlets(outlets.body);
+        console.log(loanApplication);
+        //setOutlets(outlets.body);
         setCountData(loanApplication.body);
       } catch (error) {
         console.log(error.message);
@@ -112,9 +131,12 @@ function LoanDash() {
     (async () => {
       try {
         setIsCountArrearLoading(true);
-        const outlets = await getOutletsApi({ outletId: auth.outlet_id });
+        let defaultOutlets = outlets
+          .map((item) => "'" + item.outlet_id + "'")
+          .join();
         const arrearLoans = await getLoanArrear({
-          outletId: outletParam,
+          outletId:
+            !outletParam || outletParam == "" ? defaultOutlets : outletParam,
           ...searchArrearLoanParamas,
           //dateTo: tdate.toISOString().split("T")[0],
         });
@@ -122,7 +144,6 @@ function LoanDash() {
           throw new Error(arrearLoans.body);
         }
 
-        setOutlets(outlets.body);
         setCountArrearLoans(arrearLoans.body);
       } catch (error) {
         console.log(error.message);
@@ -135,18 +156,17 @@ function LoanDash() {
     (async () => {
       try {
         setIsCountPaidLoading(true);
-        const outlets = await getOutletsApi({ outletId: auth.outlet_id });
-        const arrearLoans = await getLoanPaid({
+        const paidLoans = await getLoanCounter({
           outletId: outletParam,
           ...searchPaidLoanParamas,
+          status: "PAID",
           //dateTo: tdate.toISOString().split("T")[0],
         });
-        if (arrearLoans.error == true) {
-          throw new Error(arrearLoans.body);
+        if (paidLoans.error == true) {
+          throw new Error(paidLoans.body);
         }
 
-        setOutlets(outlets.body);
-        setCountPaidLoans(arrearLoans.body);
+        setCountPaidLoans(paidLoans.body);
       } catch (error) {
         console.log(error.message);
       }
@@ -299,7 +319,7 @@ function LoanDash() {
         <div className="counter-list" style={{}}>
           <DashCountCard
             cardName={"Activos"}
-            amount={currencyFormat(countData.length, false)}
+            amount={currencyFormat(countData[0]?.count, false)}
             movementPct={(
               countData.length /
               lineChartData
@@ -335,7 +355,8 @@ function LoanDash() {
                 .map((item) => item.amount_of_apps)
                 .reduce((acc, item) => acc + parseFloat(item), 0)
             ).toFixed(3)}
-            movementAmount={4000}
+            customerMessage={`Se traduce en un total cobrado de `}
+            movementAmount={currencyFormat(countPaidLoans[0]?.amount)}
             setSearchParams={setSearchPaidLoanParamas}
             isLoading={isCountPaidLoading}
           />
@@ -343,15 +364,7 @@ function LoanDash() {
         <div className="list">
           <DashCountCard
             cardName={"Monto aprovado"}
-            amount={currencyFormat(
-              countData
-                .filter((item) => item.status_type == "CREATED")
-                .reduce(
-                  (acc, item) => acc + parseFloat(item.amount_approved),
-                  0
-                ),
-              true
-            )}
+            amount={currencyFormat(countData[0]?.amount, true)}
             movementPct={8.6}
             movementAmount={12}
             setSearchParams={setSearchCountParams}
@@ -363,13 +376,14 @@ function LoanDash() {
             cardName={"Monto en atraso"}
             amount={currencyFormat(parseInt(countArrearLoans[0]?.total_arrear))}
             movementPct={4}
-            movementAmount={12}
             setSearchParams={setSearchAmountParams}
             isLoading={isCountArrearLoading}
             filterActive={false}
+            customerMessage={`Este monto toma en cuenta las moras`}
+            movementAmount={""}
           />
           <DashCountCard
-            cardName={"Refinanciados, Renegociados, Transferidos . . ."}
+            cardName={"Refinanciados, Transferidos . . ."}
             amount={currencyFormat(
               pendingData.filter((item) => item.status_type === "CREATED")
                 .length,
@@ -442,18 +456,28 @@ function LoanDash() {
               <div className="filter">
                 <select
                   onChange={(e) => {
-                    let { days, isPrev } = JSON.parse(e.target.value);
-                    let daysTo = isPrev == true ? days - 1 : days;
+                    if (e.target.value.length > 0) {
+                      console.log("klk");
+                      let { days, isPrev } = JSON.parse(e.target.value);
+                      let daysTo = isPrev == true ? days - 1 : days;
 
-                    let currentDays = new Date().getDate();
-                    if (currentDays == days) days--;
+                      let currentDays = new Date().getDate();
 
-                    setSearchPieChartParams({
-                      dateFrom: getPreviousDateByDays(days),
-                      dateTo: getPreviousDateByDays(daysTo, true),
-                    });
+                      if (currentDays == days) days--;
+
+                      setSearchPieChartParams({
+                        dateFrom: getPreviousDateByDays(days),
+                        dateTo: getPreviousDateByDays(daysTo, true),
+                      });
+                    } else {
+                      setSearchPieChartParams({
+                        dateFrom: undefined,
+                        dateTo: undefined,
+                      });
+                    }
                   }}
                 >
+                  <option value={""}>Todo el tiempo</option>
                   <option value={JSON.stringify({ days: 0, isPrev: false })}>
                     Hoy
                   </option>

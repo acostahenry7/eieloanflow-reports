@@ -7,6 +7,7 @@ function DashCountCard({
   cardName,
   amount,
   movementPct,
+  customerMessage,
   movementAmount,
   setReqToggle,
   setSearchParams,
@@ -103,10 +104,16 @@ function DashCountCard({
             </div>
           </div>
           <div className="des">
-            <p>
-              Se registra un movimeinto del <b>${movementAmount}%</b> desde el
-              último mes
-            </p>
+            {customerMessage ? (
+              <p>
+                {customerMessage} <b>{movementAmount}</b>
+              </p>
+            ) : (
+              <p>
+                Se registra un movimeinto del <b>${movementAmount}%</b> desde el
+                último mes
+              </p>
+            )}
             <div className="des-stats">
               <div className="des-stat-item">icon --</div>
               <div className="des-stat-item">icon --</div>
