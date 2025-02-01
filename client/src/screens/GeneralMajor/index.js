@@ -19,11 +19,12 @@ function GeneralMajor() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [reqToggle, setReqToggle] = React.useState([]);
   const [searchedText, setSearchedText] = React.useState("");
-
+  const [lastMonthBalance, setLastMontBalance] = React.useState(0);
   React.useEffect(() => {
     (async () => {
       try {
         let response = await getMajorGeneral(searchParams);
+        setLastMontBalance(response.body.last_month_balance);
         let arr = Object.entries(response.body).map((item) => ({
           account: item[1][0],
           transactions: item[1],

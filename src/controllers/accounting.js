@@ -1,9 +1,18 @@
 const db = require("../models");
-const { generateWhereStatement, getDateRangeFilter } = require("../utils");
+const { v4: uuid } = require("uuid");
+const {
+  generateWhereStatement,
+  getDateRangeFilter,
+  getGenericLikeFilter,
+  getCurrentISODate,
+} = require("../utils");
 const path = require("path");
 const XlsxPopulate = require("xlsx-populate");
 const { nanoid } = require("nanoid");
+const fs = require("fs");
 var _ = require("lodash");
+const { processTransactionsFormat } = require("../helpers/banks");
+const conciliarTransacciones = require("../helpers/conciliationProcess");
 
 const controller = {};
 
@@ -16,6 +25,35 @@ controller.accountCatalog = async (queryParams) => {
       from account_catalog
       where outlet_id like'${queryParams.outletId || "%"}'
       order by number`
+    );
+
+    return data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+controller.getBankAccounts = async (queryParams) => {
+  try {
+    const [data, meta] = await db.query(
+      `select * from bank_account
+      where outlet_id like'${queryParams.outletId || "%"}'
+      and bank_id like '${queryParams.bankId || "%"}'
+      order by name`
+    );
+
+    return data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+controller.getBanks = async (queryParams) => {
+  try {
+    const [data, meta] = await db.query(
+      `select * from bank
+      where record_type = 'SYSTEM'
+      order by name`
     );
 
     return data;
@@ -278,7 +316,8 @@ controller.getMajorGeneral = async (queryParams) => {
       ${getDateRangeFilter(
         "gd.general_diary_date",
         queryParams.dateFrom,
-        queryParams.dateTo
+        queryParams.dateTo,
+        false
       )}
       and ac.number like '${queryParams.accountId || "%"}'
       and gd.status_type = 'ENABLED'
@@ -452,6 +491,324 @@ controller.getSummarizeMajor = async (queryParams) => {
 
     return data;
   } catch (error) {}
+};
+
+controller.getBankDiaryTransactions = async (queryParams) => {
+  try {
+    const [checkPayment] = await db.query(`
+      SELECT t1.check_payment_id as transaction_id, t1.amount, t1.description, t1.status_type, t1.check_payment_type transaction_type, t1.loan_number_id, 
+      t2.general_diary_id, t2.general_diary_number_id, t2.credit as diary_amount, t1.bank as bank_number, t1.bank_account_id, t1.reference, 
+      t2.diary_description, t1.check_payment_date as target_date, t1.outlet_id, cd.is_conciliated, CASE 
+	  	WHEN cl.status_type = 'ENABLED' AND cd.is_conciliated = true THEN true
+	    ELSE false
+	  END is_conciliated, cd.conciliation_id, t1.reference_bank
+      FROM (select cp.check_payment_id, cp.amount, cp.description, cp.reference, cp.status_type, cp.check_payment_date, cp.check_payment_type, 
+        ba.number as bank, ac.number, cp.bank_account_id, cp.general_diary_id, l.loan_number_id, cp.outlet_id, cp.reference_bank
+        from check_payment cp
+        left join bank_account ba on (cp.bank_account_id = ba.bank_account_id)
+        left join account_catalog ac on (ba.account_catalog_id = ac.account_catalog_id)
+        left join loan l on (cp.loan_id = l.loan_id)
+        where cp.status_type = 'APPROVED'
+        ${getGenericLikeFilter("cp.outlet_id", queryParams.outletId)}
+        ${getDateRangeFilter(
+          "check_payment_date",
+          queryParams.dateFrom,
+          queryParams.dateTo,
+          false
+        )}
+        order by check_payment_date desc)t1
+      LEFT JOIN (select gd.general_diary_id, 
+            length(trim(leading '0' from substring(gd.description, position('0' in gd.description), 8))) desc_length,
+            trim(leading '0' from substring(gd.description, position('0' in gd.description), 8)) description,
+            gd.description as diary_description,
+            string_agg(ac.number::varchar , ',') cuentas, 
+            sum(gda.debit) debit,  sum(gda.credit) credit, gd.general_diary_date, gd.general_diary_number_id
+            from general_diary gd
+            left join general_diary_account gda on (gd.general_diary_id = gda.general_diary_id)
+            left join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
+            where lower(gd.description) like any (array['%desembolso%', '%pago%proveedor%'])
+            ${getGenericLikeFilter("gd.outlet_id", queryParams.outletId)}
+            and number like any (array['110%', '4%', '12%', '21%'])
+            ${getDateRangeFilter(
+              "general_diary_date",
+              queryParams.dateFrom,
+              queryParams.dateTo,
+              false
+            )}
+            group by gd.general_diary_id
+            order by gd.general_diary_date asc) t2 on (t1.reference::text = t2.description or t1.general_diary_id = t2.general_diary_id)
+      left join conciliation_detail cd on (t1.check_payment_id = cd.transaction_id)
+      left join conciliation cl on (cd.conciliation_id = cl.conciliation_id AND (cl.status_type = 'ENABLED' or cl.status_type is null))
+      where t1.status_type = 'APPROVED'	
+      ${getGenericLikeFilter("t1.bank_account_id", queryParams.bankAccountId)}
+      order by check_payment_date desc
+
+    `);
+
+    const [bankEntryRetire] = await db.query(
+      `select ber.bank_entry_retirement_id as transaction_id, ber.amount, ber.description, ber.status_type, 
+      ber.type_movement as transaction_type, ber.general_diary_id, sum(gda.debit) as diary_amount, ba.number as bank_number, 
+      ber.bank_account_id, ber.reference, gd.description as diary_description, ber.target_date, ber.outlet_id, ber.created_date,
+      CASE 
+	  	WHEN cl.status_type = 'ENABLED' AND cd.is_conciliated = true THEN true
+	    ELSE false
+	  END is_conciliated, cd.conciliation_id, gd.general_diary_number_id
+      from bank_entry_retirement ber
+      left join bank_account ba on (ber.bank_account_id = ba.bank_account_id)
+      left join general_diary gd on (ber.general_diary_id = gd.general_diary_id)
+      left join general_diary_account gda on (gd.general_diary_id = gda.general_diary_id)
+      left join conciliation_detail cd on (ber.bank_entry_retirement_id = cd.transaction_id)
+      left join conciliation cl on (cd.conciliation_id = cl.conciliation_id AND (cl.status_type = 'ENABLED' or cl.status_type is null))
+      where ber.status_type in ('COMPLETED', 'TRANSIT')
+      ${getGenericLikeFilter("ber.outlet_id", queryParams.outletId)}
+      ${getDateRangeFilter(
+        "ber.target_date",
+        queryParams.dateFrom,
+        queryParams.dateTo,
+        false
+      )}
+      ${getGenericLikeFilter("ber.bank_account_id", queryParams.bankAccountId)}
+      group by ber.bank_entry_retirement_id, ber.amount, ber.description, ber.status_type, 
+      ber.type_movement, ber.general_diary_id, ba.number, ber.bank_account_id, ber.reference, 
+      gd.description, ber.target_date, ber.outlet_id, cd.is_conciliated, cd.conciliation_id,
+      cl.status_type, gd.general_diary_number_id
+      order by ber.target_date desc
+      `
+    );
+
+    const transactions = checkPayment.concat(...bankEntryRetire);
+
+    const totalIn = transactions
+      .filter((i) => i.transaction_type === "ENTRY")
+      .reduce((acc, i) => acc + parseFloat(i.amount), 0);
+
+    const totalOut = transactions
+      .filter(
+        (i) =>
+          i.transaction_type === "DISBURSEMENT" ||
+          i.transaction_type === "RETIREMENT" ||
+          i.transaction_type === "PAYMENT"
+      )
+      .reduce((acc, i) => acc + parseFloat(i.amount), 0);
+
+    const totalDiaryIn = transactions
+      .filter((i) => i.transaction_type === "ENTRY")
+      .reduce((acc, i) => acc + parseFloat(i.diary_amount), 0);
+
+    const totalDiaryOut = transactions
+      .filter(
+        (i) =>
+          i.transaction_type === "DISBURSEMENT" ||
+          i.transaction_type === "RETIREMENT" ||
+          i.transaction_type === "PAYMENT"
+      )
+      .reduce((acc, i) => acc + parseFloat(i.diary_amount), 0);
+    const periodBankBalance = totalIn - totalOut;
+    const periodDiaryBalance = totalDiaryIn - totalDiaryOut;
+    const differences = transactions.filter((i) => i.amount != i.diary_amount);
+
+    console.log("DIFERENCES QTY", differences.length);
+
+    return {
+      periodBankBalance,
+      periodDiaryBalance,
+      differences,
+      transactions,
+    };
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+controller.getTransactionsFromBankFile = async (queryParams) => {
+  try {
+    const [[{ bank_id: bankId }]] = await db.query(
+      `select bank_id from bank_account where bank_account_id = '${queryParams.bankAccountId}'`
+    );
+
+    const data = fs.readFileSync(queryParams.filepath);
+
+    const length = data.toString().split("\n").length;
+    console.log(data.toString().split("\n")[1]);
+    const parseData = data
+      .toString()
+      .split("\n")
+      .map((item) => item.match(/(?:[^,"']+|"[^"]*"|'[^']*')+/g))
+      .slice(0, length - 1);
+
+    fs.unlink(queryParams.filepath, () => {
+      console.log("File deleted");
+    });
+
+    const formatedData = processTransactionsFormat(bankId, parseData);
+
+    const { transactions: localTransactions } =
+      await controller.getBankDiaryTransactions(queryParams);
+
+    const comparedTrasactions = [];
+
+    console.log(localTransactions);
+
+    const result = conciliarTransacciones(localTransactions, formatedData);
+
+    for (bt of formatedData) {
+      const t = localTransactions.find(
+        (item) =>
+          item.transaction_type == "ENTRY"
+            ? item.amount == bt.amount
+            : item.reference_bank == bt.reference // && item.target_date == bt.date
+      );
+
+      if (t) {
+        comparedTrasactions.push({
+          transaction_id: t.transaction_id,
+          ...bt,
+          local_amount: t.amount,
+          general_diary_id: t.general_diary_id,
+          diary_amount: t.diary_amount,
+          transaction_type: t.transaction_type,
+          local_date: t.target_date,
+          bank_account_id: t.bank_account_id,
+          found: true,
+          is_conciliated: t.is_conciliated,
+        });
+      } else {
+        comparedTrasactions.push({
+          ...bt,
+          found: false,
+          is_conciliated: false,
+        });
+      }
+    }
+
+    //return comparedTrasactions;
+    return result;
+  } catch (error) {
+    console.error(`Got an error trying to read the file: ${error.message}`);
+    throw error;
+  }
+};
+
+controller.createConciliation = async (data) => {
+  console.log(data);
+  try {
+    const conciliationId = uuid();
+    const currentDate = getCurrentISODate();
+
+    const conciliationStm = `INSERT INTO conciliation (
+      conciliation_id,
+      description,
+      start_date,
+      end_date,
+      created_by,
+      last_modified_by,
+      created_date,
+      last_modified_date,
+      status_type,
+      outlet_id)
+  VALUES('${conciliationId}',
+    '${data.description}',
+    '${data.dateFrom}',
+    '${data.dateTo}',
+    '${data.createdBy}',
+    '${data.lastModifiedBy}',
+    '${currentDate}',
+    '${currentDate}',
+    'ENABLED',
+    '${data.outletId}')`;
+
+    console.log(data);
+    //Statements excution
+    await db.query(conciliationStm);
+    let conciliationDetailStm = "";
+    for (t of data.transactions) {
+      conciliationDetailStm = `INSERT INTO conciliation_detail (
+        transaction_id,
+        conciliation_id,
+        amount,
+        description,
+        transaction_type,
+        bank_account_id,
+        transaction_date,
+        is_conciliated,
+        adjustment_transaction_id,
+        transactions)
+        VALUES (
+          '${t.bank.id}',
+          '${conciliationId}',
+          '${t.bank.amount}',
+          '${t.bank.description.trim()}',
+          '${t.bank.transaction_type}',
+          '${t.local[0]?.bank_account_id}',
+          '${t.bank.date}',
+          '${true}',
+          '${null}',
+          '${JSON.stringify(t.local)}')`;
+
+      await db.query(conciliationDetailStm);
+    }
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+controller.getConciliations = async (queryParams) => {
+  try {
+    const statement = `
+      select c.*, cd.transaction_id, cd.amount,  cd.amount as local_amount, cd.description transaction_description, 
+      cd.transaction_type, cd.bank_account_id, to_char(cd.transaction_date::date, 'dd-mm-yyy') as date, is_conciliated, 
+      cd.adjustment_transaction_id, ba.number bank_account, cd.transactions
+      from conciliation c
+      join conciliation_detail cd on (c.conciliation_id = cd.conciliation_id)
+      join bank_account ba on (cd.bank_account_id = ba.bank_account_id)
+      WHERE c.status_type NOT IN ('DELETED')
+      ${getDateRangeFilter(
+        "c.start_date",
+        queryParams.dateFrom,
+        queryParams.dateTo
+      )}
+      ${getGenericLikeFilter("c.outlet_id", queryParams.outletId)}
+      ${getGenericLikeFilter("cd.bank_account_id", queryParams.bankAccountId)}
+      `;
+
+    const [data] = await db.query(statement);
+
+    const result = _(data)
+      .groupBy("conciliation_id")
+      .map((items, conciliation_id) => ({
+        conciliation_id,
+        description: items[0].description,
+        start_date: items[0].start_date,
+        end_date: items[0].end_date,
+        outlet_id: items[0].outlet_id,
+        amount: items[0].amount,
+        status:
+          items?.every((item) => item.is_conciliated == true) == true
+            ? "COMPLETADA"
+            : "EN PROCESO",
+        bankTransactions: [...items],
+      }));
+
+    return result;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+controller.removeConciliation = async (queryParams) => {
+  try {
+    const statement = `UPDATE conciliation SET status_type = 'DELETED' WHERE conciliation_id = '${queryParams.conciliationId}'`;
+
+    await db.query(statement);
+
+    return true;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 };
 
 function getMainAccountsArr(arr) {

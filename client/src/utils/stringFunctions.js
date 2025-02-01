@@ -139,6 +139,28 @@ function getPaymentTypeLabel(paymentType) {
   return result;
 }
 
+function getLabelByTransactionType(paymentType) {
+  let result = "";
+  switch (paymentType) {
+    case "DISBURSEMENT":
+      result = "Desembolso";
+      break;
+    case "ENTRY":
+      result = "Depósito";
+      break;
+    case "RETIREMENT":
+      result = "Retiro";
+      break;
+    case "PAYMENT":
+      result = "Pago";
+      break;
+    default:
+      break;
+  }
+
+  return result;
+}
+
 function getLoanFrequencyLabel(key) {
   let result = "";
 
@@ -194,11 +216,36 @@ export function getPaymentTotalByType(arr, type) {
   return totalCash;
 }
 
+function getTotalPaymentDiscount(arr) {
+  let discount = 0;
+
+  // discount += arr.reduce(
+  //   (acc, item) => acc + parseFloat(item.register.total_discount || 0),
+  //   0
+  // );
+
+  discount += arr.reduce((acc, item) => {
+    let rowTotal = item.child?.reduce(
+      (inAcc, inItem) =>
+        inAcc +
+        //parseFloat(inItem.pay_off_loan_discount || 0) +
+        parseFloat(inItem.loan_discount),
+      0
+    );
+
+    return acc + rowTotal;
+  }, 0);
+
+  return discount;
+}
+
 export {
   formatClientName,
   getLoanSituationLabel,
   getLoanTypeLabel,
   getPaymentTypeLabel,
+  getTotalPaymentDiscount,
   getLoanFrequencyLabel,
   getCustomerEstatusLabel,
+  getLabelByTransactionType,
 };

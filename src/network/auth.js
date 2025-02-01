@@ -5,7 +5,7 @@ const response = require("./response");
 
 module.exports = (app) => {
   router.post("/api/signin", (req, res) => {
-    console.log("here");
+    console.log("here", req.body);
     authCtrl
       .signin(req.body)
       .then((msg) => {

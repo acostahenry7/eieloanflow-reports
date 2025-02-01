@@ -127,6 +127,10 @@ function SearchBar({
                     setSearchParams({ [mf.field]: e.target.value });
                   }
                   searchForm.setFieldValue(mf.field, e.target.value);
+                  if (mf.customAction) {
+                    console.log("hi");
+                    mf.customAction(e.target.value);
+                  }
                 }}
               >
                 {mf.options.map((item) => (

@@ -26,7 +26,8 @@ function generateWhereStatement(queryParams, whereClause) {
   return whereString;
 }
 
-function getDateRangeFilter(field, fromDate, toDate) {
+function getDateRangeFilter(field, fromDate, toDate, convertion) {
+  if (convertion == undefined || convertion == null) convertion = true;
   let condition = "";
 
   fromDate == "undefined" ? (fromDate = undefined) : fromDate;
@@ -41,7 +42,9 @@ function getDateRangeFilter(field, fromDate, toDate) {
       if (!toDate) {
         condition = `AND ${field} >= '${fromDate}'`;
       } else {
-        condition = `AND ${field}::date BETWEEN '${fromDate}' AND '${toDate}'`;
+        condition = `AND ${field}${
+          convertion == true ? "::date" : ""
+        } BETWEEN '${fromDate}' AND '${toDate}'`;
       }
     }
   }
@@ -49,12 +52,10 @@ function getDateRangeFilter(field, fromDate, toDate) {
   return condition;
 }
 
-function getOutletFilter(field, value) {
+function getGenericLikeFilter(field, value) {
   if (!value || value === "null" || value == "undefined") {
     return `AND ${field} LIKE '%'`;
   }
-
-  console.log(value?.split(","));
 
   if (value?.split(",").length > 1) {
     console.log("VALUE %%%%%%%%%%%%", value);
@@ -64,8 +65,13 @@ function getOutletFilter(field, value) {
   }
 }
 
+function getCurrentISODate() {
+  return new Date().toISOString();
+}
+
 module.exports = {
   generateWhereStatement,
   getDateRangeFilter,
-  getOutletFilter,
+  getGenericLikeFilter,
+  getCurrentISODate,
 };

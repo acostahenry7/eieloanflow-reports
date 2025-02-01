@@ -82,6 +82,14 @@ function generateReport(data, configParams) {
     let currentTotalDebit = 0;
     let currentTotalCredit = 0;
     let currentTotalBalance = 0;
+
+    pd.transactions.unshift({
+      description: "Balance al mes anterior",
+      credit: 50000,
+      debit: 80000,
+      //balance: 13456,
+      created_date: "2020",
+    });
     pd.transactions.map((transaction, index) => {
       counter += 1;
       let description = transaction.description.split(" ");
@@ -121,7 +129,7 @@ function generateReport(data, configParams) {
       createSubTitle(
         doc,
         `${currencyFormat(
-          getRowBalance(pd.transactions, index, origin),
+          transaction.balance || getRowBalance(pd.transactions, index, origin),
           false
         )}`,
         left + colsWidth[0] + colsWidth[1] + colsWidth[2] + colsWidth[3] + 17,

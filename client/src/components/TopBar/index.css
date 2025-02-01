@@ -1,4 +1,6 @@
 .TopBar {
+  display: flex;
+  justify-content: space-between;
   background-color: white;
   padding: 18px;
 }
@@ -13,4 +15,19 @@
 .TopBar span {
   font-size: 14px;
   color: rgb(151, 148, 148);
+}
+
+.TopBar button {
+  border-radius: 6px;
+  border: none;
+  padding: 0 8px;
+  font-size: 15px;
+  background-color: var(--main-color);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.TopBar button:hover {
+  background-color: #0068ac;
 }

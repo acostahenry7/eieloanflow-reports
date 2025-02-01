@@ -5,6 +5,7 @@ import { getRegisterClose } from "../../../api/loan";
 import {
   formatClientName,
   getPaymentTotalByType,
+  getTotalPaymentDiscount,
 } from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import { Margin, usePDF } from "react-to-pdf";
@@ -48,6 +49,7 @@ function RegisterCloseCrud() {
           child: i,
         }));
 
+        console.log(parseData);
         setData(parseData);
 
         console.log(parseData);
@@ -107,7 +109,13 @@ function RegisterCloseCrud() {
     {
       name: "Total de efectivo",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.total_cash, false),
+      selector: (row) =>
+        row.register.employee_name == totalsLabel
+          ? currencyFormat(row.register.total_cash, false)
+          : currencyFormat(
+              getPaymentTotalByType([{ child: row.child }], "CASH"),
+              false
+            ),
       sortable: true,
       reorder: true,
       omit: false,
@@ -116,7 +124,13 @@ function RegisterCloseCrud() {
     {
       name: "Total de cheques",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.total_check, false),
+      selector: (row) =>
+        row.register.employee_name == totalsLabel
+          ? currencyFormat(row.register.total_check, false)
+          : currencyFormat(
+              getPaymentTotalByType([{ child: row.child }], "CHECK"),
+              false
+            ),
       sortable: true,
       reorder: true,
       omit: false,
@@ -124,7 +138,13 @@ function RegisterCloseCrud() {
     {
       name: "Total de transferencia",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.total_transfer, false),
+      selector: (row) =>
+        row.register.employee_name == totalsLabel
+          ? currencyFormat(row.register.total_transfer, false)
+          : currencyFormat(
+              getPaymentTotalByType([{ child: row.child }], "CASH"),
+              false
+            ),
       sortable: true,
       reorder: true,
       omit: false,
@@ -132,7 +152,19 @@ function RegisterCloseCrud() {
     {
       name: "Descuento",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.total_discount, false),
+      selector: (row) =>
+        row.register.employee_name == totalsLabel
+          ? currencyFormat(row.register.total_discount, false)
+          : currencyFormat(
+              row.child.reduce(
+                (acc, i) =>
+                  acc +
+                  parseFloat(i.pay_off_loan_discount) +
+                  parseFloat(i.loan_discount),
+                0
+              ),
+              false
+            ),
       sortable: true,
       reorder: true,
       omit: false,
@@ -140,7 +172,15 @@ function RegisterCloseCrud() {
     {
       name: "Total pagado",
       width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.total_pay, false),
+      selector: (row) =>
+        row.register.employee_name == totalsLabel
+          ? currencyFormat(row.register.total_pay, false)
+          : currencyFormat(
+              getPaymentTotalByType([{ child: row.child }], "CASH") +
+                getPaymentTotalByType([{ child: row.child }], "CHECK") +
+                getPaymentTotalByType([{ child: row.child }], "TRANSFER"),
+              false
+            ),
       sortable: true,
       reorder: true,
       omit: false,
@@ -286,14 +326,12 @@ function RegisterCloseCrud() {
       total_cash: getPaymentTotalByType(filterData, "CASH"),
       total_check: getPaymentTotalByType(filterData, "CHECK"),
       total_transfer: getPaymentTotalByType(filterData, "TRANSFER"),
-      total_discount: filterData.reduce(
-        (acc, item) => acc + parseFloat(item.register.total_discount || 0),
-        0
-      ),
+      total_discount: getTotalPaymentDiscount(filterData),
       total_pay:
         getPaymentTotalByType(filterData, "CASH") +
         getPaymentTotalByType(filterData, "CHECK") +
-        getPaymentTotalByType(filterData, "TRANSFER"),
+        getPaymentTotalByType(filterData, "TRANSFER") -
+        getTotalPaymentDiscount(filterData),
     },
     child: [],
   });
@@ -346,6 +384,14 @@ function RegisterCloseCrud() {
                   name: "Tipo de pago",
                   selector: (row) =>
                     row.payment_type == "CASH" ? "Efectivo" : "Transferencia",
+                  sortable: true,
+                  reorder: true,
+                  omit: false,
+                },
+
+                {
+                  name: "Descuento",
+                  selector: (row) => row.loan_discount,
                   sortable: true,
                   reorder: true,
                   omit: false,

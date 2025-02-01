@@ -1,6 +1,7 @@
 import { request } from "../utils/request";
 
 async function loginApi(username, password) {
+  console.log(username);
   try {
     const user = await request({
       method: "POST",

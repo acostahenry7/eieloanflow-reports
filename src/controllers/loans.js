@@ -4,7 +4,7 @@ const XlsxPopulate = require("xlsx-populate");
 const {
   generateWhereStatement,
   getDateRangeFilter,
-  getOutletFilter,
+  getGenericLikeFilter,
 } = require("../utils");
 var _ = require("lodash");
 const { nanoid } = require("nanoid");
@@ -62,7 +62,7 @@ controller.getLoanApplicationCounter = async (queryParams) => {
     SELECT count(loan_application_id) count, sum(requested_amount) amount
     FROM loan_application 
     WHERE status_type <> 'DELETE'
-    ${getOutletFilter("outlet_id", queryParams.outletId)}
+    ${getGenericLikeFilter("outlet_id", queryParams.outletId)}
     ${getDateRangeFilter(
       "created_date",
       queryParams.dateFrom,
@@ -219,7 +219,7 @@ controller.getLoanCounter = async (queryParams) => {
     WHERE status_type <> 'DELETE'
     AND status_type like '${queryParams.status || "%"}'
     AND loan_situation like '${queryParams.situation || "%"}' 
-    ${getOutletFilter("outlet_id", queryParams.outletId)}
+    ${getGenericLikeFilter("outlet_id", queryParams.outletId)}
     ${getDateRangeFilter(
       "created_date",
       queryParams.dateFrom,
@@ -280,7 +280,7 @@ controller.getTotalArrears = async (queryParams) => {
       JOIN late_payment lp ON (l.late_payment_id = lp.late_payment_id)
       LEFT JOIN interest_rate ir ON (l.interest_rate_id = ir.interest_rate_id)
       WHERE a.status_type NOT LIKE 'DELETE'
-      ${getOutletFilter("l.outlet_id", queryParams.outletId)}
+      ${getGenericLikeFilter("l.outlet_id", queryParams.outletId)}
       AND l.status_type NOT LIKE 'DELETE'
       ${getDateRangeFilter(
         "a.payment_date",
@@ -540,7 +540,8 @@ controller.getRegisterClose = async (queryParams) => {
   try {
     const [data, meta] =
       await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, p.pay, o.name as outlet,
-      r.amount, p.register_id, r.total_cash, r.total_check, r.total_transfer, r.total_discount, r.total_pay, r.total_registered as difference, 
+      r.amount, p.register_id, r.total_cash, r.total_check, r.total_transfer, r.total_discount,  p.pay_off_loan_discount, p.individual_discount,
+	    coalesce(amd.discount,0) as loan_discount, r.total_pay, r.total_registered as difference, 
       e.first_name || ' ' || e.last_name as employee_name, r.created_date opening_date, r.last_modified_date, p.created_date, p.payment_type,
       e.commission_debt_collector_percentage as collector_percentage, p.status_type,
       case
@@ -554,6 +555,7 @@ controller.getRegisterClose = async (queryParams) => {
       JOIN jhi_user u ON (r.user_id = u.user_id)
       JOIN employee e ON (u.employee_id = e.employee_id)
       JOIN outlet o ON (l.outlet_id = o.outlet_id)
+      LEFT JOIN amortization_discount amd on (p.loan_id = amd.loan_id and p.created_date::date  = amd.created_date::date)
       --WHERE l.status_type NOT IN ('DELETE')
       WHERE p.status_type = 'ENABLED'
       AND p.outlet_id like '${queryParams.outletId || ""}%'

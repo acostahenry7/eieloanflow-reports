@@ -1,18 +1,21 @@
 import { config } from "./consts";
 
-async function request({ method, path, urlParams, data }) {
+async function request({ method, path, urlParams, data, isFormData }) {
   let options = {
     method,
-    headers: { "Content-Type": "application/json" },
   };
+
+  if (!isFormData) {
+    options.headers = {
+      "Content-Type": "application/json",
+    };
+  }
 
   switch (method) {
     case "POST":
-      options = {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      };
+      options.method = "POST";
+      options.body = !isFormData ? JSON.stringify(data) : data;
+
       break;
 
     default:

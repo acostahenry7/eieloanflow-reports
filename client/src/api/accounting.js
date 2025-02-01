@@ -15,6 +15,33 @@ async function getAccountCatalog(queryParams) {
   }
 }
 
+async function getBanksApi(queryParams) {
+  try {
+    const banks = await request({
+      method: "GET",
+      path: "/banks",
+      urlParams: queryParams || {},
+    });
+
+    return banks;
+  } catch (error) {
+    throw error;
+  }
+}
+async function getBankAccountsApi(queryParams) {
+  try {
+    const accounts = await request({
+      method: "GET",
+      path: "/bank-accounts",
+      urlParams: queryParams || {},
+    });
+
+    return accounts;
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function getToChargeAccount(queryParams) {
   try {
     const chargeAccount = await request({
@@ -142,8 +169,97 @@ async function generate607Api(queryParams) {
   }
 }
 
+async function loadFileTransactionsApi(data) {
+  try {
+    const formData = new FormData();
+
+    formData.append("name", data.file.name);
+    formData.append("file", data.file);
+    formData.append("outletId", data.outletId);
+    formData.append("bankAccountId", data.bankAccountId);
+    formData.append("dateFrom", data.dateFrom);
+    formData.append("dateTo", data.dateTo);
+
+    const res = await request({
+      path: "/bank-file/upload",
+      method: "POST",
+      data: formData,
+      isFormData: true,
+    });
+
+    console.log("#####", res);
+    return res;
+    //const result = await res.json();
+    //return result;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+async function getBankTransactionsApi(queryParams) {
+  try {
+    const summarizeMajor = await request({
+      method: "GET",
+      path: "/bank-transactions",
+      urlParams: queryParams || {},
+    });
+
+    return summarizeMajor;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function createConciliationApi(data) {
+  try {
+    const conciliation = request({
+      path: "/create-conciliation",
+      method: "POST",
+      data,
+    });
+
+    return conciliation;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+async function getConciliationApi(queryParams) {
+  try {
+    const conciliations = await request({
+      method: "GET",
+      path: "/conciliation",
+      urlParams: queryParams || {},
+    });
+
+    return conciliations;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function removeConciliationApi(queryParams) {
+  try {
+    const res = await request({
+      method: "DELETE",
+      path: "/conciliation",
+      urlParams: queryParams || {},
+    });
+
+    console.log(res);
+
+    return res;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export {
   getAccountCatalog,
+  getBanksApi,
+  getBankAccountsApi,
   getSummarizeMajor,
   getGeneralBalance,
   getToChargeAccount,
@@ -153,4 +269,9 @@ export {
   generate607Api,
   getMajorGeneral,
   getBoxMajorByEmployee,
+  getBankTransactionsApi,
+  loadFileTransactionsApi,
+  createConciliationApi,
+  getConciliationApi,
+  removeConciliationApi,
 };

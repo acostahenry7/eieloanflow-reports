@@ -11,6 +11,7 @@ function Datatable({
   onChangePageSize,
   totalRows,
   marginTopPagination,
+  customStyles,
 }) {
   const styles = {
     boxShadow: "0 0 10px grey",
@@ -30,7 +31,7 @@ function Datatable({
     },
     responsiveWrapper: {
       style: {
-        marginTop: 40,
+        marginTop: customStyles?.marginTop || 40,
       },
     },
     rows: {
@@ -85,7 +86,12 @@ function Datatable({
       striped={true}
       data={data}
       progressPending={isLoading}
-      customStyles={dataTableStyles}
+      customStyles={{
+        ...dataTableStyles,
+        responsiveWrapper: {
+          ...customStyles,
+        },
+      }}
       progressComponent={
         <ThreeDots
           height="80"
