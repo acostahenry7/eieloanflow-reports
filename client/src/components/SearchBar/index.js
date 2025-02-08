@@ -28,7 +28,7 @@ function SearchBar({
   const searchForm = useFormik({
     initialValues: getInitialValues([...mainFilters, ...secondaryFilters]),
     validateOnChange: false,
-    enableReinitialize: true,
+    enableReinitialize: false,
     onSubmit: async (values, { resetForm }) => {
       setSearchParams({});
       console.log(values);
@@ -123,13 +123,13 @@ function SearchBar({
               <select
                 value={searchForm.values[mf.field]}
                 onChange={(e) => {
-                  if (mf.updateForm == true) {
-                    setSearchParams({ [mf.field]: e.target.value });
-                  }
                   searchForm.setFieldValue(mf.field, e.target.value);
                   if (mf.customAction) {
                     console.log("hi");
                     mf.customAction(e.target.value);
+                  }
+                  if (mf.updateForm == true) {
+                    searchForm.handleSubmit();
                   }
                 }}
               >

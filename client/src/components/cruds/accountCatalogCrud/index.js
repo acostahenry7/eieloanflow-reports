@@ -71,6 +71,16 @@ function AccountCatalogCrud() {
 
   const mainFilters = [
     {
+      label: "No. de Cuenta",
+      field: "accountNumber",
+      type: "text",
+    },
+    {
+      label: "Nombre de la Cuenta",
+      field: "accountName",
+      type: "text",
+    },
+    {
       label: "Sucursal",
       field: "outletId",
       type: "select",
@@ -98,7 +108,7 @@ function AccountCatalogCrud() {
   ];
 
   const filterData = data.filter((item) => {
-    let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}`;
+    let searchText = `accountName${item.name}accountNumber${item.number}`;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
 

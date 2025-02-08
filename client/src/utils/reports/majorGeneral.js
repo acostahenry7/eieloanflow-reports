@@ -12,7 +12,9 @@ import {
   getDiaryDescription,
 } from "./report-helpers";
 
-let colsWidth = [30, 92, 27, 27];
+import logo from "./images/logo";
+
+let colsWidth = [25, 25, 130, 27, 27];
 
 function generateReport(data, configParams) {
   let parsedData = data;
@@ -26,7 +28,7 @@ function generateReport(data, configParams) {
   let granTotalRight = 460;
   let rightTotal = right;
   let center = 80;
-  let itemsPerPage = 45;
+  let itemsPerPage = 30;
 
   //-------File settings---------
   let fileNameDate = new Date().toISOString().split("T")[0];
@@ -35,7 +37,7 @@ function generateReport(data, configParams) {
   const width = 215.9;
   const height = 279.4;
   const doc = new jsPDF({
-    orientation: "portrait",
+    orientation: "landscape",
     unit: "mm",
     format: [width, height],
   });
@@ -46,15 +48,18 @@ function generateReport(data, configParams) {
   let subTitle = `MAYOR GENERAL`;
   let date = `${configParams.date || ""}`;
 
-  createMainTitle(doc, title, right, headerTop);
-  createMainSubTitle(doc, subTitle, right, headerTop + 5);
-  createMainSubTitle(doc, date, right, headerTop + 10);
-  createMainSubTitle(
-    doc,
-    `Cajero: ${parsedData[0].account.employee_name}`,
-    left,
-    headerTop + 5
-  );
+  createMainTitle(doc, title, right + 50, headerTop);
+  createMainSubTitle(doc, subTitle, right + 50, headerTop + 5);
+  createMainSubTitle(doc, date, right + 50, headerTop + 10);
+
+  doc.addImage(logo, "png", left + 2, headerTop - 5, 100, 25);
+
+  // createMainSubTitle(
+  //   doc,
+  //   `Cajero: ${parsedData[0].account.employee_name}`,
+  //   left,
+  //   headerTop + 5
+  // );
 
   //---------------------- TRANSACTIONS--------------------
   let counter = 0;
@@ -68,10 +73,10 @@ function generateReport(data, configParams) {
     createTitle(
       doc,
       `${pd.account.name} ${pd.account.number}`,
-      right + 63,
+      right + 50,
       headerTop + 18,
       {
-        align: "right",
+        align: "left",
       }
     );
 
@@ -83,18 +88,41 @@ function generateReport(data, configParams) {
     let currentTotalCredit = 0;
     let currentTotalBalance = 0;
 
-    pd.transactions.unshift({
-      description: "Balance al mes anterior",
-      credit: 50000,
-      debit: 80000,
-      //balance: 13456,
-      created_date: "2020",
-    });
+    //adding previous balance
+
+    console.log(
+      configParams.previousBalances[0],
+      "vs",
+      configParams.currentAccount
+    );
+
+    if (pd.transactions[0].isFirst == true) {
+      pd.transactions.shift();
+    }
+
+    const obj = configParams.previousBalances.find(
+      (item) => item.number == pd.account.number
+    );
+
+    if (obj) {
+      obj.isFirst = true;
+      obj.description = "Balance al mes anterior";
+      obj.created_date = "";
+
+      console.log(obj);
+
+      pd.transactions.unshift(obj);
+    }
+
     pd.transactions.map((transaction, index) => {
       counter += 1;
-      let description = transaction.description.split(" ");
+      let description =
+        transaction.deposit_description ||
+        transaction.check_description ||
+        getDiaryDescription(transaction.description);
 
       doc.text(transaction.created_date.split("T")[0], left + 3, top);
+      doc.text(transaction.reference_bank || "", left + colsWidth[0] + 3, top);
       // doc.text(
       //   `${description[0] || ""} ${description[1] || ""} ${
       //     description[2] || ""
@@ -104,15 +132,11 @@ function generateReport(data, configParams) {
       //   left + colsWidth[0] + 3,
       //   top
       // );
-      doc.text(
-        getDiaryDescription(transaction.description),
-        left + colsWidth[0] + 3,
-        top
-      );
+      doc.text(description, left + colsWidth[0] + colsWidth[1] + 4, top);
       createSubTitle(
         doc,
         currencyFormat(transaction.debit, false),
-        left + colsWidth[0] + colsWidth[1] + 17,
+        left + colsWidth[0] + colsWidth[1] + colsWidth[2] + 17,
         top,
         {
           align: "right",
@@ -121,7 +145,7 @@ function generateReport(data, configParams) {
       createSubTitle(
         doc,
         currencyFormat(transaction.credit, false),
-        left + colsWidth[0] + colsWidth[1] + colsWidth[2] + 17,
+        left + colsWidth[0] + colsWidth[1] + colsWidth[2] + colsWidth[3] + 17,
         top,
         { align: "right" }
       );
@@ -132,7 +156,13 @@ function generateReport(data, configParams) {
           transaction.balance || getRowBalance(pd.transactions, index, origin),
           false
         )}`,
-        left + colsWidth[0] + colsWidth[1] + colsWidth[2] + colsWidth[3] + 17,
+        left +
+          colsWidth[0] +
+          colsWidth[1] +
+          colsWidth[2] +
+          colsWidth[3] +
+          colsWidth[4] +
+          17,
         top,
         { align: "right" }
       );
@@ -160,15 +190,6 @@ function generateReport(data, configParams) {
         createSubTitle(
           doc,
           `${currencyFormat(currentTotalDebit, false)}`,
-          left + colsWidth[0] + colsWidth[1] + 17,
-          top + 4,
-          {
-            align: "right",
-          }
-        );
-        createSubTitle(
-          doc,
-          `${currencyFormat(currentTotalCredit, false)}`,
           left + colsWidth[0] + colsWidth[1] + colsWidth[2] + 17,
           top + 4,
           {
@@ -177,8 +198,23 @@ function generateReport(data, configParams) {
         );
         createSubTitle(
           doc,
+          `${currencyFormat(currentTotalCredit, false)}`,
+          left + colsWidth[0] + colsWidth[1] + colsWidth[2] + colsWidth[3] + 17,
+          top + 4,
+          {
+            align: "right",
+          }
+        );
+        createSubTitle(
+          doc,
           `${currencyFormat(currentTotalBalance, false)}`,
-          right + 63,
+          left +
+            colsWidth[0] +
+            colsWidth[1] +
+            colsWidth[2] +
+            colsWidth[3] +
+            colsWidth[4] +
+            17,
           top + 4,
           {
             align: "right",
@@ -247,10 +283,12 @@ function generateReport(data, configParams) {
 }
 
 function renderTableHeader(doc, pos, top) {
-  doc.rect(pos, top - 6, 195, 10);
+  doc.rect(pos + 2, top - 6, 252, 10);
   pos += 3;
-  createSubTitle(doc, "Fecha Asiento", pos, top, "center");
+  createSubTitle(doc, "Fecha\nAsiento", pos, top - 2, "center");
   pos += colsWidth[0];
+  createSubTitle(doc, "No.\nDocumento ", pos, top - 2, "center");
+  pos += colsWidth[1];
   createSubTitle(
     doc,
     "Detalle de la Transacción / Descripción",
@@ -258,11 +296,11 @@ function renderTableHeader(doc, pos, top) {
     top,
     "center"
   );
-  pos += colsWidth[1];
-  createSubTitle(doc, "Débitos", pos, top, "center");
   pos += colsWidth[2];
-  createSubTitle(doc, "Créditos", pos, top, "center");
+  createSubTitle(doc, "Débitos", pos, top, "center");
   pos += colsWidth[3];
+  createSubTitle(doc, "Créditos", pos, top, "center");
+  pos += colsWidth[4];
   createSubTitle(doc, "Balance", pos, top, "center");
 }
 

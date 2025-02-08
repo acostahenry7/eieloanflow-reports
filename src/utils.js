@@ -52,16 +52,21 @@ function getDateRangeFilter(field, fromDate, toDate, convertion) {
   return condition;
 }
 
-function getGenericLikeFilter(field, value) {
+function getGenericLikeFilter(field, value, isFirst) {
+  let prefix = "AND";
+  if (isFirst && isFirst == true) {
+    prefix = "where";
+  }
+
   if (!value || value === "null" || value == "undefined") {
-    return `AND ${field} LIKE '%'`;
+    return `${prefix} ${field} LIKE '%'`;
   }
 
   if (value?.split(",").length > 1) {
     console.log("VALUE %%%%%%%%%%%%", value);
-    return `AND ${field} IN (${value})`;
+    return `${prefix} ${field} IN (${value})`;
   } else {
-    return `AND ${field} LIKE '${value}'`;
+    return `${prefix} ${field} LIKE '${value}'`;
   }
 }
 

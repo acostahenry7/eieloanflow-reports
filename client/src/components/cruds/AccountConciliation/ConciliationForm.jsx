@@ -9,6 +9,7 @@ import {
   createConciliationApi,
   getBankAccountsApi,
   getBanksApi,
+  getMajorGeneral,
   loadFileTransactionsApi,
 } from "../../../api/accounting";
 import { currencyFormat } from "../../../utils/reports/report-helpers";
@@ -40,6 +41,8 @@ const ConciliationForm = ({
   const [bankTransactions, setBankTransactions] = useState([]);
   const [selectedBankTransactions, setSelectedBankTransactions] = useState([]);
   const [conciliatedTransactions, setConciliatedTransactions] = useState([]);
+  const [transitTransactions, setTransitTransactions] = useState([]);
+  const [prevBalances, setPrevBalances] = useState([]);
   const loadersSize = 18;
 
   //Loaders
@@ -54,6 +57,14 @@ const ConciliationForm = ({
   const totalLocalTransactions = data
     .filter((item) => item.selected)
     .reduce((acc, t) => acc + parseFloat(t.diary_amount), 0);
+
+  const totalTransitTransactions = transitTransactions.reduce(
+    (acc, t) =>
+      t.transaction_type == "ENTRY"
+        ? acc + parseFloat(t.amount)
+        : acc - parseFloat(t.amount),
+    0
+  );
 
   const getBankAccounts = async (outletId) => {
     try {
@@ -100,10 +111,16 @@ const ConciliationForm = ({
   const form = useFormik({
     initialValues: {
       description: currentItem?.description || "",
-      dateFrom: currentItem?.start_date.split("T")[0] || "",
-      dateTo: currentItem?.end_date.split("T")[0] || "",
+      dateFrom:
+        currentItem?.start_date.split("T")[0] ||
+        new Date().toISOString().split("T")[0],
+      dateTo:
+        currentItem?.end_date.split("T")[0] ||
+        new Date().toISOString().split("T")[0],
       createdBy: "",
       lastModifiedBy: "",
+      diaryBalance: 0,
+      bankBalance: 0,
       bankAccountId: currentItem?.bank_account_id || "",
       outletId: currentItem?.outlet_id || "",
       file: "",
@@ -338,6 +355,118 @@ const ConciliationForm = ({
     },
   ];
 
+  const transitColumns = [
+    {
+      name: "Fecha",
+      selector: (row) => row.target_date,
+      sortable: true,
+      reorder: true,
+      wrap: true,
+      omit: false,
+    },
+    {
+      name: "Cuenta",
+      selector: (row) => row.bank_number,
+      sortable: true,
+      reorder: true,
+      wrap: true,
+      omit: false,
+    },
+    {
+      name: "Descripción",
+      selector: (row) => row.description,
+      width: "180px",
+      sortable: true,
+      reorder: true,
+      wrap: true,
+      omit: false,
+    },
+    {
+      name: "Referencia",
+      selector: (row) => row.reference,
+      width: "140px",
+      sortable: true,
+      reorder: true,
+      wrap: true,
+      omit: false,
+    },
+    {
+      name: "Banco",
+      selector: (row) => (
+        <b style={{ fontSize: 16 }}>
+          {" "}
+          {currencyFormat(parseFloat(row.amount), false)}
+        </b>
+      ),
+      sortable: true,
+      reorder: true,
+      wrap: true,
+      omit: false,
+    },
+    // {
+    //   name: "Diario",
+    //   selector: (row) => (
+    //     <b style={{ fontSize: 16 }}>
+    //       {" "}
+    //       {currencyFormat(row.local.diary_amount || 0, false)}
+    //     </b>
+    //   ),
+    //   sortable: true,
+    //   reorder: true,
+    //   wrap: true,
+    //   omit: false,
+    // },
+
+    // {
+    //   name: "Banco (sistema)",
+    //   selector: (row) => <b> {currencyFormat(row.local_amount || 0, false)}</b>,
+    //   sortable: true,
+    //   reorder: true,
+    //   wrap: true,
+    //   omit: false,
+    // },
+    {
+      name: "Tipo transacción",
+      selector: (row) => row.transaction_type,
+      sortable: true,
+      reorder: true,
+      wrap: true,
+      omit: false,
+    },
+    !isPrevData && {
+      name: "Conciliar",
+      selector: (row) =>
+        row.local ? (
+          row.local.is_conciliated == false ? (
+            <BiCheck
+              style={{ cursor: "pointer" }}
+              onClick={() => conciliateTransaction(row.local)}
+              color="green"
+              size={24}
+            />
+          ) : (
+            <IoMdClose
+              style={{ cursor: "pointer" }}
+              onClick={() => discardTransaction(row)}
+              color="red"
+              size={24}
+            />
+          )
+        ) : (
+          <BiBlock
+            size={24}
+            color={"red"}
+            title="Transacción no registrada o se encuetra en tránsito"
+            style={{ cursor: "help" }}
+          />
+        ),
+      sortable: true,
+      reorder: true,
+      wrap: true,
+      omit: false,
+    },
+  ];
+
   const conciliatedColumns = [];
 
   const loadFileTransactions = async (values) => {
@@ -356,18 +485,88 @@ const ConciliationForm = ({
       // });
 
       //setData(trasactions.filter((item) => item.is_conciliated == false));
+
+      console.log(values);
       setData(res.body.unconciliated);
       setBankTransactions(res.body.manualRevisions);
       setConciliatedTransactions(res.body.conciliated);
       setOriginalData(res.body);
+      setTransitTransactions(res.body.transit);
       setIsSecondSectionLoading(false);
     } catch (error) {}
   };
+
+  const loadPrevBalance = async (values, outletId) => {
+    try {
+      const res = await getMajorGeneral({ ...values, outletId });
+
+      setPrevBalances(res.body.balanceByAccount);
+
+      console.log(res);
+    } catch (error) {}
+  };
+
+  const updateDiaryBalance = (bankId) => {
+    const catalogId = accounts.find(
+      (ac) => ac.bank_account_id == bankId
+    )?.account_catalog_id;
+    const account = prevBalances.find(
+      (account) => account.account_catalog_id == catalogId
+    );
+
+    console.log(account);
+    form.setFieldValue(
+      "diaryBalance",
+
+      Math.abs(
+        parseFloat(account?.credit || 0) - parseFloat(account?.debit || 0)
+      )
+    );
+  };
+
+  // useEffect(() => {
+  //   updateDiaryBalance(form.bankId);
+  // }, [form.bankId, form.dateFrom, form.dateTo]);
 
   const handleCloseForm = () => {
     setPrevData([]);
     setIsFormOpened(false);
   };
+
+  //Final Balances
+  const bankBalance =
+    parseFloat(form.values.bankBalance) +
+    conciliatedTransactions.reduce(
+      (acc, item) =>
+        item.bank.transaction_type == "CR"
+          ? acc + parseFloat(item.bank.amount)
+          : acc - parseFloat(item.bank.amount),
+      0
+    ) +
+    totalTransitTransactions;
+
+  const diaryBalance =
+    parseFloat(form.values.diaryBalance || 0) +
+    conciliatedTransactions?.reduce((acc, item) => {
+      if (Array.isArray(item.local)) {
+        const currentAmount = item.local.reduce(
+          (acc2, sbItem) =>
+            sbItem.transaction_type == "ENTRY"
+              ? acc2 + parseFloat(sbItem.diary_amount)
+              : acc2 - parseFloat(sbItem.diary_amount),
+          0
+        );
+
+        return acc + currentAmount;
+      } else {
+        return item.local.transaction_type == "ENTRY"
+          ? acc + parseFloat(item.local.diary_amount)
+          : acc - parseFloat(item.local.diary_amount);
+      }
+    }, 0) +
+    totalTransitTransactions;
+
+  console.log(conciliatedTransactions);
 
   return (
     <Modal>
@@ -417,6 +616,8 @@ const ConciliationForm = ({
                     getBankAccounts(e.target.value)
                       .then((res) => {})
                       .catch((err) => {});
+
+                    loadPrevBalance(form.values, e.target.value);
                   }}
                 >
                   {outlets.map((o) => (
@@ -437,6 +638,7 @@ const ConciliationForm = ({
                       value={form.values.bankAccountId}
                       onChange={(e) => {
                         form.setFieldValue("bankAccountId", e.target.value);
+                        updateDiaryBalance(e.target.value);
                       }}
                     >
                       {accounts.map((a) => (
@@ -465,6 +667,7 @@ const ConciliationForm = ({
                           value={form.values.dateFrom}
                           onChange={(e) => {
                             form.setFieldValue("dateFrom", e.target.value);
+                            loadPrevBalance(form.values, form.values.outletId);
                           }}
                           type="date"
                           name="begin"
@@ -487,6 +690,7 @@ const ConciliationForm = ({
                           value={form.values.dateTo}
                           onChange={(e) => {
                             form.setFieldValue("dateTo", e.target.value);
+                            loadPrevBalance(form.values, form.values.outletId);
                           }}
                           type="date"
                         />
@@ -501,6 +705,63 @@ const ConciliationForm = ({
                   No hay cuentas bancarias asociadas
                 </span>
               )}
+            </div>
+          </div>
+          <div className="form-section" style={{ marginTop: 20 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 8,
+              }}
+            >
+              {/* <h4>Balance del banco</h4>
+              {isFirstSectionLoading && (
+                <Oval
+                  color="var(--main-color)"
+                  secondaryColor="lightgray"
+                  width={loadersSize}
+                  height={loadersSize}
+                  strokeWidth={8}
+                />
+              )} */}
+
+              <div className="SearchBar-main-item" style={{ marginTop: 10 }}>
+                <label>
+                  Balance en banco al{" "}
+                  {form.values.dateFrom.split("-").reverse().join("/")}
+                </label>
+                <input
+                  name=""
+                  id=""
+                  type="number"
+                  value={form.values.bankBalance}
+                  onChange={(e) => {
+                    form.setFieldValue("bankBalance", e.target.value);
+                  }}
+                />
+              </div>
+              <div className="SearchBar-main-item" style={{ marginTop: 10 }}>
+                <label>
+                  Balance en diario al{" "}
+                  {form.values.dateFrom.split("-").reverse().join("/")}
+                </label>
+                <input
+                  name=""
+                  id=""
+                  type="text"
+                  disabled
+                  value={
+                    form.values.diaryBalance
+                      ? currencyFormat(form.values.diaryBalance, false)
+                      : 0
+                  }
+                  // onChange={(e) => {
+                  //   form.setFieldValue("diaryBalance", e.target.value);
+                  // }}
+                />
+              </div>
             </div>
           </div>
           {form.values.bankAccountId && (
@@ -532,7 +793,7 @@ const ConciliationForm = ({
                         flexWrap: "wrap",
                       }}
                     >
-                      <h4>Conciliación Manual</h4>
+                      <h4>Conciliación</h4>
                       {isSecondSectionLoading && (
                         <Oval
                           color="var(--main-color)"
@@ -722,6 +983,27 @@ const ConciliationForm = ({
           </div> */}
           <div className="form-section">
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <h4>Transacciones en tránsito</h4>
+              {isThirdSectionLoading && (
+                <Oval
+                  color="var(--main-color)"
+                  secondaryColor="lightgray"
+                  width={loadersSize}
+                  height={loadersSize}
+                  strokeWidth={8}
+                />
+              )}
+            </div>
+            <div style={{}}>
+              <Datatable
+                columns={transitColumns}
+                data={transitTransactions}
+                customStyles={{ marginTop: 0 }}
+              />
+            </div>
+          </div>
+          <div className="form-section">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <h4>Transacciones conciliadas</h4>
               {isThirdSectionLoading && (
                 <Oval
@@ -813,6 +1095,7 @@ const ConciliationForm = ({
               />
             </div>
           </div>
+
           {/* <div>
             <p>
               Balance en banco (No Conciliado):{" "}
@@ -839,35 +1122,24 @@ const ConciliationForm = ({
           </div> */}
           <div style={{ marginTop: 30 }}>
             <p>
-              Balance <b>conciliado</b> en banco:{" "}
-              <b>
-                {currencyFormat(
-                  bankTransactions.reduce(
-                    (acc, item) =>
-                      item.bank.transaction_type == "CR"
-                        ? acc + parseFloat(item.bank.amount)
-                        : acc - parseFloat(item.bank.amount),
-                    0
-                  )
-                )}
-              </b>
+              Balance en banco al {form.values.dateTo}:{" "}
+              <b>{currencyFormat(bankBalance)}</b>
             </p>
             <p>
-              Balance <b>conciliado</b> en Diario:{" "}
-              <b>
-                {currencyFormat(
-                  conciliatedTransactions.reduce(
-                    (acc, item) => acc + parseFloat(item.diary_amount),
-                    0
-                  )
-                )}
-              </b>
+              Balance en Libro al {form.values.dateTo}:{" "}
+              <b>{currencyFormat(diaryBalance)}</b>
             </p>
           </div>
         </div>
         <div className="form-footer">
           <button onClick={handleCloseForm}>Cancelar</button>
-          <button onClick={form.handleSubmit}>Guardar</button>
+          <button
+            className={`${bankBalance != diaryBalance ? "disabled" : ""}`}
+            disabled={bankBalance != diaryBalance ? true : false}
+            onClick={form.handleSubmit}
+          >
+            Guardar
+          </button>
         </div>
       </div>
     </Modal>

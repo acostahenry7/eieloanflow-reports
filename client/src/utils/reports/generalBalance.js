@@ -219,6 +219,22 @@ function generateReport(data, configParams) {
     []
   );
 
+  let [topPCirculantes5, balancePCirculantes5] = generateReportSection(
+    doc,
+    pasivosCirculantes3,
+    data.balances,
+    "Pasivos circulantes",
+    "25",
+    false,
+    false,
+    {
+      top,
+      left,
+      right,
+    },
+    []
+  );
+
   top = topPCirculantes4;
 
   top += spacing;

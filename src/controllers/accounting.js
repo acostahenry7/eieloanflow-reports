@@ -89,8 +89,10 @@ controller.getGeneralBalance = async (queryParams) => {
       left join general_diary_account gda on (ac.account_catalog_id = gda.account_catalog_id)
       left join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
       where ac.outlet_id like '${queryParams.outletId}'
+      and gd.general_diary_id in (select general_diary_id from general_diary where general_diary_date <= '${queryParams.date}' and status_type = 'ENABLED')
       group by ac.account_catalog_id, ac.name
-      having min(gd.created_date) <= '${queryParams.date}' ) t1 on (ac.account_catalog_id = t1.account_catalog_id)
+      --having min(gd.general_diary_date) <= '${queryParams.date}' 
+      ) t1 on (ac.account_catalog_id = t1.account_catalog_id)
       where ac.outlet_id like '${queryParams.outletId}'
       order by ac.number`);
 
@@ -262,7 +264,7 @@ controller.getValidationBalance = async (queryParams) => {
     ac.outlet_id
     FROM account_catalog ac
     LEFT JOIN general_diary_account gda ON (ac.account_catalog_id = gda.account_catalog_id
-    and gda.created_date::date <='${queryParams.date}')
+    and gd.general_diary_date <='${queryParams.date}')
     WHERE outlet_id like '${queryParams.outletId}'
     GROUP BY ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
     ac.is_control, ac.status_type, ac.created_by, ac.created_date, ac.last_modified_by, ac.last_modified_date,
@@ -303,23 +305,34 @@ controller.getMajorGeneral = async (queryParams) => {
 
   try {
     const [majorGeneral, meta] = await db.query(
-      ` select ac.number, ac.name,gd.description, sum(gda.debit) debit, sum(gda.credit) credit, 
-      gd.general_diary_date as created_date, e.first_name || ' ' || e.last_name as employee_name
-      from general_diary_account gda
+      `select ac.number, ac.name, gd.description, 'Deposito ' || ber.description deposit_description, 
+      'Desembolso a Préstamo '|| l.loan_number_id || ' ' || c.first_name || ' ' || c.last_name as check_description,
+      gda.debit, gda.credit, gd.general_diary_date as created_date, e.first_name || ' ' || e.last_name as employee_name,
+      l.loan_number_id loan_number, 
+      CASE WHEN cp.check_payment_type = 'DISBURSEMENT' THEN 'CK' || cp.reference_bank
+      ELSE ber.reference::varchar
+      END reference_bank
+      from general_diary gd
+      join general_diary_account gda on (gd.general_diary_id = gda.general_diary_id)
       join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
-      join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
-      left join payment p on (gd.payment_id = p.payment_id )
-      --left join register r on (p.register_id = r.register_id)
       left JOIN jhi_user u ON (gd.created_by = u.login)
       left JOIN employee e ON (u.employee_id = e.employee_id)
-      where gd.outlet_id='${queryParams.outletId}'
+      left join bank_entry_retirement ber ON (gd.general_diary_id = ber.general_diary_id)
+      left join check_payment cp on (gd.general_diary_id = cp.general_diary_id)
+      left join loan l on (cp.loan_id = l.loan_id)
+      left join loan_application la on (l.loan_application_id = la.loan_application_id)
+      left join customer c on (la.customer_id = c.customer_id)
+      ${getGenericLikeFilter("gd.outlet_id", queryParams.outletId, true)}
       ${getDateRangeFilter(
         "gd.general_diary_date",
         queryParams.dateFrom,
         queryParams.dateTo,
         false
       )}
-      and ac.number like '${queryParams.accountId || "%"}'
+      ${getGenericLikeFilter(
+        "ac.number",
+        queryParams.accountNumber || queryParams.accountName
+      )}
       and gd.status_type = 'ENABLED'
       and gd.description not like '%226464%'
       and gd.description not like '%227695%'
@@ -331,15 +344,43 @@ controller.getMajorGeneral = async (queryParams) => {
         `
           : ""
       }
+      ${queryParams.transType == "debit" ? "and gda.debit > 0" : ""}
+      ${queryParams.transType == "credit" ? "and gda.credit > 0" : ""}
       and u.login not in ('y.aragonez')
-      group by gd.payment_id, ac.number, ac.name,gd.description,gd.general_diary_date, e.first_name, e.last_name
       order by gd.general_diary_date asc`
+    );
+
+    const [balanceByAccount] = await db.query(
+      `select ac.account_catalog_id, ac.number, ac.name, coalesce(t1.debit,0) debit, coalesce(t1.credit,0)credit
+      from account_catalog ac
+      left join (select ac.account_catalog_id, sum(gda.debit) debit, sum(gda.credit) credit, abs(sum(debit) - sum(credit)) as balance
+        from general_diary gd
+        join general_diary_account gda on (gd.general_diary_id = gda.general_diary_id)
+        join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
+        left JOIN jhi_user u ON (gd.created_by = u.login)
+        ${getGenericLikeFilter("gd.outlet_id", queryParams.outletId, true)}
+        AND extract (year from gd.general_diary_date) <= ${
+          queryParams.dateFrom.split("-")[0]
+        }
+        AND extract (month from gd.general_diary_date) < ${
+          queryParams.dateFrom.split("-")[1]
+        }
+        and ac.number like '%'
+        and gd.status_type = 'ENABLED'
+        and gd.description not like '%226464%'
+        and gd.description not like '%227695%'
+        and u.login not in ('y.aragonez')
+        group by ac.account_catalog_id) t1 on (ac.account_catalog_id = t1.account_catalog_id)
+      ${getGenericLikeFilter("ac.outlet_id", queryParams.outletId, true)}
+      order by ac.number`
     );
 
     // console.log(majorGeneral);
     let data = _(majorGeneral).groupBy("number");
 
-    return data;
+    console.log(Object.entries(data).length);
+
+    return { data, balanceByAccount };
   } catch (err) {
     console.log(err);
   }
@@ -508,7 +549,7 @@ controller.getBankDiaryTransactions = async (queryParams) => {
         left join bank_account ba on (cp.bank_account_id = ba.bank_account_id)
         left join account_catalog ac on (ba.account_catalog_id = ac.account_catalog_id)
         left join loan l on (cp.loan_id = l.loan_id)
-        where cp.status_type = 'APPROVED'
+        where cp.status_type in ('APPROVED', 'TRANSIT')
         ${getGenericLikeFilter("cp.outlet_id", queryParams.outletId)}
         ${getDateRangeFilter(
           "check_payment_date",
@@ -539,7 +580,7 @@ controller.getBankDiaryTransactions = async (queryParams) => {
             order by gd.general_diary_date asc) t2 on (t1.reference::text = t2.description or t1.general_diary_id = t2.general_diary_id)
       left join conciliation_detail cd on (t1.check_payment_id = cd.transaction_id)
       left join conciliation cl on (cd.conciliation_id = cl.conciliation_id AND (cl.status_type = 'ENABLED' or cl.status_type is null))
-      where t1.status_type = 'APPROVED'	
+      where t1.status_type in ('APPROVED', 'TRANSIT')
       ${getGenericLikeFilter("t1.bank_account_id", queryParams.bankAccountId)}
       order by check_payment_date desc
 
@@ -650,7 +691,13 @@ controller.getTransactionsFromBankFile = async (queryParams) => {
 
     console.log(localTransactions);
 
-    const result = conciliarTransacciones(localTransactions, formatedData);
+    const result = conciliarTransacciones(
+      localTransactions.filter(
+        (item) =>
+          item.status_type == "APPROVED" || item.status_type == "COMPLETED"
+      ),
+      formatedData
+    );
 
     for (bt of formatedData) {
       const t = localTransactions.find(
@@ -683,6 +730,9 @@ controller.getTransactionsFromBankFile = async (queryParams) => {
     }
 
     //return comparedTrasactions;
+    result.transit = localTransactions.filter(
+      (item) => item.status_type == "TRANSIT"
+    );
     return result;
   } catch (error) {
     console.error(`Got an error trying to read the file: ${error.message}`);

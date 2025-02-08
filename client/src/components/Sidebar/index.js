@@ -512,17 +512,17 @@ function Sidebar() {
           route: "/reports/accouting-major-general",
           selected: false,
         },
-        {
-          label: "Mayor General Detallado",
-          icon: (selected) => (
-            <TbReport
-              className="Sidebar-content-item-icon"
-              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
-            />
-          ),
-          route: "/reports/detailed-accouting-major-general",
-          selected: false,
-        },
+        // {
+        //   label: "Mayor General Detallado",
+        //   icon: (selected) => (
+        //     <TbReport
+        //       className="Sidebar-content-item-icon"
+        //       color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+        //     />
+        //   ),
+        //   route: "/reports/detailed-accouting-major-general",
+        //   selected: false,
+        // },
         {
           label: "Conciliación bancaria",
           icon: (selected) => (

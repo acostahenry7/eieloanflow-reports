@@ -106,11 +106,11 @@ export function currencyFormat(number, showCurrencySign) {
 }
 
 export function getDiaryDescription(description) {
-  console.log(description);
+  //console.log(description);
   let result = "";
   let keywords = description.split(" ");
   if (keywords.some((word) => word === "desembolso")) {
-    result = `${keywords[2]} ${keywords[7]} ${keywords[8]}`;
+    result = `${description}`;
   } else if (
     keywords.some((word) => word.toLowerCase() === "prestamo") &&
     keywords.some((word) => word.toLowerCase() === "pago") &&

@@ -10,6 +10,7 @@ import {
   spacing,
   sectionSpacing,
 } from "./report-helpers";
+import logo from "./images/logo";
 
 let colsWidth = [60, 120];
 
@@ -25,7 +26,7 @@ function generateReport(data, configParams) {
   let granTotalRight = 460;
   let rightTotal = right;
   let center = 80;
-  let itemsPerPage = 47;
+  let itemsPerPage = 45;
 
   //-------File settings---------
   let fileNameDate = new Date().toISOString().split("T")[0];
@@ -45,14 +46,17 @@ function generateReport(data, configParams) {
   let subTitle = `CATALOGO DE CUENTAS`;
   let date = `${configParams.date || ""}`;
 
-  createMainTitle(doc, title, left, headerTop);
-  createMainSubTitle(doc, subTitle, left, headerTop + 5);
-  createMainSubTitle(doc, date, left, headerTop + 10);
+  createMainTitle(doc, title, right, headerTop);
+  createMainSubTitle(doc, subTitle, right, headerTop + 5);
+  createMainSubTitle(doc, date, right, headerTop + 10);
+
+  doc.addImage(logo, "png", left + 2, headerTop - 5, 100, 25);
 
   //---------------------- TRANSACTIONS--------------------
   let counter = 0;
-  renderTableHeader(doc, left, top - 10);
+  renderTableHeader(doc, left, top);
   left += 1;
+  top += 10;
   data.map((item, index) => {
     createSubTitle(doc, `${item.number}`, left + 2, top);
     doc.text(`${item.name}`, left + colsWidth[0] + 2, top);
