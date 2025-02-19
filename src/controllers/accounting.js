@@ -359,12 +359,9 @@ controller.getMajorGeneral = async (queryParams) => {
         join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
         left JOIN jhi_user u ON (gd.created_by = u.login)
         ${getGenericLikeFilter("gd.outlet_id", queryParams.outletId, true)}
-        AND extract (year from gd.general_diary_date) <= ${
-          queryParams.dateFrom.split("-")[0]
-        }
-        AND extract (month from gd.general_diary_date) < ${
-          queryParams.dateFrom.split("-")[1]
-        }
+        and gd.general_diary_date < date_trunc('month','${
+          queryParams.dateFrom
+        }'::date)
         and ac.number like '%'
         and gd.status_type = 'ENABLED'
         and gd.description not like '%226464%'

@@ -40,6 +40,7 @@ function GeneralMajor() {
   React.useEffect(() => {
     (async () => {
       try {
+        setIsLoading(true);
         console.log("hi");
         //setAccountBalances([]);
         let response = await getMajorGeneral(searchParams);
@@ -52,6 +53,7 @@ function GeneralMajor() {
         setData(arr);
         // const outlets = await getOutletsApi({});
         // setOutlets(outlets.body);
+        setIsLoading(false);
       } catch (error) {
         console.log(error);
       }
@@ -267,10 +269,11 @@ function GeneralMajor() {
             exportFunction={() => generateMajorGeneral()}
           />
 
-          {isLoading && <ThreeDots />}
+          {/* {isLoading && <ThreeDots />} */}
           <Datatable
             columns={columns}
             data={filterData}
+            isLoading={isLoading}
             dtOptions={{
               expandableRows: true,
               expandableRowsComponent: ({ data }) => {

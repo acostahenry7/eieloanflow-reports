@@ -143,8 +143,12 @@ export function generateReportSection(
   options,
   notShowAccounts
 ) {
+  console.log(
+    mainList.filter((item) => item.number == parentNum),
+    parentNum
+  );
   let sectionData = mainList.filter((item) => item.number == parentNum)[0]
-    .controlledAccounts;
+    ?.controlledAccounts;
 
   let alwaysVisibleAccounts = ["34", "3601", "37", "32"];
   if (notShowAccounts?.length > 0) {
@@ -167,7 +171,7 @@ export function generateReportSection(
 
   let totalBalance = 0;
   let itemCounter = 0;
-  for (let i = 0; i < sectionData.length; i++) {
+  for (let i = 0; i < sectionData?.length; i++) {
     let balance = mainBalances.filter(
       (item) => item.account_catalog_id == sectionData[i].account_catalog_id
     )[0].balance;

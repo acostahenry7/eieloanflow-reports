@@ -36,7 +36,7 @@ function generateReport(data, configParams) {
     format: [width, height],
   });
 
-  let parentAccounts = [];
+  let parentAccounts = ["1", "2", "3", "4", "5", "6"];
 
   let title = `${configParams.title}`;
   let subTitle = `BALANCE GENERAL`;
@@ -45,6 +45,8 @@ function generateReport(data, configParams) {
   createMainTitle(doc, title, center, headerTop);
   createMainSubTitle(doc, subTitle, center + 8, headerTop + spacing + 0.8);
   createDate(doc, date, center + 14, headerTop + spacing * 2);
+
+  //function accountSection
 
   //----------------------------Activos---------------------------------
   let activos = data.accounts.filter((item) => item.number == "1")[0]
@@ -198,11 +200,14 @@ function generateReport(data, configParams) {
 
   top = topPCirculantes3;
 
+  console.log(pasivosCirculantes2);
+
   let pasivosCirculantes3 = pasivosCirculantes2.filter(
     (item) => item.number == "23"
   )[0].controlledAccounts;
 
-  console.log(data.balances);
+  console.log(pasivosCirculantes3);
+
   let [topPCirculantes4, balancePCirculantes4] = generateReportSection(
     doc,
     pasivosCirculantes3,
@@ -219,9 +224,11 @@ function generateReport(data, configParams) {
     []
   );
 
+  top = topPCirculantes4;
+
   let [topPCirculantes5, balancePCirculantes5] = generateReportSection(
     doc,
-    pasivosCirculantes3,
+    pasivos,
     data.balances,
     "Pasivos circulantes",
     "25",
@@ -234,8 +241,6 @@ function generateReport(data, configParams) {
     },
     []
   );
-
-  top = topPCirculantes4;
 
   top += spacing;
   console.log(
