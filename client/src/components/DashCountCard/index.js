@@ -18,7 +18,7 @@ function DashCountCard({
     <div className="item card">
       <div className="card-header">
         <div className="name">{cardName}</div>
-        {filterActive && (
+        {/* {filterActive && (
           <div className="filter">
             <select
               onChange={(e) => {
@@ -81,7 +81,7 @@ function DashCountCard({
               </option>
             </select>
           </div>
-        )}
+        )} */}
       </div>
       {isLoading ? (
         <div

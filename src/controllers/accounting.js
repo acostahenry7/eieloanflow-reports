@@ -322,8 +322,10 @@ controller.getMajorGeneral = async (queryParams) => {
       'Desembolso a Préstamo '|| l.loan_number_id || ' ' || c.first_name || ' ' || c.last_name as check_description,
       gda.debit, gda.credit, e.first_name || ' ' || e.last_name as employee_name,
       l.loan_number_id loan_number,
-      CASE WHEN cp.check_payment_type IS NULL THEN ber.target_date
-      ELSE cp.check_payment_date
+      CASE 
+        WHEN cp.check_payment_type IS NULL AND ber.target_date IS NOT NULL THEN ber.target_date
+        WHEN ber.target_date IS NULL AND cp.check_payment_type IS NOT NULL THEN cp.check_payment_date
+        ELSE gd.general_diary_date
       END created_date,
       CASE WHEN cp.check_payment_type = 'DISBURSEMENT' THEN 'CK' || cp.reference_bank
       ELSE ber.reference::varchar
@@ -343,6 +345,9 @@ controller.getMajorGeneral = async (queryParams) => {
         AND (ber.target_date BETWEEN '${queryParams.dateFrom}' AND '${
         queryParams.dateTo
       }' OR cp.check_payment_date BETWEEN '${queryParams.dateFrom}' AND '${
+        queryParams.dateTo
+      }' 
+        OR general_diary_date BETWEEN '${queryParams.dateFrom}' AND '${
         queryParams.dateTo
       }' )
       ${getGenericLikeFilter(

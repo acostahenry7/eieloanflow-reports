@@ -99,7 +99,8 @@ function App() {
                 path="/dash/accounting"
                 element={checkRole(
                   "ACCOUNT_CATALOGS",
-                  <MantainingMessage /> /*<AccountingDash />*/
+                  <AccountingDash />
+                  // <MantainingMessage />
                 )}
               />
               <Route

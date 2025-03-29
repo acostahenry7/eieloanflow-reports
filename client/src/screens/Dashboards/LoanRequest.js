@@ -45,9 +45,9 @@ function LoanRequest() {
     // dateTo: getPreviousDateByDays(0),
   });
 
-  const [searchPendingParams, setSearchPendingParams] = React.useState({
-    dateFrom: getPreviousDateByDays(0),
-    dateTo: getPreviousDateByDays(0),
+  const [searchPeriodParams, setSearchPeriodParams] = React.useState({
+    dateFrom: undefined,
+    dateTo: undefined,
   });
 
   const [searchLineChartParams, setSearchLineChartParams] = React.useState({
@@ -76,7 +76,7 @@ function LoanRequest() {
         const loanApplication = await getLoanApplicationCounter({
           outletId:
             !outletParam || outletParam == "" ? defaultOutlets : outletParam,
-          ...searchCountParams,
+          ...searchPeriodParams,
           //dateTo: tdate.toISOString().split("T")[0],
         });
         if (loanApplication.error == true) {
@@ -91,7 +91,7 @@ function LoanRequest() {
       }
       setCountIsLoading(false);
     })();
-  }, [outletParam, searchCountParams]);
+  }, [outletParam, searchPeriodParams]);
 
   React.useEffect(() => {
     (async () => {
@@ -100,7 +100,7 @@ function LoanRequest() {
 
         const loanApplication = await getLoanApplication({
           outletId: outletParam,
-          ...searchPendingParams,
+          ...searchPeriodParams,
           // dateTo: tdate.toISOString().split("T")[0],
         });
         if (loanApplication.error == true) {
@@ -113,7 +113,7 @@ function LoanRequest() {
       }
       setPendingIsLoading(false);
     })();
-  }, [outletParam, searchPendingParams]);
+  }, [outletParam, searchPeriodParams]);
 
   React.useEffect(() => {
     (async () => {
@@ -144,7 +144,7 @@ function LoanRequest() {
 
         const loanApplication = await getLoansByMonth({
           outletId: outletParam,
-          ...searchBarChartParams,
+          ...searchLineChartParams,
           dateTo: tdate.toISOString().split("T")[0],
         });
         if (loanApplication.error == true) {
@@ -157,7 +157,7 @@ function LoanRequest() {
       }
       setBarChartIsLoading(false);
     })();
-  }, [outletParam, searchBarChartParams]);
+  }, [outletParam, searchLineChartParams]);
 
   React.useEffect(() => {
     (async () => {
@@ -166,7 +166,7 @@ function LoanRequest() {
 
         const loanApplication = await getLoanApplicationByType({
           outletId: outletParam,
-          ...searchPieChartParams,
+          ...searchPeriodParams,
           //dateTo: tdate.toISOString().split("T")[0],
         });
         if (loanApplication.error == true) {
@@ -179,7 +179,7 @@ function LoanRequest() {
       }
       setPieChartIsLoading(false);
     })();
-  }, [outletParam, searchPieChartParams]);
+  }, [outletParam, searchPeriodParams]);
 
   return (
     <div className="dash-container">
@@ -195,7 +195,71 @@ function LoanRequest() {
             <div className="title">Solicitudes</div>
             <div className="sub-title">Resumen de las solicitudes</div>
           </div>
-          <div>
+          <div style={{ display: "flex", gap: 4 }}>
+            <div className="filter">
+              <select
+                onChange={(e) => {
+                  console.log(e.target.value);
+                  if (e.target.value.length > 0) {
+                    console.log("klk");
+                    let { days, isPrev } = JSON.parse(e.target.value);
+                    let daysTo = isPrev == true ? days - 1 : days;
+
+                    let currentDays = new Date().getDate();
+
+                    if (currentDays == days) days--;
+                    console.log({
+                      dateFrom: getPreviousDateByDays(days),
+                      dateTo: getPreviousDateByDays(daysTo, true),
+                    });
+
+                    setSearchPeriodParams({
+                      dateFrom: getPreviousDateByDays(days),
+                      dateTo: getPreviousDateByDays(daysTo, true),
+                    });
+                  } else {
+                    setSearchPeriodParams({
+                      dateFrom: undefined,
+                      dateTo: undefined,
+                    });
+                  }
+                }}
+              >
+                <option value={""}>Todo el tiempo</option>
+                <option value={JSON.stringify({ days: 0, isPrev: false })}>
+                  Hoy
+                </option>
+                <option value={JSON.stringify({ days: 15, isPrev: false })}>
+                  Últimos 15 días
+                </option>
+                <option
+                  value={JSON.stringify({
+                    days: daysInMonth(0),
+                    isPrev: false,
+                  })}
+                >
+                  Este mes
+                </option>
+                <option
+                  value={JSON.stringify({ days: daysInMonth(3), isPrev: true })}
+                >
+                  Últimos 3 meses
+                </option>
+                <option
+                  value={JSON.stringify({ days: daysInMonth(6), isPrev: true })}
+                >
+                  Últimos 6 meses
+                </option>
+                <option
+                  value={JSON.stringify({
+                    days: daysInMonth(12),
+                    isPrev: false,
+                  })}
+                >
+                  Últimos 12 meses
+                </option>
+              </select>
+            </div>
             <div className="filter">
               <select
                 onChange={(e) => {
@@ -246,7 +310,7 @@ function LoanRequest() {
             )}
             movementPct={8.6}
             movementAmount={10}
-            setSearchParams={setSearchPendingParams}
+            setSearchParams={setSearchPeriodParams}
             isLoading={isPendingLoading}
           />
 
@@ -413,7 +477,7 @@ function LoanRequest() {
           <div className="item">
             <div className="card-header">
               <div className="name">Solicitudes - préstamos</div>
-              <div className="filter">
+              {/* <div className="filter">
                 <select
                   style={{ marginRight: 10 }}
                   onChange={(e) =>
@@ -430,7 +494,7 @@ function LoanRequest() {
                     );
                   })}
                 </select>
-                {/* <select>
+                <select>
                   <option>Todos</option>
                   <option>Personal</option>
                   <option>Vehículos</option>
@@ -439,8 +503,8 @@ function LoanRequest() {
                   <option>Micro</option>
                   <option>Seguro</option>
                   <option>Empleado</option>
-                </select> */}
-              </div>
+                </select>
+              </div> */}
             </div>
             {isBarChartLoading ? (
               <div
