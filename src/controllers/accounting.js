@@ -320,8 +320,11 @@ controller.getMajorGeneral = async (queryParams) => {
     const [majorGeneral, meta] = await db.query(
       `select ac.number, ac.name, gd.description, 'Deposito ' || ber.description deposit_description,
       'Desembolso a Préstamo '|| l.loan_number_id || ' ' || c.first_name || ' ' || c.last_name as check_description,
-      gda.debit, gda.credit, gd.general_diary_date as created_date, e.first_name || ' ' || e.last_name as employee_name,
+      gda.debit, gda.credit, e.first_name || ' ' || e.last_name as employee_name,
       l.loan_number_id loan_number,
+      CASE WHEN cp.check_payment_type IS NULL THEN ber.target_date
+      ELSE cp.check_payment_date
+      END created_date,
       CASE WHEN cp.check_payment_type = 'DISBURSEMENT' THEN 'CK' || cp.reference_bank
       ELSE ber.reference::varchar
       END reference_bank
@@ -336,12 +339,12 @@ controller.getMajorGeneral = async (queryParams) => {
       left join loan_application la on (l.loan_application_id = la.loan_application_id)
       left join customer c on (la.customer_id = c.customer_id)
       ${getGenericLikeFilter("gd.outlet_id", queryParams.outletId, true)}
-      ${getDateRangeFilter(
-        "gd.general_diary_date",
-        queryParams.dateFrom,
-        queryParams.dateTo,
-        false
-      )}
+     
+        AND (ber.target_date BETWEEN '${queryParams.dateFrom}' AND '${
+        queryParams.dateTo
+      }' OR cp.check_payment_date BETWEEN '${queryParams.dateFrom}' AND '${
+        queryParams.dateTo
+      }' )
       ${getGenericLikeFilter(
         "ac.number",
         queryParams.accountNumber || queryParams.accountName
@@ -360,7 +363,7 @@ controller.getMajorGeneral = async (queryParams) => {
       ${queryParams.transType == "debit" ? "and gda.debit > 0" : ""}
       ${queryParams.transType == "credit" ? "and gda.credit > 0" : ""}
       and u.login not in ('y.aragonez')
-      order by gd.general_diary_date asc`
+      order by created_date asc`
     );
 
     const [balanceByAccount] = await db.query(
