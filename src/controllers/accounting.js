@@ -64,7 +64,7 @@ controller.getBanks = async (queryParams) => {
 
 controller.getGeneralBalance = async (queryParams) => {
   let data = {};
-  // console.log(queryParams);
+  console.log(queryParams);
 
   let lastMonth =
     queryParams.date?.split("-")[1] == "01"
@@ -84,14 +84,17 @@ controller.getGeneralBalance = async (queryParams) => {
       left join (select ac.account_catalog_id, ac.name,
       coalesce(sum(gda.debit),0) debit,
       coalesce(sum(gda.credit),0) credit,
-      coalesce(abs(sum(gda.debit) - sum(gda.credit)),0) balance	
+      case 
+	     when ac.number like any(array['1%', '6%']) then coalesce(sum(gda.debit) - sum(gda.credit),0)
+      when ac.number like any(array['2%', '3%', '4%']) then coalesce(sum(gda.credit) - sum(gda.debit),0)
+      end as balance
       from account_catalog ac
       left join general_diary_account gda on (ac.account_catalog_id = gda.account_catalog_id)
       left join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
       where ac.outlet_id like '${queryParams.outletId}'
       and gd.general_diary_id in (select general_diary_id from general_diary where general_diary_date <= '${queryParams.date}' and status_type = 'ENABLED')
       group by ac.account_catalog_id, ac.name
-      --having min(gd.general_diary_date) <= '${queryParams.date}' 
+      --having min(gd.general_diary_date) <= '${queryParams.date}'
       ) t1 on (ac.account_catalog_id = t1.account_catalog_id)
       where ac.outlet_id like '${queryParams.outletId}'
       order by ac.number`);
@@ -169,30 +172,40 @@ controller.getGeneralBalance = async (queryParams) => {
     //data = accounts;
 
     let mainAccounts = getMainAccountsArr(generalBalance);
-    let accounts = getAccountsArr(generalBalance, mainAccounts);
-    let accountBalances = [];
+    //let accounts = getAccountsArr(generalBalance, mainAccounts);
+    //let nestedAccounts = buildAccountTree(originalData);
+    const { tree: accounts, accountMap } = buildAccountTree(originalData);
+    //let accountBalances = [];
 
-    for (item of originalData) {
-      let balance = 0;
-      let prevBalance = 0;
-      let isParent =
-        originalData.filter(
-          (sItem) => sItem.control_account == item.account_catalog_id
-        ).length > 0;
+    accounts.forEach((account) => calculateBalance(account));
+    const accountBalances = originalData.map((account) => ({
+      ...account,
+      balance: accountMap.get(account.account_catalog_id).totalBalance,
+    }));
 
-      //if (isParent) balance = parseFloat(item.balance);
-      // if (isParent) prevBalance = parseFloat(item.prev_balance);
+    // for (item of nestedAccounts) {
+    //   let balance = 0;
+    //   let prevBalance = 0;
+    //   let isParent =
+    //     originalData.filter(
+    //       (sItem) => sItem.control_account == item.account_catalog_id
+    //     ).length > 0;
 
-      accountBalances.push({
-        account_catalog_id: item.account_catalog_id,
-        number: item.number,
-        name: item.name,
-        is_control: item.is_control,
-        control_account: item.control_account,
-        balance: getAccountBalance(originalData, item, balance),
-        //prevBalance: getPrevAccountBalance(originalData, item, prevBalance),
-      });
-    }
+    //   //if (isParent) balance = parseFloat(item.balance);
+    //   // if (isParent) prevBalance = parseFloat(item.prev_balance);
+
+    //   accountBalances.push({
+    //     account_catalog_id: item.account_catalog_id,
+    //     number: item.number,
+    //     name: item.name,
+    //     is_control: item.is_control,
+    //     control_account: item.control_account,
+    //     balance: getAccountBalance(item).toFixed(2),
+    //     //prevBalance: getPrevAccountBalance(originalData, item, prevBalance),
+    //   });
+    // }
+
+    //console.log(accountBalances);
 
     return { accounts, accountBalances };
   } catch (error) {
@@ -257,7 +270,7 @@ controller.getValidationBalance = async (queryParams) => {
     /*BALANCE A LA FECHA*/
     ABS(COALESCE(sum(gda.debit) filter( where gda.created_date::date <= '${
       queryParams.date
-    }'::date ) , 0) -  
+    }'::date ) , 0) -
     COALESCE(sum(gda.credit) filter( where gda.created_date::date <= '${
       queryParams.date
     }'::date ) , 0)) as balance,
@@ -305,10 +318,10 @@ controller.getMajorGeneral = async (queryParams) => {
 
   try {
     const [majorGeneral, meta] = await db.query(
-      `select ac.number, ac.name, gd.description, 'Deposito ' || ber.description deposit_description, 
+      `select ac.number, ac.name, gd.description, 'Deposito ' || ber.description deposit_description,
       'Desembolso a Préstamo '|| l.loan_number_id || ' ' || c.first_name || ' ' || c.last_name as check_description,
       gda.debit, gda.credit, gd.general_diary_date as created_date, e.first_name || ' ' || e.last_name as employee_name,
-      l.loan_number_id loan_number, 
+      l.loan_number_id loan_number,
       CASE WHEN cp.check_payment_type = 'DISBURSEMENT' THEN 'CK' || cp.reference_bank
       ELSE ber.reference::varchar
       END reference_bank
@@ -388,14 +401,14 @@ controller.getBoxMajorByEmployee = async (queryParams) => {
     const [data, metadata] =
       await db.query(`select e.first_name || ' ' || e.last_name as employee_name, count(distinct(gd.payment_id)) transactions,
     sum(gda.debit) debit, sum(gda.credit) credit
-    from general_diary gd 
+    from general_diary gd
     join general_diary_account gda on (gd.general_diary_id = gda.general_diary_id)
     join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
     left join payment p on (gd.payment_id = p.payment_id)
     left join register r on (p.register_id = r.register_id)
     left join jhi_user ju on (r.created_by = ju.login)
     left join employee e on (ju.employee_id = e.employee_id)
-    left join outlet o on (gd.outlet_id = o.outlet_id) 
+    left join outlet o on (gd.outlet_id = o.outlet_id)
     where r.outlet_id like'${queryParams.outletId}%'
     and gd.status_type = 'ENABLED'
     ${
@@ -418,15 +431,15 @@ controller.getPayableAccount = async (queryParams) => {
   console.log(queryParams);
   try {
     const [data] = await db.query(`
-    SELECT ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount, 
+    SELECT ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount,
 	concept, ap.outlet_id, ap.status_type, ap.created_by,
-	extract(YEAR FROM ap.created_date) as created_year, 
-	extract(MONTH FROM ap.created_date) as created_month, 
-	extract(DAY FROM ap.created_date) as created_day, 
-	ap.last_modified_by, ap.last_modified_date, 
+	extract(YEAR FROM ap.created_date) as created_year,
+	extract(MONTH FROM ap.created_date) as created_month,
+	extract(DAY FROM ap.created_date) as created_day,
+	ap.last_modified_by, ap.last_modified_date,
 	ap.debit_account, ap.credit_account, ap.ncf,et.name as expense_type, et.code,
-	extract(YEAR FROM max(cp.created_date)) as last_payment_year, 
-	extract(MONTH FROM max(cp.created_date)) as last_payment_month, 
+	extract(YEAR FROM max(cp.created_date)) as last_payment_year,
+	extract(MONTH FROM max(cp.created_date)) as last_payment_month,
 	extract(DAY FROM max(cp.created_date)) as last_payment_day,
 	max(cp.payment_type) as payment_type
 	FROM account_payable ap
@@ -434,10 +447,10 @@ controller.getPayableAccount = async (queryParams) => {
 	LEFT JOIN check_payment cp ON (ap.account_payable_id = cp.account_payable_id)
 	WHERE ap.outlet_id like'${queryParams.outletId}%'
 	AND ap.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'
-	GROUP BY ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount, 
+	GROUP BY ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount,
 	concept, ap.outlet_id, ap.status_type, ap.created_by,
-	ap.created_date, ap.created_date, ap.created_date, 
-	ap.last_modified_by, ap.last_modified_date, 
+	ap.created_date, ap.created_date, ap.created_date,
+	ap.last_modified_by, ap.last_modified_date,
 	ap.debit_account, ap.credit_account, ap.ncf,et.name, et.code`);
 
     return data;
@@ -451,7 +464,7 @@ controller.getToChargeAccount = async (queryParams) => {
   try {
     const [data] = await db.query(
       `select c.first_name || ' ' || c.last_name as customer_name, c.identification,
-        l.loan_number_id, la.loan_type, l.status_type, l.loan_situation, 
+        l.loan_number_id, la.loan_type, l.status_type, l.loan_situation,
         sum(a.amount_of_fee) filter(where a.status_type <> 'DELETE') as total_due,
         coalesce(sum (a.capital) filter(where a.status_type <> 'DELETE' and a.paid = 'true'),0) +
         coalesce(sum (a.total_paid - a.interest) filter(where a.total_paid > a.interest and a.status_type <> 'DELETE' and a.paid = 'false'),0) as total_paid_capital,
@@ -460,14 +473,14 @@ controller.getToChargeAccount = async (queryParams) => {
         coalesce(sum (a.total_paid) filter(where a.total_paid <= a.interest and a.status_type <> 'DELETE' and a.paid = 'false'),0)
         as total_paid_interest,
         sum(a.total_paid + a.discount) filter(where a.status_type <> 'DELETE') as total_paid,
-        sum(a.amount_of_fee - a.total_paid - a.discount_interest) filter(where a.paid = 'false' and a.status_type <> 'DELETE') 
+        sum(a.amount_of_fee - a.total_paid - a.discount_interest) filter(where a.paid = 'false' and a.status_type <> 'DELETE')
         as total_pending
         from loan l
         join loan_application la on (l.loan_application_id = la.loan_application_id)
         join customer c on (la.customer_id = c.customer_id)
         join amortization a on (l.loan_id = a.loan_id)
         where l.status_type not in ('DELETE', 'PAID', 'REFINANCE')
-        AND  l.outlet_id like '${queryParams.outletId || ""}%'	
+        AND  l.outlet_id like '${queryParams.outletId || ""}%'
         AND c.identification like '${queryParams.identification || ""}%'
         AND l.loan_number_id::varchar like '${queryParams.loanNumber || ""}%'
         AND l.status_type like '${queryParams.loanStatus || ""}%'
@@ -479,7 +492,7 @@ controller.getToChargeAccount = async (queryParams) => {
             : ""
         }
         AND a.payment_date::date <='${queryParams.dateTo}'
-        group by l.loan_number_id, la.loan_type, l.status_type, l.loan_situation, 
+        group by l.loan_number_id, la.loan_type, l.status_type, l.loan_situation,
         l.amount_approved, c.first_name, c.last_name, c.identification,l.created_date
         having  coalesce(sum (a.interest) filter(where a.status_type <> 'DELETE' and a.paid = 'true'),0) +
         coalesce(sum (a.interest) filter(where a.total_paid > a.interest and a.status_type <> 'DELETE' and a.paid = 'false'),0) +
@@ -497,9 +510,9 @@ controller.getToChargeAccount = async (queryParams) => {
 controller.getSummarizeMajor = async (queryParams) => {
   try {
     let [data] =
-      await db.query(`select employee, employee_name, count(payment_id) transactions,  sum(debit) as debit, sum(credit) as credit 
-      from 
-      (select ac.number, ac.name,gd.description, sum(gda.debit) debit, sum(gda.credit) credit, 
+      await db.query(`select employee, employee_name, count(payment_id) transactions,  sum(debit) as debit, sum(credit) as credit
+      from
+      (select ac.number, ac.name,gd.description, sum(gda.debit) debit, sum(gda.credit) credit,
        r.created_by as employee, r.register_id, p.payment_id, e.first_name || ' ' || e.last_name as employee_name,
       gd.general_diary_date as created_date
       from general_diary_account gda
@@ -534,13 +547,13 @@ controller.getSummarizeMajor = async (queryParams) => {
 controller.getBankDiaryTransactions = async (queryParams) => {
   try {
     const [checkPayment] = await db.query(`
-      SELECT t1.check_payment_id as transaction_id, t1.amount, t1.description, t1.status_type, t1.check_payment_type transaction_type, t1.loan_number_id, 
-      t2.general_diary_id, t2.general_diary_number_id, t2.credit as diary_amount, t1.bank as bank_number, t1.bank_account_id, t1.reference, 
-      t2.diary_description, t1.check_payment_date as target_date, t1.outlet_id, cd.is_conciliated, CASE 
+      SELECT t1.check_payment_id as transaction_id, t1.amount, t1.description, t1.status_type, t1.check_payment_type transaction_type, t1.loan_number_id,
+      t2.general_diary_id, t2.general_diary_number_id, t2.credit as diary_amount, t1.bank as bank_number, t1.bank_account_id, t1.reference,
+      t2.diary_description, t1.check_payment_date as target_date, t1.outlet_id, cd.is_conciliated, CASE
 	  	WHEN cl.status_type = 'ENABLED' AND cd.is_conciliated = true THEN true
 	    ELSE false
 	  END is_conciliated, cd.conciliation_id, t1.reference_bank
-      FROM (select cp.check_payment_id, cp.amount, cp.description, cp.reference, cp.status_type, cp.check_payment_date, cp.check_payment_type, 
+      FROM (select cp.check_payment_id, cp.amount, cp.description, cp.reference, cp.status_type, cp.check_payment_date, cp.check_payment_type,
         ba.number as bank, ac.number, cp.bank_account_id, cp.general_diary_id, l.loan_number_id, cp.outlet_id, cp.reference_bank
         from check_payment cp
         left join bank_account ba on (cp.bank_account_id = ba.bank_account_id)
@@ -555,11 +568,11 @@ controller.getBankDiaryTransactions = async (queryParams) => {
           false
         )}
         order by check_payment_date desc)t1
-      LEFT JOIN (select gd.general_diary_id, 
+      LEFT JOIN (select gd.general_diary_id,
             length(trim(leading '0' from substring(gd.description, position('0' in gd.description), 8))) desc_length,
             trim(leading '0' from substring(gd.description, position('0' in gd.description), 8)) description,
             gd.description as diary_description,
-            string_agg(ac.number::varchar , ',') cuentas, 
+            string_agg(ac.number::varchar , ',') cuentas,
             sum(gda.debit) debit,  sum(gda.credit) credit, gd.general_diary_date, gd.general_diary_number_id
             from general_diary gd
             left join general_diary_account gda on (gd.general_diary_id = gda.general_diary_id)
@@ -584,10 +597,10 @@ controller.getBankDiaryTransactions = async (queryParams) => {
     `);
 
     const [bankEntryRetire] = await db.query(
-      `select ber.bank_entry_retirement_id as transaction_id, ber.amount, ber.description, ber.status_type, 
-      ber.type_movement as transaction_type, ber.general_diary_id, sum(gda.debit) as diary_amount, ba.number as bank_number, 
+      `select ber.bank_entry_retirement_id as transaction_id, ber.amount, ber.description, ber.status_type,
+      ber.type_movement as transaction_type, ber.general_diary_id, sum(gda.debit) as diary_amount, ba.number as bank_number,
       ber.bank_account_id, ber.reference, gd.description as diary_description, ber.target_date, ber.outlet_id, ber.created_date,
-      CASE 
+      CASE
 	  	WHEN cl.status_type = 'ENABLED' AND cd.is_conciliated = true THEN true
 	    ELSE false
 	  END is_conciliated, cd.conciliation_id, gd.general_diary_number_id
@@ -606,8 +619,8 @@ controller.getBankDiaryTransactions = async (queryParams) => {
         false
       )}
       ${getGenericLikeFilter("ber.bank_account_id", queryParams.bankAccountId)}
-      group by ber.bank_entry_retirement_id, ber.amount, ber.description, ber.status_type, 
-      ber.type_movement, ber.general_diary_id, ba.number, ber.bank_account_id, ber.reference, 
+      group by ber.bank_entry_retirement_id, ber.amount, ber.description, ber.status_type,
+      ber.type_movement, ber.general_diary_id, ba.number, ber.bank_account_id, ber.reference,
       gd.description, ber.target_date, ber.outlet_id, cd.is_conciliated, cd.conciliation_id,
       cl.status_type, gd.general_diary_number_id
       order by ber.target_date desc
@@ -681,10 +694,29 @@ controller.getTransactionsFromBankFile = async (queryParams) => {
 
     const formatedData = processTransactionsFormat(bankId, parseData);
 
-    const { transactions: localTransactions } =
+    let { transactions: localTransactions } =
       await controller.getBankDiaryTransactions(queryParams);
 
     const comparedTrasactions = [];
+
+    const [detail] = await db.query(
+      `SELECT transactions::json from conciliation_detail`
+    );
+
+    let alreadyConciliated = detail.map(
+      (item) => item.transactions[0].transaction_id
+    );
+
+    localTransactions = localTransactions.filter((item) => {
+      if (
+        alreadyConciliated.some((sbItem) => sbItem == item.transaction_id) ==
+        true
+      ) {
+        return false;
+      } else {
+        return true;
+      }
+    });
 
     console.log(localTransactions);
 
@@ -782,13 +814,13 @@ controller.createConciliation = async (data) => {
         adjustment_transaction_id,
         transactions)
         VALUES (
-          '${t.bank.id}',
+          '${t.bank?.id || ""}',
           '${conciliationId}',
-          '${t.bank.amount}',
-          '${t.bank.description.trim()}',
-          '${t.bank.transaction_type}',
+          '${t.bank?.amount || 0}',
+          '${t.bank?.description.trim() || ""}',
+          '${t.bank?.transaction_type || ""}',
           '${t.local[0]?.bank_account_id}',
-          '${t.bank.date}',
+          ${t.bank?.date ? "'" + t.bank?.date + "'" : null},
           '${true}',
           '${null}',
           '${JSON.stringify(t.local)}')`;
@@ -804,12 +836,12 @@ controller.createConciliation = async (data) => {
 controller.getConciliations = async (queryParams) => {
   try {
     const statement = `
-      select c.*, cd.transaction_id, cd.amount,  cd.amount as local_amount, cd.description transaction_description, 
-      cd.transaction_type, cd.bank_account_id, to_char(cd.transaction_date::date, 'dd-mm-yyy') as date, is_conciliated, 
-      cd.adjustment_transaction_id, ba.number bank_account, cd.transactions
+      select c.*, cd.transaction_id, cd.amount,  cd.amount as local_amount, cd.description transaction_description,
+      cd.transaction_type, cd.bank_account_id, to_char(cd.transaction_date::date, 'dd-mm-yyy') as date, is_conciliated,
+      cd.adjustment_transaction_id, ba.number bank_account, cd.transactions::json
       from conciliation c
       join conciliation_detail cd on (c.conciliation_id = cd.conciliation_id)
-      join bank_account ba on (cd.bank_account_id = ba.bank_account_id)
+      left join bank_account ba on (cd.bank_account_id = ba.bank_account_id)
       WHERE c.status_type NOT IN ('DELETED')
       ${getDateRangeFilter(
         "c.start_date",
@@ -905,49 +937,49 @@ function getAccountsArr(baseArr, arr) {
   return testAccounts;
 }
 
-function getAccountBalance(accountList, currentAccount, balance) {
-  //console.log(accountList);
+function buildAccountTree(flatAccounts) {
+  const accountMap = new Map();
 
-  let accounts = accountList.filter(
-    (item) => item.control_account == currentAccount.account_catalog_id
-  );
+  // Initialize each account with an empty controlledAccounts array
+  flatAccounts.forEach((account) => {
+    accountMap.set(account.account_catalog_id, {
+      ...account,
+      controlledAccounts: [],
+    });
+  });
 
-  // console.log({
-  //   item: currentAccount.number,
-  //   name: currentAccount.name,
-  //   balance: currentAccount.balance,
-  //   ctrl: accounts.length,
-  // });
+  const tree = [];
 
-  if (accounts.length == 0) {
-    balance = balance + parseFloat(currentAccount.balance);
-  }
-
-  for (item of accounts) {
-    let controlledAcccounts = accountList.filter(
-      (sItem) => sItem.control_account == item.account_catalog_id
-    );
-
-    if (controlledAcccounts.length > 0) {
-      // console.log("ITEM BALANCE", item);
-      balance += getAccountBalance(accountList, item, parseFloat(item.balance));
-      // console.log("GENERAL BALANCE", balance);
+  flatAccounts.forEach((account) => {
+    if (account.control_account === null) {
+      tree.push(accountMap.get(account.account_catalog_id)); // Root accounts
     } else {
-      balance += parseFloat(item.balance);
+      const parent = accountMap.get(account.control_account);
+      if (parent) {
+        parent.controlledAccounts.push(
+          accountMap.get(account.account_catalog_id)
+        ); // Nest children
+      }
     }
+  });
 
-    /*getAccountBalance(
-      item?.controlledAccounts,
-      item?.account_catalog_id
-    );*/
+  return { tree, accountMap }; // Return both the hierarchy and the map for easy lookup
+}
+
+function calculateBalance(account) {
+  if (!account.controlledAccounts || account.controlledAccounts.length === 0) {
+    account.totalBalance = parseFloat(account.balance); // Base case: only own balance
+    return account.totalBalance;
   }
-  // console.log(balance);
 
-  // if (accounts.length > 0) {
-  //   return accounts.reduce((acc, item) => acc + parseFloat(item.balance));
-  // }
+  let totalBalance = parseFloat(account.balance);
 
-  return balance;
+  for (let subAccount of account.controlledAccounts) {
+    totalBalance += calculateBalance(subAccount);
+  }
+
+  account.totalBalance = totalBalance; // Store computed balance
+  return parseFloat(totalBalance);
 }
 
 function getPrevAccountBalance(accountList, currentAccount, prevBalance) {
@@ -987,27 +1019,38 @@ for (i = 0; i < 26; i++) {
 controller.generate606 = async (req, res, queryParams) => {
   console.log(queryParams);
   const [accountPayable, meta] = await db.query(`
-  SELECT ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount, 
+  SELECT ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount,
 	concept, ap.outlet_id, ap.status_type, ap.created_by,
-	extract(YEAR FROM ap.created_date) as created_year, 
-	extract(MONTH FROM ap.created_date) as created_month, 
-	extract(DAY FROM ap.created_date) as created_day, 
-	ap.last_modified_by, ap.last_modified_date, 
+	extract(YEAR FROM ap.created_date) as created_year,
+	extract(MONTH FROM ap.created_date) as created_month,
+	extract(DAY FROM ap.created_date) as created_day,
+	ap.last_modified_by, ap.last_modified_date,
 	ap.debit_account, ap.credit_account, ap.ncf,et.name as expense_type, et.code,
-	extract(YEAR FROM max(cp.created_date)) as last_payment_year, 
-	extract(MONTH FROM max(cp.created_date)) as last_payment_month, 
+	extract(YEAR FROM max(cp.created_date)) as last_payment_year,
+	extract(MONTH FROM max(cp.created_date)) as last_payment_month,
 	extract(DAY FROM max(cp.created_date)) as last_payment_day,
 	max(cp.payment_type) as payment_type
 	FROM account_payable ap
 	LEFT JOIN expenses_type et ON (ap.expenses_type_id = et.expenses_type_id)
 	LEFT JOIN check_payment cp ON (ap.account_payable_id = cp.account_payable_id)
-	WHERE ap.outlet_id like'${queryParams.outletId}%'
-	AND extract(YEAR FROM ap.created_date)  = '${queryParams.dateYear}'
-	AND extract(MONTH FROM ap.created_date)  = '${queryParams.dateMonth}'
-	GROUP BY ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount, 
+  ${getGenericLikeFilter("ap.outlet_id", queryParams.outletId, true)}
+  ${
+    queryParams.dateYear
+      ? `AND extract(YEAR FROM ap.created_date) = ${queryParams.dateYear}`
+      : ""
+  }
+  ${
+    queryParams.dateMonth
+      ? `AND extract(MONTH FROM ap.created_date) = ${queryParams.dateMonth.padStart(
+          2,
+          "0"
+        )}`
+      : ""
+  }
+	GROUP BY ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount,
 	concept, ap.outlet_id, ap.status_type, ap.created_by,
-	ap.created_date, ap.created_date, ap.created_date, 
-	ap.last_modified_by, ap.last_modified_date, 
+	ap.created_date, ap.created_date, ap.created_date,
+	ap.last_modified_by, ap.last_modified_date,
 	ap.debit_account, ap.credit_account, ap.ncf,et.name, et.code`);
 
   let rowArr = [
@@ -1067,16 +1110,16 @@ controller.generate606 = async (req, res, queryParams) => {
       let currentRow = Object.values(rowArr[row]);
 
       for (i = 0; i < currentRow.length; i++) {
-        console.log(`${alphabet[i + 1]}${12 + row}`);
+        // console.log(`${alphabet[i + 1]}${12 + row}`);
         workbook
           .sheet("Herramienta Formato 606")
           .cell(`${alphabet[i + 1]}${12 + row}`)
           .value(currentRow[i]);
       }
     }
-    console.log(new Date().toLocaleDateString().trim());
+    // console.log(new Date().toLocaleDateString().trim());
 
-    console.log(`http://${req.headers.host}/static/reports/${fileName}`);
+    // console.log(`http://${req.headers.host}/static/reports/${fileName}`);
 
     // Write to file.
     await workbook.toFileAsync(`${filePath}/${fileName}`);
@@ -1092,7 +1135,7 @@ controller.generate607 = async (req, res, queryParams) => {
   );
 
   const [receipts, meta] = await db.query(`
-  select r.receipt_number, pn.ncf_number,c.identification, pn.created_date, 
+  select r.receipt_number, pn.ncf_number,c.identification, pn.created_date,
 		c.first_name || ' ' || c.last_name as customer_name, sum(a.amount_of_fee) as total_amount,
 		sum(a.capital) as capital, sum(a.interest) as interest, sum(a.mora) as mora,
 		CASE WHEN p.payment_type = 'CASH' THEN p.pay ELSE 0 END as total_cash,
@@ -1104,10 +1147,11 @@ controller.generate607 = async (req, res, queryParams) => {
 		join amortization a on (pd.amortization_id = a.amortization_id)
 		join receipt r on (p.payment_id = r.payment_id)
 		join customer c on (p.customer_id = c.customer_id)
-		where pn.outlet_id like '${queryParams.outletId}%'
+    ${getGenericLikeFilter("pn.outlet_id", queryParams.outletId, true)}
+		--where pn.outlet_id like '${queryParams.outletId}%'
     AND extract(YEAR FROM pn.created_date)  = '${queryParams.dateYear}'
 	  AND extract(MONTH FROM pn.created_date)  = '${queryParams.dateMonth}'
-		group by r.receipt_number, pn.ncf_number,c.identification, pn.created_date, 
+		group by r.receipt_number, pn.ncf_number,c.identification, pn.created_date,
 		c.first_name, c.last_name, p.pay, p.payment_type`);
 
   let rowArr = [

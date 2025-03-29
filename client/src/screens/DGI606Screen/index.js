@@ -8,7 +8,8 @@ import "./index.css";
 
 function DGI606Screen() {
   const [searchParams, setSearchParams] = React.useState({
-    date: new Date().toISOString().split("T")[0],
+    dateYear: new Date().getFullYear(),
+    dateMonth: new Date().getMonth(),
   });
   const [reqToggle, setReqToggle] = React.useState([]);
   const [outlets, setOutlets] = React.useState([]);
@@ -64,7 +65,7 @@ function DGI606Screen() {
       for (let i = 0; i < 12; i++) {
         arr2.push({
           label: `${months[i]}`,
-          value: i <= 9 ? `0${i + 1}` : `${i + 1}`,
+          value: i + 1,
         });
       }
       setLastYears(arr);
@@ -89,10 +90,10 @@ function DGI606Screen() {
       field: "outletId",
       type: "select",
       options: [
-        // {
-        //   label: "Todas las sucursales",
-        //   value: "",
-        // },
+        {
+          label: "Todas las sucursales",
+          value: undefined,
+        },
         ...outlets.map((item) => {
           return {
             label: item.name,
@@ -105,13 +106,16 @@ function DGI606Screen() {
       label: "Año",
       field: "dateYear",
       type: "select",
-      options: lastYears,
+      options: [, /*{ label: "Todas los años", value: "" }*/ ...lastYears],
     },
     {
       label: "Mes",
       field: "dateMonth",
       type: "select",
-      options: lastMonths,
+      options: [
+        ,
+        /*{ label: "Todas las sucursales", value: "" }*/ ...lastMonths,
+      ],
     },
     // {
     //   label: "A la Fecha De",
@@ -130,11 +134,14 @@ function DGI606Screen() {
     // },
   ];
 
+  console.log(searchParams);
+
   return (
     <div className="">
       <TopBar title="Formulario 606" />
       <div className="screen-content">
         <SearchBar
+          searchParams={searchParams}
           mainFilters={mainFilters}
           secondaryFilters={secondaryFilters}
           setSearchParams={setSearchParams}

@@ -57,8 +57,12 @@ function generateReport(data, configParams) {
     headerTop + 10
   );
 
+  console.log(data.bankTransactions);
   let totalBankBalance = data.bankTransactions.reduce(
-    (acc, i) => acc + parseFloat(i.amount),
+    (acc, i) =>
+      i.transaction_type == "CR"
+        ? acc + parseFloat(i.amount)
+        : acc - parseFloat(i.amount),
     0
   );
 
@@ -76,7 +80,7 @@ function generateReport(data, configParams) {
 
   const transitDeposits = [];
   data.bankTransactions.map((bt) => {
-    JSON.parse(bt.transactions)
+    bt.transactions
       .filter(
         (t) => t.transaction_type == "ENTRY" && t.status_type == "TRANSIT"
       )
@@ -114,8 +118,9 @@ function generateReport(data, configParams) {
   top += spacing + 5;
   renderTableHeader(doc, left, top);
   const transitChecks = [];
+  console.log(data);
   data.bankTransactions.map((bt) => {
-    JSON.parse(bt.transactions)
+    bt.transactions
       .filter(
         (t) => t.transaction_type != "ENTRY" && t.status_type == "TRANSIT"
       )
@@ -126,6 +131,7 @@ function generateReport(data, configParams) {
 
   top += 10;
 
+  console.log("$$", transitChecks);
   if (transitChecks.length == 0) {
     doc.text("No hay cheques en tránsito", left, top);
   }
@@ -168,14 +174,17 @@ function generateReport(data, configParams) {
   createSubTitle(doc, "Balance en diario", left, top);
   let allLocalTransactions = [];
   data.bankTransactions.map((bt) => {
-    JSON.parse(bt.transactions).map((t) => {
+    bt.transactions.map((t) => {
       allLocalTransactions.push(t);
     });
   });
   doc.text(
     currencyFormat(
       `${allLocalTransactions.reduce(
-        (acc, i) => acc + parseFloat(i.diary_amount),
+        (acc, i) =>
+          i.transaction_type == "ENTRY"
+            ? acc + parseFloat(i.diary_amount)
+            : acc - parseFloat(i.diary_amount),
         0
       )}`
     ),

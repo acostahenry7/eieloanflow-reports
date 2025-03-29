@@ -142,9 +142,14 @@ const ConciliationForm = ({
       }
 
       console.log(values);
+      console.log(transitTransactions);
+
       createConciliationApi({
         ...values,
-        transactions: conciliatedTransactions,
+        transactions: [
+          ...conciliatedTransactions,
+          ...transitTransactions.map((item) => ({ local: [item] })),
+        ],
       })
         .then((res) => {
           console.log(res);
@@ -155,6 +160,8 @@ const ConciliationForm = ({
         });
     },
   });
+
+  console.log(transitTransactions);
 
   const conciliateTransaction = () => {
     let bTIndex = -1;
@@ -486,7 +493,6 @@ const ConciliationForm = ({
 
       //setData(trasactions.filter((item) => item.is_conciliated == false));
 
-      console.log(values);
       setData(res.body.unconciliated);
       setBankTransactions(res.body.manualRevisions);
       setConciliatedTransactions(res.body.conciliated);
@@ -500,21 +506,23 @@ const ConciliationForm = ({
     try {
       const res = await getMajorGeneral({ ...values, outletId });
 
-      setPrevBalances(res.body.balanceByAccount);
+      //setPrevBalances(res.body.balanceByAccount);
+      updateDiaryBalance(form.values.bankAccountId, res.body.balanceByAccount);
 
-      console.log(res);
+      console.log();
     } catch (error) {}
   };
 
-  const updateDiaryBalance = (bankId) => {
+  const updateDiaryBalance = (bankId, balances) => {
+    if (!balances) balances = prevBalances;
     const catalogId = accounts.find(
       (ac) => ac.bank_account_id == bankId
     )?.account_catalog_id;
-    const account = prevBalances.find(
+    const account = balances.find(
       (account) => account.account_catalog_id == catalogId
     );
 
-    console.log(account);
+    console.log(balances, account);
     form.setFieldValue(
       "diaryBalance",
 
@@ -566,7 +574,7 @@ const ConciliationForm = ({
     }, 0) +
     totalTransitTransactions;
 
-  console.log(conciliatedTransactions);
+  //console.log(conciliatedTransactions);
 
   return (
     <Modal>
@@ -667,7 +675,10 @@ const ConciliationForm = ({
                           value={form.values.dateFrom}
                           onChange={(e) => {
                             form.setFieldValue("dateFrom", e.target.value);
-                            loadPrevBalance(form.values, form.values.outletId);
+                            loadPrevBalance(
+                              { ...form.values, dateFrom: e.target.value },
+                              form.values.outletId
+                            );
                           }}
                           type="date"
                           name="begin"
@@ -690,7 +701,7 @@ const ConciliationForm = ({
                           value={form.values.dateTo}
                           onChange={(e) => {
                             form.setFieldValue("dateTo", e.target.value);
-                            loadPrevBalance(form.values, form.values.outletId);
+                            //loadPrevBalance(form.values, form.values.outletId);
                           }}
                           type="date"
                         />

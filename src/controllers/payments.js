@@ -1,6 +1,10 @@
 const ENTITY = "payment";
 const db = require("../models");
-const { generateWhereStatement, getDateRangeFilter } = require("../utils");
+const {
+  generateWhereStatement,
+  getDateRangeFilter,
+  getGenericLikeFilter,
+} = require("../utils");
 
 const controller = {};
 
@@ -256,8 +260,11 @@ controller.getDetailReceipt = async (queryParams) => {
 		join amortization a on (pd.amortization_id = a.amortization_id)
 		join receipt r on (p.payment_id = r.payment_id)
 		join customer c on (p.customer_id = c.customer_id)
-		where pn.outlet_id like '${queryParams.outletId}%'
-		and pn.created_date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'
+    ${getGenericLikeFilter("pn.outlet_id", queryParams.outletId, true)}
+		--where pn.outlet_id like '${queryParams.outletId}%'
+		and pn.created_date between '${queryParams.dateFrom}' and '${
+        queryParams.dateTo
+      }'
 		group by r.receipt_number, pn.ncf_number,c.identification, pn.created_date, 
 		c.first_name, c.last_name, p.pay, p.payment_type`);
 

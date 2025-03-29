@@ -25,14 +25,26 @@ function SearchBar({
   const [showOtherfilters, setShowOtherFilters] = React.useState(
     secondaryFilters.length > 0 ? true : false
   );
+
   const searchForm = useFormik({
     initialValues: getInitialValues([...mainFilters, ...secondaryFilters]),
     validateOnChange: false,
     enableReinitialize: false,
     onSubmit: async (values, { resetForm }) => {
-      setSearchParams({});
-      console.log(values);
-      setSearchParams(values);
+      let haveAnyValue = Object.values(values).some(
+        (item) => item != undefined
+      );
+      if (haveAnyValue) {
+        console.log("hi");
+        Object.entries(values).map(([key, value], index) => {
+          if (!value) {
+            delete values[key];
+          }
+        });
+
+        setSearchParams({ ...searchParams, ...values });
+      }
+
       setRequestToggle((state) => !state);
     },
   });
