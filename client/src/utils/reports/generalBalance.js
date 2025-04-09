@@ -106,12 +106,29 @@ function generateReport(data, configParams) {
   );
   top = topAFijos;
 
+  //Activos Fijos
+  let [topAOtros, balanceAOtros] = generateReportSection(
+    doc,
+    activos,
+    data.balances,
+    "Otros Activos",
+    "16",
+    true,
+    true,
+    {
+      top,
+      left,
+      right,
+    }
+  );
+  top = topAOtros;
+
   top += sectionSpacing;
   createTitle(doc, "Total Activos", left, top);
   createTitle(
     doc,
     `${currencyFormat(
-      balanceACirculantes + balanceACorrientes + balanceAFijos
+      balanceACirculantes + balanceACorrientes + balanceAFijos + balanceAOtros
     )}`,
     right,
     top
@@ -242,6 +259,7 @@ function generateReport(data, configParams) {
     []
   );
 
+  top = topPCirculantes5;
   top += spacing;
   console.log(
     balancePCirculantes,
@@ -254,7 +272,8 @@ function generateReport(data, configParams) {
     balancePCirculantes +
     balancePCirculantes2 +
     balancePCirculantes3 +
-    balancePCirculantes4;
+    balancePCirculantes4 +
+    balancePCirculantes5;
 
   createSubTitle(doc, `Total Pasivos Circulantes`, left, top);
   createSubTitle(
@@ -290,9 +309,14 @@ function generateReport(data, configParams) {
     .controlledAccounts;
 
   top += sectionSpacing;
+  if (top + sectionSpacing > height - 100) {
+    doc.addPage();
+    top = 20;
+  }
   createTitle(doc, "Capital", left, top);
   top += 1;
   doc.line(left, top, left + getTextWidth("Capital"), top);
+
   //Capital
   let [topCapital1, balanceCapital1] = generateReportSection(
     doc,
@@ -362,10 +386,6 @@ function generateReport(data, configParams) {
     top
   );
 
-  if (top + sectionSpacing > height - 40) {
-    doc.addPage();
-    top = 20;
-  }
   top += sectionSpacing;
 
   createTitle(doc, "Total Capital", left, top);

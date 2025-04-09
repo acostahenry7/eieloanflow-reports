@@ -92,7 +92,21 @@ controller.getGeneralBalance = async (queryParams) => {
       left join general_diary_account gda on (ac.account_catalog_id = gda.account_catalog_id)
       left join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
       where ac.outlet_id like '${queryParams.outletId}'
-      and gd.general_diary_id in (select general_diary_id from general_diary where general_diary_date <= '${queryParams.date}' and status_type = 'ENABLED')
+      and gd.general_diary_id in (
+        select gd.general_diary_id 
+        from general_diary gd
+        left join bank_entry_retirement ber ON (gd.general_diary_id = ber.general_diary_id)
+            left join check_payment cp on (gd.general_diary_id = cp.general_diary_id) 
+        where gd.status_type = 'ENABLED'
+          AND (
+          ber.target_date <= date_trunc('month','${queryParams.date}'::date) 
+          OR cp.check_payment_date <= date_trunc('month','${queryParams.date}'::date)
+          OR (
+            (ber.target_date IS NULL AND cp.check_payment_date IS NULL)
+            AND general_diary_date <= date_trunc('month','${queryParams.date}'::date)
+            )
+          )
+      )
       group by ac.account_catalog_id, ac.name
       --having min(gd.general_diary_date) <= '${queryParams.date}'
       ) t1 on (ac.account_catalog_id = t1.account_catalog_id)
@@ -342,14 +356,20 @@ controller.getMajorGeneral = async (queryParams) => {
       left join customer c on (la.customer_id = c.customer_id)
       ${getGenericLikeFilter("gd.outlet_id", queryParams.outletId, true)}
      
-        AND (ber.target_date BETWEEN '${queryParams.dateFrom}' AND '${
-        queryParams.dateTo
-      }' OR cp.check_payment_date BETWEEN '${queryParams.dateFrom}' AND '${
+      AND (
+        ber.target_date BETWEEN '${queryParams.dateFrom}' AND '${
         queryParams.dateTo
       }' 
-        OR general_diary_date BETWEEN '${queryParams.dateFrom}' AND '${
+        OR cp.check_payment_date BETWEEN '${queryParams.dateFrom}' AND '${
         queryParams.dateTo
-      }' )
+      }'
+        OR (
+          (ber.target_date IS NULL AND cp.check_payment_date IS NULL)
+          AND general_diary_date BETWEEN '${queryParams.dateFrom}' AND '${
+        queryParams.dateTo
+      }'
+          )
+        )
       ${getGenericLikeFilter(
         "ac.number",
         queryParams.accountNumber || queryParams.accountName
@@ -377,12 +397,25 @@ controller.getMajorGeneral = async (queryParams) => {
       left join (select ac.account_catalog_id, sum(gda.debit) debit, sum(gda.credit) credit, abs(sum(debit) - sum(credit)) as balance
         from general_diary gd
         join general_diary_account gda on (gd.general_diary_id = gda.general_diary_id)
+        left join bank_entry_retirement ber ON (gd.general_diary_id = ber.general_diary_id)
+        left join check_payment cp on (gd.general_diary_id = cp.general_diary_id)
         join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
         left JOIN jhi_user u ON (gd.created_by = u.login)
         ${getGenericLikeFilter("gd.outlet_id", queryParams.outletId, true)}
-        and gd.general_diary_date < date_trunc('month','${
-          queryParams.dateFrom
-        }'::date)
+        AND (
+          ber.target_date < date_trunc('month','${
+            queryParams.dateFrom
+          }'::date) --date_trunc('month','2025-04-04'::date)
+          OR cp.check_payment_date < date_trunc('month','${
+            queryParams.dateFrom
+          }'::date)
+          OR (
+            (ber.target_date IS NULL AND cp.check_payment_date IS NULL)
+            AND general_diary_date < date_trunc('month','${
+              queryParams.dateFrom
+            }'::date)
+            )
+          )
         and ac.number like '%'
         and gd.status_type = 'ENABLED'
         and gd.description not like '%226464%'
@@ -1108,7 +1141,12 @@ controller.generate606 = async (req, res, queryParams) => {
   ).then(async (workbook) => {
     //Fill preconf-ingo
     workbook.sheet("Herramienta Formato 606").cell("C4").value("40240604682");
-    workbook.sheet("Herramienta Formato 606").cell("C5").value("202301");
+    workbook
+      .sheet("Herramienta Formato 606")
+      .cell("C5")
+      .value(
+        `${queryParams.dateYear}${queryParams.dateMonth.padStart(2, "0")}`
+      );
     workbook
       .sheet("Herramienta Formato 606")
       .cell("C6")
