@@ -106,6 +106,7 @@ controller.getGeneralBalance = async (queryParams) => {
             AND general_diary_date <= date_trunc('month','${queryParams.date}'::date)
             )
           )
+          AND gd.created_by not in ('y.aragonez')  
       )
       group by ac.account_catalog_id, ac.name
       --having min(gd.general_diary_date) <= '${queryParams.date}'
