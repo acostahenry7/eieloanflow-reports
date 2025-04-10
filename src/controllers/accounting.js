@@ -92,6 +92,7 @@ controller.getGeneralBalance = async (queryParams) => {
       left join general_diary_account gda on (ac.account_catalog_id = gda.account_catalog_id)
       left join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
       where ac.outlet_id like '${queryParams.outletId}'
+      and gda.status_type = 'ENABLED'
       and gd.general_diary_id in (
         select gd.general_diary_id 
         from general_diary gd
