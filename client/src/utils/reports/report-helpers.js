@@ -143,14 +143,17 @@ export function generateReportSection(
   options,
   notShowAccounts
 ) {
-  console.log(
-    mainList.filter((item) => item.number == parentNum),
-    parentNum
-  );
+  // console.log(
+  //   mainList.filter((item) => item.number == parentNum),
+  //   parentNum
+  // );
+
+  console.log("Balances", mainBalances);
+
   let sectionData = mainList.filter((item) => item.number == parentNum)[0]
     ?.controlledAccounts;
 
-  let alwaysVisibleAccounts = ["34", "3601", "37", "32"];
+  let alwaysVisibleAccounts = ["34", "R", "3601", "37", "32"];
   if (notShowAccounts?.length > 0) {
     let tempArr = [];
     sectionData.forEach((item) => {
@@ -189,12 +192,26 @@ export function generateReportSection(
       ).length > 0;
 
     if (sectionData[i].number == "3601") {
+      let incomesBalance = mainBalances.find(
+        (item) => item.number == "4"
+      ).balance;
+
+      console.log(incomesBalance);
+
+      let expensesBalance = mainBalances.find(
+        (item) => item.number == "6"
+      ).balance;
+
+      let resultadoPeriodo = incomesBalance - expensesBalance;
+
+      console.log("############", resultadoPeriodo);
+
       top += spacing;
       doc.text(`RESULTADO DEL PERIODO`, left, top);
-      doc.text(`${currencyFormat(totalPeriod)}`, right, top, {
+      doc.text(`${currencyFormat(resultadoPeriodo)}`, right, top, {
         align: "right",
       });
-      totalBalance += totalPeriod;
+      totalBalance += resultadoPeriodo;
     }
 
     if (balance > 0 || isVisible == true) {
