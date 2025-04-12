@@ -57,7 +57,7 @@ function generateReport(data, configParams) {
   );
   createSubTitle(
     doc,
-    "Balance Actual (RD$)",
+    "Movimiento del  Mes (RD$)",
     left + colsWidth[4] - 18,
     headerTop + 12
   );
@@ -91,7 +91,7 @@ function generateReport(data, configParams) {
       }
     );
     doc.text(
-      `${currencyFormat(item.month_debit, false)}`,
+      `${currencyFormat(item.mov_debit, false)}`,
       left + colsWidth[3] + 15,
       top,
       {
@@ -99,7 +99,7 @@ function generateReport(data, configParams) {
       }
     );
     doc.text(
-      `${currencyFormat(item.month_credit, false)}`,
+      `${currencyFormat(item.mov_credit, false)}`,
       left + colsWidth[4] + 15,
       top,
       {
@@ -107,7 +107,7 @@ function generateReport(data, configParams) {
       }
     );
     doc.text(
-      `${currencyFormat(item.debit, false)}`,
+      `${currencyFormat(item.total_debit, false)}`,
       left + colsWidth[5] + 15,
       top,
       {
@@ -115,7 +115,7 @@ function generateReport(data, configParams) {
       }
     );
     doc.text(
-      `${currencyFormat(item.credit, false)}`,
+      `${currencyFormat(item.total_credit, false)}`,
       left + colsWidth[6] + 15,
       top,
       {
@@ -137,7 +137,7 @@ function generateReport(data, configParams) {
       );
       createSubTitle(
         doc,
-        "Balance Actual (RD$)",
+        "Movimiento del  Mes (RD$)",
         left + colsWidth[4] - 18,
         headerTop + 12
       );
@@ -152,9 +152,11 @@ function generateReport(data, configParams) {
     }
 
     if (index == data.length - 1) {
-      doc.addPage();
+      if (top > 215 - 20) {
+        doc.addPage();
+        top = 40;
+      }
 
-      top = 40;
       createSubTitle(
         doc,
         "Balance Anterior (RD$)",
@@ -163,7 +165,7 @@ function generateReport(data, configParams) {
       );
       createSubTitle(
         doc,
-        "Balance Actual (RD$)",
+        "Movimiento del  Mes (RD$)",
         left + colsWidth[4] - 18,
         headerTop + 12
       );
@@ -173,7 +175,7 @@ function generateReport(data, configParams) {
         left + colsWidth[5] + 12,
         headerTop + 12
       );
-      renderTableHeader(doc, left, top - 10);
+      if (top > 215 - 20) renderTableHeader(doc, left, top - 10);
       createSubTitle(doc, `Totales`, left, top);
       createSubTitle(
         doc,
@@ -202,7 +204,7 @@ function generateReport(data, configParams) {
       createSubTitle(
         doc,
         `${currencyFormat(
-          data.reduce((acc, item) => acc + parseFloat(item.month_debit), 0),
+          data.reduce((acc, item) => acc + parseFloat(item.mov_debit), 0),
           false
         )}`,
         left + colsWidth[3] + 15,
@@ -214,7 +216,7 @@ function generateReport(data, configParams) {
       createSubTitle(
         doc,
         `${currencyFormat(
-          data.reduce((acc, item) => acc + parseFloat(item.month_credit), 0),
+          data.reduce((acc, item) => acc + parseFloat(item.mov_credit), 0),
           false
         )}`,
         left + colsWidth[4] + 15,
@@ -226,7 +228,7 @@ function generateReport(data, configParams) {
       createSubTitle(
         doc,
         `${currencyFormat(
-          data.reduce((acc, item) => acc + parseFloat(item.debit), 0),
+          data.reduce((acc, item) => acc + parseFloat(item.total_debit), 0),
           false
         )}`,
         left + colsWidth[5] + 15,
@@ -238,7 +240,7 @@ function generateReport(data, configParams) {
       createSubTitle(
         doc,
         `${currencyFormat(
-          data.reduce((acc, item) => acc + parseFloat(item.credit), 0),
+          data.reduce((acc, item) => acc + parseFloat(item.total_credit), 0),
           false
         )}`,
         left + colsWidth[6] + 15,

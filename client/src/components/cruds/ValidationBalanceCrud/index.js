@@ -102,7 +102,7 @@ function ValidationBalanceCrud() {
     {
       name: (
         <div>
-          <p style={{ textAlign: "center" }}>Balance actual</p>
+          <p style={{ textAlign: "center" }}>Movimiento del mes</p>
           <div
             style={{
               width: 250,
@@ -126,13 +126,13 @@ function ValidationBalanceCrud() {
           }}
         >
           <CurrencyFormat
-            value={parseFloat(row.month_debit).toFixed(2)}
+            value={parseFloat(row.mov_debit).toFixed(2)}
             displayType={"text"}
             thousandSeparator={true}
             prefix={"RD$ "}
           />
           <CurrencyFormat
-            value={parseFloat(row.month_credit).toFixed(2)}
+            value={parseFloat(row.mov_credit).toFixed(2)}
             displayType={"text"}
             thousandSeparator={true}
             prefix={"RD$ "}
@@ -170,13 +170,13 @@ function ValidationBalanceCrud() {
           }}
         >
           <CurrencyFormat
-            value={parseFloat(row.debit).toFixed(2)}
+            value={parseFloat(row.total_debit).toFixed(2)}
             displayType={"text"}
             thousandSeparator={true}
             prefix={"RD$ "}
           />
           <CurrencyFormat
-            value={parseFloat(row.credit).toFixed(2)}
+            value={parseFloat(row.total_credit).toFixed(2)}
             displayType={"text"}
             thousandSeparator={true}
             prefix={"RD$ "}

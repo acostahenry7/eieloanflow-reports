@@ -7,7 +7,7 @@ let mainSubTitleFontSize = mainTitleFontSize - 2;
 let dateFontSize = mainSubTitleFontSize - 2;
 
 //Body
-let baseFontSize = 10;
+let baseFontSize = +8;
 let subtitleFontSize = baseFontSize;
 let titleFontSize = baseFontSize + 2;
 

@@ -100,11 +100,11 @@ controller.getGeneralBalance = async (queryParams) => {
             left join check_payment cp on (gd.general_diary_id = cp.general_diary_id) 
         where gd.status_type = 'ENABLED'
           AND (
-          ber.target_date <= date_trunc('month','${queryParams.date}'::date) 
-          OR cp.check_payment_date <= date_trunc('month','${queryParams.date}'::date)
+          ber.target_date <= '${queryParams.date}' 
+          OR cp.check_payment_date <= '${queryParams.date}'
           OR (
             (ber.target_date IS NULL AND cp.check_payment_date IS NULL)
-            AND general_diary_date <= date_trunc('month','${queryParams.date}'::date)
+            AND general_diary_date <= '${queryParams.date}'
             )
           )
           AND gd.created_by not in ('y.aragonez')  
@@ -236,69 +236,123 @@ controller.getValidationBalance = async (queryParams) => {
   console.log(queryParams);
 
   try {
-    const [data, meta] =
-      await db.query(`SELECT ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
-    ac.is_control, ac.status_type, ac.created_by, ac.created_date, ac.last_modified_by, ac.last_modified_date,
-    ac.balance as catalog_balance,
-    /*TIPO DE ASIENTO  ANTERIOR*/
-    COALESCE(sum(gda.debit) filter(where gda.created_date::date <= cast(date_trunc('month', '${
-      queryParams.date
-    }'::date) - interval '1 day' as date))  , 0) as prev_debit,
-    COALESCE(sum(gda.credit) filter(where gda.created_date::date <= cast(date_trunc('month', '${
-      queryParams.date
-    }'::date) - interval '1 day' as date))  , 0)as prev_credit,
-    /*BALANCE ANTERIOR*/
-    ABS(COALESCE(sum(gda.debit) filter(where gda.created_date::date <= cast(date_trunc('month', '${
-      queryParams.date
-    }'::date) - interval '1 day' as date))  , 0)-
-    COALESCE(sum(gda.credit) filter(where gda.created_date::date <= cast(date_trunc('month', '${
-      queryParams.date
-    }'::date) - interval '1 day' as date))  , 0)) as prev_balance,
-    /*TIPO DE ASIENTO MES*/
-    COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) = '${
-      queryParams.date.split("-")[0]
-    }' and extract(MONTH from gda.created_date) = '${
-        queryParams.date.split("-")[1]
-      }')  , 0) as month_debit,
-    COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) = '${
-      queryParams.date.split("-")[0]
-    }' and extract(MONTH from gda.created_date) = '${
-        queryParams.date.split("-")[1]
-      }') , 0)as month_credit,
-    /*BALANCE MES*/
-    COALESCE(sum(gda.debit) filter(where extract(YEAR from gda.created_date ) = '${
-      queryParams.date.split("-")[0]
-    }' and extract(MONTH from gda.created_date)= '${
-        queryParams.date.split("-")[1]
-      }') , 0)-
-    COALESCE(sum(gda.credit) filter(where extract(YEAR from gda.created_date ) = '${
-      queryParams.date.split("-")[0]
-    }' and extract(MONTH from gda.created_date) = '${
-        queryParams.date.split("-")[1]
-      }') , 0) as month_balance,
-    /*TIPO DE ASIENTO A LA FECHA*/
-    COALESCE(sum(gda.debit) filter( where gda.created_date::date <= '${
-      queryParams.date
-    }'::date ) , 0) as debit,
-    COALESCE(sum(gda.credit) filter( where gda.created_date::date <= '${
-      queryParams.date
-    }'::date ) , 0)as credit,
-    /*BALANCE A LA FECHA*/
-    ABS(COALESCE(sum(gda.debit) filter( where gda.created_date::date <= '${
-      queryParams.date
-    }'::date ) , 0) -
-    COALESCE(sum(gda.credit) filter( where gda.created_date::date <= '${
-      queryParams.date
-    }'::date ) , 0)) as balance,
-    ac.outlet_id
+    const [data, meta] = await db.query(`SELECT 
+    ac.account_catalog_id,
+    ac.number,
+    ac.name,
+    ac.description,
+    ac.control_account,
+    ac.is_control,
+    ac.status_type,
+    ac.created_by,
+    ac.created_date,
+    ac.last_modified_by,
+    ac.last_modified_date,
+	COALESCE(t2.debit, 0) AS prev_debit,
+	COALESCE(t2.credit, 0) AS prev_credit,
+	COALESCE(t2.balance, 0) AS prev_balance,
+    COALESCE(t1.debit, 0) AS mov_debit,
+    COALESCE(t1.credit, 0) AS mov_credit,
+    COALESCE(t1.balance, 0) AS mov_balance,
+	case 
+		when (COALESCE(t2.debit, 0) + COALESCE(t1.debit, 0)) > (COALESCE(t2.credit, 0) + COALESCE(t1.credit, 0)) 
+		then (COALESCE(t2.debit, 0) + COALESCE(t1.debit, 0)) - (COALESCE(t2.credit, 0) + COALESCE(t1.credit, 0))
+		else 0.00
+	end total_debit,
+	case 
+		when (COALESCE(t2.credit, 0) + COALESCE(t1.credit, 0)) > (COALESCE(t2.debit, 0) + COALESCE(t1.debit, 0)) 
+		then (COALESCE(t2.credit, 0) + COALESCE(t1.credit, 0)) - (COALESCE(t2.debit, 0) + COALESCE(t1.debit, 0))
+		else 0.00
+	end total_credit
+FROM account_catalog ac
+LEFT JOIN (
+    -- Subquery 1: Balance calculation for a specific month (given date)
+    SELECT 
+        ac.account_catalog_id, 
+        ac.name,
+        COALESCE(SUM(gda.debit), 0) AS debit,
+        COALESCE(SUM(gda.credit), 0) AS credit,
+        CASE
+            WHEN ac.number LIKE ANY(ARRAY['1%', '6%']) THEN COALESCE(SUM(gda.debit) - SUM(gda.credit), 0)
+            WHEN ac.number LIKE ANY(ARRAY['2%', '3%', '4%']) THEN COALESCE(SUM(gda.credit) - SUM(gda.debit), 0)
+        END AS balance
     FROM account_catalog ac
-    LEFT JOIN general_diary_account gda ON (ac.account_catalog_id = gda.account_catalog_id
-    and gd.general_diary_date <='${queryParams.date}')
-    WHERE outlet_id like '${queryParams.outletId}'
-    GROUP BY ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
-    ac.is_control, ac.status_type, ac.created_by, ac.created_date, ac.last_modified_by, ac.last_modified_date,
-    ac.balance, ac.outlet_id
-    ORDER BY number`);
+    LEFT JOIN general_diary_account gda ON (ac.account_catalog_id = gda.account_catalog_id)
+    LEFT JOIN general_diary gd ON (gda.general_diary_id = gd.general_diary_id)
+    --WHERE ac.outlet_id LIKE '${queryParams.outletId}'
+    ${getGenericLikeFilter("ac.outlet_id", queryParams.outletId, true)}
+        AND gda.status_type = 'ENABLED'
+        AND gd.general_diary_id IN (
+            SELECT gd.general_diary_id
+            FROM general_diary gd
+            LEFT JOIN bank_entry_retirement ber ON (gd.general_diary_id = ber.general_diary_id)
+            LEFT JOIN check_payment cp ON (gd.general_diary_id = cp.general_diary_id)
+            WHERE gd.status_type = 'ENABLED'
+            
+            AND (
+                (ber.target_date >= date_trunc('month', '${
+                  queryParams.date
+                }'::date) and ber.target_date <=  '${queryParams.date}')
+                OR (cp.check_payment_date >= date_trunc('month', '${
+                  queryParams.date
+                }'::date) and cp.check_payment_date <= '${queryParams.date}')
+                OR (
+                    (ber.target_date IS NULL AND cp.check_payment_date IS NULL)
+                    AND(general_diary_date >= date_trunc('month', '${
+                      queryParams.date
+                    }'::date) and general_diary_date <= '${queryParams.date}')
+                )
+            )
+            AND gd.created_by NOT IN ('y.aragonez')
+        )
+    GROUP BY ac.account_catalog_id, ac.name
+) t1 ON ac.account_catalog_id = t1.account_catalog_id
+LEFT JOIN (
+    -- Subquery 2: Balance calculation up to the end of the previous month (before '${
+      queryParams.date
+    }')
+    SELECT 
+        ac.account_catalog_id, 
+        ac.name,
+        COALESCE(SUM(gda.debit), 0) AS debit,
+        COALESCE(SUM(gda.credit), 0) AS credit,
+        CASE
+            WHEN ac.number LIKE ANY(ARRAY['1%', '6%']) THEN COALESCE(SUM(gda.debit) - SUM(gda.credit), 0)
+            WHEN ac.number LIKE ANY(ARRAY['2%', '3%', '4%']) THEN COALESCE(SUM(gda.credit) - SUM(gda.debit), 0)
+        END AS balance
+    FROM account_catalog ac
+    LEFT JOIN general_diary_account gda ON (ac.account_catalog_id = gda.account_catalog_id)
+    LEFT JOIN general_diary gd ON (gda.general_diary_id = gd.general_diary_id)
+    --WHERE ac.outlet_id LIKE '${queryParams.outletId}'
+    ${getGenericLikeFilter("ac.outlet_id", queryParams.outletId, true)}
+        AND gda.status_type = 'ENABLED'
+        AND gd.general_diary_id IN (
+            SELECT gd.general_diary_id
+            FROM general_diary gd
+            LEFT JOIN bank_entry_retirement ber ON (gd.general_diary_id = ber.general_diary_id)
+            LEFT JOIN check_payment cp ON (gd.general_diary_id = cp.general_diary_id)
+            WHERE gd.status_type = 'ENABLED'
+            AND (
+                ber.target_date < date_trunc('month', '${
+                  queryParams.date
+                }'::date)  -- Before the first day of the month (2023-12-31)
+                OR cp.check_payment_date < date_trunc('month', '${
+                  queryParams.date
+                }'::date)
+                OR (
+                    (ber.target_date IS NULL AND cp.check_payment_date IS NULL)
+                    AND general_diary_date < date_trunc('month', '${
+                      queryParams.date
+                    }'::date)
+                )
+            )
+            AND gd.created_by NOT IN ('y.aragonez')
+        )
+    GROUP BY ac.account_catalog_id, ac.name
+) t2 ON ac.account_catalog_id = t2.account_catalog_id
+--WHERE ac.outlet_id LIKE '${queryParams.outletId}'
+${getGenericLikeFilter("ac.outlet_id", queryParams.outletId, true)}
+ORDER BY ac.number;`);
 
     if (data.length == 0) {
       return [];
