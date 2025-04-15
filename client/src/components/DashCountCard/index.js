@@ -2,6 +2,7 @@ import React from "react";
 import { daysInMonth, getPreviousDateByDays } from "../../utils/dateFunctions";
 import { FallingLines } from "react-loader-spinner";
 import "./index.css";
+import { currencyFormat } from "../../utils/reports/report-helpers";
 
 function DashCountCard({
   cardName,
@@ -12,6 +13,8 @@ function DashCountCard({
   setReqToggle,
   setSearchParams,
   isLoading,
+  normal,
+  arrear,
   filterActive = true,
 }) {
   return (
@@ -98,9 +101,35 @@ function DashCountCard({
         <>
           <div className="card-body">
             <div className="amount">
-              <p>{amount}</p>
+              <p>{currencyFormat(amount, false, 0)}</p>
               <br />
-              <div className="movement">{movementPct}%</div>
+              <div>
+                <span style={{ fontSize: 12, color: "rgba(196, 193, 193)" }}>
+                  Atraso{" "}
+                </span>
+                <div
+                  className="movement"
+                  style={{
+                    backgroundColor:
+                      arrear > normal
+                        ? "rgba(164, 28, 28, 0.16)"
+                        : "rgba(8, 253, 90, 0.26)",
+                    color:
+                      arrear > normal
+                        ? "rgba(151, 49, 49, 0.8)"
+                        : "rgb(35, 155, 75)",
+                  }}
+                >
+                  {amount > 0
+                    ? currencyFormat(
+                        Math.round((arrear / amount) * 100),
+                        false,
+                        0
+                      )
+                    : "0.00"}
+                  %
+                </div>
+              </div>
             </div>
           </div>
           <div className="des">
@@ -110,13 +139,22 @@ function DashCountCard({
               </p>
             ) : (
               <p>
-                Se registra un movimeinto del <b>${movementAmount}%</b> desde el
-                último mes
+                Se registra un movimeinto de <b>${movementAmount}</b>
               </p>
             )}
             <div className="des-stats">
-              <div className="des-stat-item">icon --</div>
-              <div className="des-stat-item">icon --</div>
+              <div className="des-stat-item">
+                <span>Normal</span>{" "}
+                <b style={{ color: "#4ac34a" }}>
+                  {currencyFormat(normal, false, 0)}
+                </b>
+              </div>
+              <div className="des-stat-item">
+                Atraso{" "}
+                <b style={{ color: "#e17c7c" }}>
+                  {currencyFormat(arrear, false, 0)}
+                </b>
+              </div>
             </div>
           </div>
         </>

@@ -30,7 +30,7 @@ function getLoanSituationLabel(loanSituation) {
       label = "Cambio de fecha";
       break;
     case "BAD_LOAN":
-      label = "DEFINIR";
+      label = "Incobrable";
       break;
     case "TRANSFERRED":
       label = "Transferido";

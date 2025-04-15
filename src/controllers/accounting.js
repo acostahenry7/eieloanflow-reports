@@ -933,12 +933,13 @@ controller.createConciliation = async (data) => {
 controller.getConciliations = async (queryParams) => {
   try {
     const statement = `
-      select c.*, cd.transaction_id, cd.amount,  cd.amount as local_amount, cd.description transaction_description,
+      select c.*, o.name outlet_name, cd.transaction_id, cd.amount,  cd.amount as local_amount, cd.description transaction_description,
       cd.transaction_type, cd.bank_account_id, to_char(cd.transaction_date::date, 'dd-mm-yyy') as date, is_conciliated,
       cd.adjustment_transaction_id, ba.number bank_account, cd.transactions::json
       from conciliation c
       join conciliation_detail cd on (c.conciliation_id = cd.conciliation_id)
       left join bank_account ba on (cd.bank_account_id = ba.bank_account_id)
+      left join outlet o on (c.outlet_id  = o.outlet_id)
       WHERE c.status_type NOT IN ('DELETED')
       ${getDateRangeFilter(
         "c.start_date",
@@ -959,11 +960,12 @@ controller.getConciliations = async (queryParams) => {
         start_date: items[0].start_date,
         end_date: items[0].end_date,
         outlet_id: items[0].outlet_id,
+        outlet_name: items[0].outlet_name,
         amount: items[0].amount,
         status:
           items?.every((item) => item.is_conciliated == true) == true
-            ? "COMPLETADA"
-            : "EN PROCESO",
+            ? "Completada"
+            : "En proceso",
         bankTransactions: [...items],
       }));
 
@@ -1115,6 +1117,11 @@ for (i = 0; i < 26; i++) {
 
 controller.generate606 = async (req, res, queryParams) => {
   console.log(queryParams);
+
+  const [outlet] = await db.query(
+    `select rnc from outlet where outlet_id like '${queryParams.outletId}%'`
+  );
+
   const [accountPayable, meta] = await db.query(`
   SELECT ap.account_payable_id, ap.account_number_id, ap.supplier_name, ap.rnc, ap.phone, ap.amount_owed, ap.remaining_amount,
 	concept, ap.outlet_id, ap.status_type, ap.created_by,
@@ -1196,7 +1203,10 @@ controller.generate606 = async (req, res, queryParams) => {
     path.join(__dirname, "../Formato-de-Envio-606.xlsm")
   ).then(async (workbook) => {
     //Fill preconf-ingo
-    workbook.sheet("Herramienta Formato 606").cell("C4").value("40240604682");
+    workbook
+      .sheet("Herramienta Formato 606")
+      .cell("C4")
+      .value(`${outlet[0].rnc}`);
     workbook
       .sheet("Herramienta Formato 606")
       .cell("C5")

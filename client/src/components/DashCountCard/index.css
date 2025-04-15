@@ -82,7 +82,8 @@
 .des {
   display: flex;
   justify-content: space-between;
-  margin-top: 1em;
+  align-items: end;
+  margin-top: 1.5em;
   font-size: small;
   font-weight: 600;
   color: rgba(196, 193, 193);
@@ -90,6 +91,7 @@
 
 .des p {
   width: 50%;
+  margin: 0;
 }
 
 .des b {

@@ -90,11 +90,11 @@ export function createDate(doc, text, left, top, props) {
   doc.setFont("helvetica", "normal", "normal");
 }
 
-export function currencyFormat(number, showCurrencySign) {
+export function currencyFormat(number, showCurrencySign, floatDecimals = 2) {
   let options = {
     style: "currency",
     currency: "DOP",
-    minimumFractionDigits: 2,
+    minimumFractionDigits: floatDecimals,
   };
 
   if (showCurrencySign == false) {

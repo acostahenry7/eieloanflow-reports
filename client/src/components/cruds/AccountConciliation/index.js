@@ -96,14 +96,14 @@ function AccountConciliationCrud({ isFormOpened, setIsFormOpened }) {
       reorder: true,
       omit: false,
     },
-    // {
-    //   name: "Sucursal",
-    //   width: "140px",
-    //   selector: (row) => row.outlet_name,
-    //   sortable: true,
-    //   reorder: true,
-    //   omit: false,
-    // },
+    {
+      name: "Sucursal",
+      width: "140px",
+      selector: (row) => row.outlet_name,
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
 
     {
       name: "Monto",

@@ -19,24 +19,20 @@ import { currencyFormat } from "../../utils/reports/report-helpers";
 
 import "./index.css";
 import { FallingLines } from "react-loader-spinner";
-import { getLoanTypeLabel } from "../../utils/stringFunctions";
+import {
+  getLoanSituationLabel,
+  getLoanTypeLabel,
+} from "../../utils/stringFunctions";
 import { AuthContext } from "../../contexts/AuthContext";
+import { groupBy, orderBy } from "lodash";
 
 function LoanDash() {
   const [outlets, setOutlets] = React.useState([]);
   const [countData, setCountData] = React.useState([]);
-  const [countArrearLoans, setCountArrearLoans] = React.useState([]);
-  const [countPaidLoans, setCountPaidLoans] = React.useState([]);
-  const [amountData, setAmountData] = React.useState([]);
-  const [pendingData, setPendingData] = React.useState([]);
   const [lineChartData, setLineChartData] = React.useState([]);
   const [barChartData, setBarChartData] = React.useState({});
   const [pieChartData, setPieChartData] = React.useState([]);
   const [isCountLoading, setCountIsLoading] = React.useState(false);
-  const [isCountArrearLoading, setIsCountArrearLoading] = React.useState(false);
-  const [isCountPaidLoading, setIsCountPaidLoading] = React.useState(false);
-  const [isAmountLoading, setAmountIsLoading] = React.useState(false);
-  const [isPendingLoading, setPendingIsLoading] = React.useState(false);
   const [isLineChartLoading, setLineChartIsLoading] = React.useState(false);
   const [isBarChartLoading, setBarChartIsLoading] = React.useState(false);
   const [isPieChartLoading, setPieChartIsLoading] = React.useState(false);
@@ -49,28 +45,10 @@ function LoanDash() {
   const { auth } = React.useContext(AuthContext);
 
   const [outletParam, setOutletParam] = React.useState("");
-  const [searchCountParams, setSearchCountParams] = React.useState({
-    dateFrom: undefined,
-    dateTo: undefined,
-  });
 
-  const [searchAmountParams, setSearchAmountParams] = React.useState({
+  const [searchPeriodParams, setSearchPeriodParams] = React.useState({
     dateFrom: undefined,
     dateTo: undefined,
-  });
-
-  const [searchArrearLoanParamas, setSearchArrearLoanParamas] = React.useState({
-    dateFrom: undefined,
-    dateTo: undefined,
-  });
-  const [searchPaidLoanParamas, setSearchPaidLoanParamas] = React.useState({
-    dateFrom: undefined,
-    dateTo: undefined,
-  });
-
-  const [searchPendingParams, setSearchPendingParams] = React.useState({
-    dateFrom: getPreviousDateByDays(0),
-    dateTo: getPreviousDateByDays(0),
   });
 
   const [searchLineChartParams, setSearchLineChartParams] = React.useState({
@@ -82,8 +60,8 @@ function LoanDash() {
   });
 
   const [searchPieChartParams, setSearchPieChartParams] = React.useState({
-    dateFrom: getPreviousDateByDays(0),
-    dateTo: getPreviousDateByDays(0),
+    dateFrom: "",
+    dateTo: "",
   });
 
   React.useEffect(() => {
@@ -96,7 +74,7 @@ function LoanDash() {
         console.log(error.message);
       }
     })();
-  }, [outletParam]);
+  }, []);
 
   React.useEffect(() => {
     (async () => {
@@ -109,15 +87,14 @@ function LoanDash() {
         const loanApplication = await getLoanCounter({
           outletId:
             !outletParam || outletParam == "" ? defaultOutlets : outletParam,
-          ...searchCountParams,
-          status: "CREATED",
+          ...searchPeriodParams,
           //dateTo: tdate.toISOString().split("T")[0],
         });
         if (loanApplication.error == true) {
           throw new Error(loanApplication.body);
         }
 
-        console.log(loanApplication);
+        console.log("LOAN APP", loanApplication);
         //setOutlets(outlets.body);
         setCountData(loanApplication.body);
       } catch (error) {
@@ -125,98 +102,7 @@ function LoanDash() {
       }
       setCountIsLoading(false);
     })();
-  }, [outletParam, searchCountParams]);
-
-  React.useEffect(() => {
-    (async () => {
-      try {
-        setIsCountArrearLoading(true);
-        let defaultOutlets = outlets
-          .map((item) => "'" + item.outlet_id + "'")
-          .join();
-        const arrearLoans = await getLoanArrear({
-          outletId:
-            !outletParam || outletParam == "" ? defaultOutlets : outletParam,
-          ...searchArrearLoanParamas,
-          //dateTo: tdate.toISOString().split("T")[0],
-        });
-        if (arrearLoans.error == true) {
-          throw new Error(arrearLoans.body);
-        }
-
-        setCountArrearLoans(arrearLoans.body);
-      } catch (error) {
-        console.log(error.message);
-      }
-      setIsCountArrearLoading(false);
-    })();
-  }, [outletParam, searchArrearLoanParamas]);
-
-  React.useEffect(() => {
-    (async () => {
-      try {
-        setIsCountPaidLoading(true);
-        const paidLoans = await getLoanCounter({
-          outletId: outletParam,
-          ...searchPaidLoanParamas,
-          status: "PAID",
-          //dateTo: tdate.toISOString().split("T")[0],
-        });
-        if (paidLoans.error == true) {
-          throw new Error(paidLoans.body);
-        }
-
-        setCountPaidLoans(paidLoans.body);
-      } catch (error) {
-        console.log(error.message);
-      }
-      setIsCountPaidLoading(false);
-    })();
-  }, [outletParam, searchPaidLoanParamas]);
-
-  React.useEffect(() => {
-    (async () => {
-      try {
-        setAmountIsLoading(true);
-
-        const loanApplication = await getLoans({
-          outletId: outletParam,
-          ...searchAmountParams,
-          // dateTo: tdate.toISOString().split("T")[0],
-        });
-        if (loanApplication.error == true) {
-          throw new Error(loanApplication.body);
-        }
-
-        setAmountData(loanApplication.body);
-      } catch (error) {
-        console.log(error.message);
-      }
-      setAmountIsLoading(false);
-    })();
-  }, [outletParam, searchAmountParams]);
-
-  React.useEffect(() => {
-    (async () => {
-      try {
-        setPendingIsLoading(true);
-
-        const loanApplication = await getLoans({
-          outletId: outletParam,
-          ...searchPendingParams,
-          // dateTo: tdate.toISOString().split("T")[0],
-        });
-        if (loanApplication.error == true) {
-          throw new Error(loanApplication.body);
-        }
-
-        setPendingData(loanApplication.body);
-      } catch (error) {
-        console.log(error.message);
-      }
-      setPendingIsLoading(false);
-    })();
-  }, [outletParam, searchPendingParams]);
+  }, [outletParam, searchPeriodParams]);
 
   React.useEffect(() => {
     (async () => {
@@ -262,27 +148,38 @@ function LoanDash() {
     })();
   }, [outletParam, searchBarChartParams]);
 
-  React.useEffect(() => {
-    (async () => {
-      try {
-        setPieChartIsLoading(true);
+  // React.useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       setPieChartIsLoading(true);
 
-        const loanApplication = await getLoanApplicationByType({
-          outletId: outletParam,
-          ...searchPieChartParams,
-          //dateTo: tdate.toISOString().split("T")[0],
-        });
-        if (loanApplication.error == true) {
-          throw new Error(loanApplication.body);
-        }
+  //       const loanApplication = await getLoanApplicationByType({
+  //         outletId: outletParam,
+  //         ...searchPieChartParams,
+  //         //dateTo: tdate.toISOString().split("T")[0],
+  //       });
+  //       if (loanApplication.error == true) {
+  //         throw new Error(loanApplication.body);
+  //       }
 
-        setPieChartData(loanApplication.body);
-      } catch (error) {
-        console.log(error.message);
-      }
-      setPieChartIsLoading(false);
-    })();
-  }, [outletParam, searchPieChartParams]);
+  //       setPieChartData(loanApplication.body);
+  //     } catch (error) {
+  //       console.log(error.message);
+  //     }
+  //     setPieChartIsLoading(false);
+  //   })();
+  // }, [outletParam, searchPieChartParams]);
+
+  const getCountByParams = (arr, cb) => {
+    return arr
+      .filter((item) => cb(item))
+      .reduce((acc, item) => acc + parseInt(item.count), 0);
+  };
+  const getAmountByParams = (arr, cb) => {
+    return arr
+      .filter((item) => cb(item))
+      .reduce((acc, item) => acc + parseInt(item.amount), 0);
+  };
 
   return (
     <div className="dash-container">
@@ -298,7 +195,71 @@ function LoanDash() {
             <div className="title">Préstamos</div>
             <div className="sub-title">Resumen de los préstamos</div>
           </div>
-          <div>
+          <div style={{ display: "flex", gap: 4 }}>
+            <div className="filter">
+              <select
+                onChange={(e) => {
+                  console.log(e.target.value);
+                  if (e.target.value.length > 0) {
+                    console.log("klk");
+                    let { days, isPrev } = JSON.parse(e.target.value);
+                    let daysTo = isPrev == true ? days - 1 : days;
+
+                    let currentDays = new Date().getDate();
+
+                    if (currentDays == days) days--;
+                    console.log({
+                      dateFrom: getPreviousDateByDays(days),
+                      dateTo: getPreviousDateByDays(daysTo, true),
+                    });
+
+                    setSearchPeriodParams({
+                      dateFrom: getPreviousDateByDays(days),
+                      dateTo: getPreviousDateByDays(daysTo, true),
+                    });
+                  } else {
+                    setSearchPeriodParams({
+                      dateFrom: undefined,
+                      dateTo: undefined,
+                    });
+                  }
+                }}
+              >
+                <option value={""}>Todo el tiempo</option>
+                <option value={JSON.stringify({ days: 0, isPrev: false })}>
+                  Hoy
+                </option>
+                <option value={JSON.stringify({ days: 15, isPrev: false })}>
+                  Últimos 15 días
+                </option>
+                <option
+                  value={JSON.stringify({
+                    days: daysInMonth(0),
+                    isPrev: false,
+                  })}
+                >
+                  Este mes
+                </option>
+                <option
+                  value={JSON.stringify({ days: daysInMonth(3), isPrev: true })}
+                >
+                  Últimos 3 meses
+                </option>
+                <option
+                  value={JSON.stringify({ days: daysInMonth(6), isPrev: true })}
+                >
+                  Últimos 6 meses
+                </option>
+                <option
+                  value={JSON.stringify({
+                    days: daysInMonth(12),
+                    isPrev: false,
+                  })}
+                >
+                  Últimos 12 meses
+                </option>
+              </select>
+            </div>
             <div className="filter">
               <select
                 onChange={(e) => {
@@ -319,79 +280,162 @@ function LoanDash() {
         <div className="counter-list" style={{}}>
           <DashCountCard
             cardName={"Activos"}
-            amount={currencyFormat(countData[0]?.count, false)}
-            movementPct={(
-              countData.length /
-              lineChartData
-                .map((item) => item.amount_of_apps)
-                .reduce((acc, item) => acc + parseFloat(item), 0)
-            ).toFixed(3)}
-            movementAmount={4000}
-            setSearchParams={setSearchCountParams}
-            isLoading={isCountLoading}
-          />
-          <DashCountCard
-            cardName={"En atraso"}
-            amount={currencyFormat(
-              parseInt(countArrearLoans[0]?.amount_of_loans),
-              false
+            amount={getCountByParams(
+              countData,
+              (item) => item.status_type == "CREATED"
             )}
-            movementPct={(
-              countArrearLoans.length /
-              lineChartData
-                .map((item) => item.amount_of_apps)
-                .reduce((acc, item) => acc + parseFloat(item), 0)
-            ).toFixed(3)}
-            movementAmount={4000}
-            setSearchParams={setSearchArrearLoanParamas}
-            isLoading={isCountArrearLoading}
+            customerMessage="Monto total aprovado"
+            movementAmount={currencyFormat(
+              getAmountByParams(
+                countData,
+                (item) => item.status_type == "CREATED"
+              )
+            )}
+            isLoading={isCountLoading}
+            normal={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "CREATED" && item.loan_situation == "NORMAL"
+            )}
+            arrear={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "CREATED" &&
+                item.loan_situation == "ARREARS"
+            )}
           />
           <DashCountCard
             cardName={"Saldados"}
-            amount={currencyFormat(parseInt(countPaidLoans[0]?.count), false)}
-            movementPct={(
-              countData.length /
-              lineChartData
-                .map((item) => item.amount_of_apps)
-                .reduce((acc, item) => acc + parseFloat(item), 0)
-            ).toFixed(3)}
+            amount={getCountByParams(
+              countData,
+              (item) => item.status_type == "PAID"
+            )}
             customerMessage={`Se traduce en un total cobrado de `}
-            movementAmount={currencyFormat(countPaidLoans[0]?.amount)}
-            setSearchParams={setSearchPaidLoanParamas}
-            isLoading={isCountPaidLoading}
+            movementAmount={currencyFormat(
+              getAmountByParams(countData, (item) => item.status_type == "PAID")
+            )}
+            isLoading={isCountLoading}
+            normal={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "PAID" && item.loan_situation == "NORMAL"
+            )}
+            arrear={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "PAID" && item.loan_situation == "ARREARS"
+            )}
+          />
+          <DashCountCard
+            cardName={"Refinanciados"}
+            amount={getCountByParams(
+              countData,
+              (item) => item.status_type == "REFINANCE"
+            )}
+            movementAmount={currencyFormat(
+              getAmountByParams(
+                countData,
+                (item) => item.status_type == "REFINANCE"
+              )
+            )}
+            //setSearchParams={setSearchArrearLoanParamas}
+            isLoading={isCountLoading}
+            normal={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "REFINANCE" &&
+                item.loan_situation == "NORMAL"
+            )}
+            arrear={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "REFINANCE" &&
+                item.loan_situation == "ARREARS"
+            )}
           />
         </div>
         <div className="list">
           <DashCountCard
-            cardName={"Monto aprovado"}
-            amount={currencyFormat(countData[0]?.amount, true)}
-            movementPct={8.6}
-            movementAmount={12}
-            setSearchParams={setSearchCountParams}
+            cardName={"Transferidos"}
+            amount={getCountByParams(
+              countData,
+              (item) => item.status_type == "TRANSFERRED"
+            )}
+            movementAmount={currencyFormat(
+              getAmountByParams(
+                countData,
+                (item) => item.status_type == "TRANSFERRED"
+              )
+            )}
+            //setSearchParams={setSearchArrearLoanParamas}
             isLoading={isCountLoading}
-            filterActive={false}
+            normal={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "TRANSFERRED" &&
+                item.loan_situation == "NORMAL"
+            )}
+            arrear={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "TRANSFERRED" &&
+                item.loan_situation == "ARREARS"
+            )}
           />
 
           <DashCountCard
-            cardName={"Monto en atraso"}
-            amount={currencyFormat(parseInt(countArrearLoans[0]?.total_arrear))}
-            movementPct={4}
-            setSearchParams={setSearchAmountParams}
-            isLoading={isCountArrearLoading}
-            filterActive={false}
-            customerMessage={`Este monto toma en cuenta las moras`}
-            movementAmount={""}
+            cardName={"Renegociados"}
+            amount={getCountByParams(
+              countData,
+              (item) => item.status_type == "RENEGOTIATED"
+            )}
+            movementAmount={currencyFormat(
+              getAmountByParams(
+                countData,
+                (item) => item.status_type == "RENEGOTIATED"
+              )
+            )}
+            //setSearchParams={setSearchArrearLoanParamas}
+            isLoading={isCountLoading}
+            normal={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "RENEGOTIATED" &&
+                item.loan_situation == "NORMAL"
+            )}
+            arrear={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "RENEGOTIATED" &&
+                item.loan_situation == "ARREARS"
+            )}
           />
           <DashCountCard
-            cardName={"Refinanciados, Transferidos . . ."}
-            amount={currencyFormat(
-              pendingData.filter((item) => item.status_type === "CREATED")
-                .length,
-              false
+            cardName={"Incobrables"}
+            amount={getCountByParams(
+              countData,
+              (item) => item.status_type == "BAD_LOAN"
             )}
-            movementPct={1}
-            movementAmount={12}
-            setSearchParams={{}}
+            movementAmount={currencyFormat(
+              getAmountByParams(
+                countData,
+                (item) => item.status_type == "BAD_LOAN"
+              )
+            )}
+            //setSearchParams={setSearchArrearLoanParamas}
+            isLoading={isCountLoading}
+            normal={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "BAD_LOAN" &&
+                item.loan_situation == "NORMAL"
+            )}
+            arrear={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "BAD_LOAN" &&
+                item.loan_situation == "ARREARS"
+            )}
           />
 
           <div className="item">
@@ -453,7 +497,7 @@ function LoanDash() {
               }}
             >
               <div className="name">Tipos</div>
-              <div className="filter">
+              {/* <div className="filter">
                 <select
                   onChange={(e) => {
                     if (e.target.value.length > 0) {
@@ -525,9 +569,19 @@ function LoanDash() {
                     Último año
                   </option>
                 </select>
+              </div> */}
+              <div className="filter">
+                <select>
+                  <option value={"CREATED"}>Activos</option>
+                  <option value={"PAID"}>Saldados</option>
+                  <option value={"REFINANCE"}>Refinanciados</option>
+                  <option value={"TRANSFERRED"}>Transferidos</option>
+                  <option value={"RENEGOCIATED"}>Renegociados</option>
+                  <option value={"BAD_LOAN"}>Incobrables</option>
+                </select>
               </div>
             </div>
-            {isPieChartLoading ? (
+            {isCountLoading ? (
               <div
                 style={{
                   width: "100%",
@@ -541,16 +595,28 @@ function LoanDash() {
             ) : (
               <DoughnutChart
                 labels={[
-                  ...pieChartData.map((item) =>
-                    getLoanTypeLabel(item.loan_type)
+                  ...Object.keys(
+                    countData.reduce(
+                      (k, { loan_type }) => (
+                        (k[getLoanTypeLabel(loan_type)] = ""), k
+                      ),
+                      {}
+                    )
                   ),
                 ]}
                 data={[
-                  ...pieChartData.map((item) => parseInt(item.amount_of_apps)),
+                  ...Object.values(groupBy(countData, "loan_type")).map(
+                    (item) =>
+                      item.reduce(
+                        (acc, sbItem) => acc + parseInt(sbItem.count),
+                        0
+                      )
+                  ),
                 ]}
                 dataLabels={[]}
               />
             )}
+            {console.log()}
           </div>
           <div className="item">
             <div className="card-header">
