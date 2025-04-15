@@ -83,7 +83,7 @@ function App() {
           <Sidebar />
           <div className={`content ${isSidebarOpened ? "opened" : "closed"}`}>
             <Routes>
-              <Route path="/" element={<HomeScreen />} />
+              <Route path="/" element={<LoanRequest />} />
               <Route
                 path="/dash/loan-requests"
                 element={checkRole(

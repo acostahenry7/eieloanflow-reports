@@ -7,6 +7,7 @@ import { currencyFormat } from "../../utils/reports/report-helpers";
 function DashCountCard({
   cardName,
   amount,
+  movementLabel,
   movementPct,
   customerMessage,
   movementAmount,
@@ -15,6 +16,7 @@ function DashCountCard({
   isLoading,
   normal,
   arrear,
+  base,
   filterActive = true,
 }) {
   return (
@@ -105,7 +107,7 @@ function DashCountCard({
               <br />
               <div>
                 <span style={{ fontSize: 12, color: "rgba(196, 193, 193)" }}>
-                  Atraso{" "}
+                  {movementLabel || "Atraso"}{" "}
                 </span>
                 <div
                   className="movement"
@@ -121,11 +123,7 @@ function DashCountCard({
                   }}
                 >
                   {amount > 0
-                    ? currencyFormat(
-                        Math.round((arrear / amount) * 100),
-                        false,
-                        0
-                      )
+                    ? ((arrear / (base || amount)) * 100).toFixed(2)
                     : "0.00"}
                   %
                 </div>
@@ -142,20 +140,22 @@ function DashCountCard({
                 Se registra un movimeinto de <b>${movementAmount}</b>
               </p>
             )}
-            <div className="des-stats">
-              <div className="des-stat-item">
-                <span>Normal</span>{" "}
-                <b style={{ color: "#4ac34a" }}>
-                  {currencyFormat(normal, false, 0)}
-                </b>
+            {filterActive && (
+              <div className="des-stats">
+                <div className="des-stat-item">
+                  <span>Normal</span>{" "}
+                  <b style={{ color: "#4ac34a" }}>
+                    {currencyFormat(normal, false, 0)}
+                  </b>
+                </div>
+                <div className="des-stat-item">
+                  Atraso{" "}
+                  <b style={{ color: "#e17c7c" }}>
+                    {currencyFormat(arrear, false, 0)}
+                  </b>
+                </div>
               </div>
-              <div className="des-stat-item">
-                Atraso{" "}
-                <b style={{ color: "#e17c7c" }}>
-                  {currencyFormat(arrear, false, 0)}
-                </b>
-              </div>
-            </div>
+            )}
           </div>
         </>
       )}

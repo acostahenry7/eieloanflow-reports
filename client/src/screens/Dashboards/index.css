@@ -32,7 +32,7 @@
   box-sizing: border-box;
 }
 
-.loan-requests input {
+.loan-requests .filter input {
   appearance: none;
   height: 30px;
   color: rgba(0, 0, 0, 0.5);
@@ -51,7 +51,7 @@
   outline: none;
 }
 
-.loan-requests .filter::after {
+.loan-requests .filter:has(select)::after {
   content: "";
   position: absolute;
   top: 50%;

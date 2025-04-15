@@ -75,6 +75,15 @@ controller.getGeneralBalance = async (queryParams) => {
       ? (parseInt(queryParams.date?.split("-")[0]) - 1).toString()
       : queryParams.date?.split("-")[0];
 
+  let queryPrevious = `AND (
+        ber.target_date >= '${queryParams.prevDate}' 
+        OR cp.check_payment_date >= '${queryParams.prevDate}'
+        OR (
+          (ber.target_date IS NULL AND cp.check_payment_date IS NULL)
+          AND general_diary_date >= '${queryParams.prevDate}'
+          )
+        )`;
+
   try {
     const [generalBalance, meta] =
       await db.query(`select ac.account_catalog_id, ac.number, ac.name, ac.description, ac.control_account,
@@ -91,7 +100,7 @@ controller.getGeneralBalance = async (queryParams) => {
       from account_catalog ac
       left join general_diary_account gda on (ac.account_catalog_id = gda.account_catalog_id)
       left join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
-      where ac.outlet_id like '${queryParams.outletId}'
+      ${getGenericLikeFilter("ac.outlet_id", queryParams.outletId, true)}
       and gda.status_type = 'ENABLED'
       and gd.general_diary_id in (
         select gd.general_diary_id 
@@ -107,12 +116,17 @@ controller.getGeneralBalance = async (queryParams) => {
             AND general_diary_date <= '${queryParams.date}'
             )
           )
+          ${
+            queryParams.prevDate && queryParams.prevDate != "undefined"
+              ? queryPrevious
+              : ""
+          }
           AND gd.created_by not in ('y.aragonez')  
       )
       group by ac.account_catalog_id, ac.name
       --having min(gd.general_diary_date) <= '${queryParams.date}'
       ) t1 on (ac.account_catalog_id = t1.account_catalog_id)
-      where ac.outlet_id like '${queryParams.outletId}'
+      ${getGenericLikeFilter("ac.outlet_id", queryParams.outletId, true)}
       order by ac.number`);
 
     if (data.length == 0) {
@@ -223,7 +237,7 @@ controller.getGeneralBalance = async (queryParams) => {
 
     //console.log(accountBalances);
 
-    return { accounts, accountBalances };
+    return { accounts, accountBalances, dashBalances: generalBalance };
   } catch (error) {
     console.log(error);
     throw new Error(error.message);

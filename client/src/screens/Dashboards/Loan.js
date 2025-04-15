@@ -20,6 +20,8 @@ import { currencyFormat } from "../../utils/reports/report-helpers";
 import "./index.css";
 import { FallingLines } from "react-loader-spinner";
 import {
+  getAmountByParams,
+  getCountByParams,
   getLoanSituationLabel,
   getLoanTypeLabel,
 } from "../../utils/stringFunctions";
@@ -169,17 +171,6 @@ function LoanDash() {
   //     setPieChartIsLoading(false);
   //   })();
   // }, [outletParam, searchPieChartParams]);
-
-  const getCountByParams = (arr, cb) => {
-    return arr
-      .filter((item) => cb(item))
-      .reduce((acc, item) => acc + parseInt(item.count), 0);
-  };
-  const getAmountByParams = (arr, cb) => {
-    return arr
-      .filter((item) => cb(item))
-      .reduce((acc, item) => acc + parseInt(item.amount), 0);
-  };
 
   return (
     <div className="dash-container">
@@ -496,7 +487,7 @@ function LoanDash() {
                 justifyContent: "space-between",
               }}
             >
-              <div className="name">Tipos</div>
+              <div className="name">Por categorías de préstamos</div>
               {/* <div className="filter">
                 <select
                   onChange={(e) => {

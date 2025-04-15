@@ -16,8 +16,13 @@ import { currencyFormat } from "../../utils/reports/report-helpers";
 
 import "./index.css";
 import { FallingLines } from "react-loader-spinner";
-import { getLoanTypeLabel } from "../../utils/stringFunctions";
+import {
+  getAmountByParams,
+  getCountByParams,
+  getLoanTypeLabel,
+} from "../../utils/stringFunctions";
 import { AuthContext } from "../../contexts/AuthContext";
+import { groupBy } from "lodash";
 
 function LoanRequest() {
   const [outlets, setOutlets] = React.useState([]);
@@ -98,7 +103,7 @@ function LoanRequest() {
       try {
         setPendingIsLoading(true);
 
-        const loanApplication = await getLoanApplication({
+        const loanApplication = await getLoanApplicationCounter({
           outletId: outletParam,
           ...searchPeriodParams,
           // dateTo: tdate.toISOString().split("T")[0],
@@ -107,6 +112,7 @@ function LoanRequest() {
           throw new Error(loanApplication.body);
         }
 
+        console.log("BODY", loanApplication.body);
         setPendingData(loanApplication.body);
       } catch (error) {
         console.log(error.message);
@@ -279,39 +285,80 @@ function LoanRequest() {
 
         <div className="list">
           <DashCountCard
-            cardName={"Solicitudes"}
-            amount={currencyFormat(countData[0]?.count, false)}
-            movementPct={(
-              countData.length /
-              lineChartData
-                .map((item) => item.amount_of_apps)
-                .reduce((acc, item) => acc + parseFloat(item), 0)
-            ).toFixed(3)}
-            movementAmount={10}
-            setSearchParams={setSearchCountParams}
+            cardName={"Activas"}
+            amount={getCountByParams(
+              countData,
+              (item) => item.status_type == "CREATED"
+            )}
+            customerMessage="Monto total solicitado"
+            movementAmount={currencyFormat(
+              getAmountByParams(
+                countData,
+                (item) => item.status_type == "CREATED"
+              )
+            )}
             isLoading={isCountLoading}
+            normal={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "CREATED" && item.loan_situation == "NORMAL"
+            )}
+            arrear={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "CREATED" &&
+                item.loan_situation == "ARREARS"
+            )}
           />
 
           <DashCountCard
-            cardName={"Monto solicitado"}
-            amount={currencyFormat(countData[0]?.amount)}
-            movementPct={4}
-            movementAmount={10}
-            setSearchParams={setSearchCountParams}
+            cardName={"Aprovadas"}
+            amount={getCountByParams(
+              countData,
+              (item) => item.status_type == "LOAN"
+            )}
+            customerMessage="Monto total aprovado"
+            movementAmount={currencyFormat(
+              getAmountByParams(countData, (item) => item.status_type == "LOAN")
+            )}
             isLoading={isCountLoading}
-            filterActive={false}
+            normal={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "LOAN" && item.loan_situation == "NORMAL"
+            )}
+            arrear={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "LOAN" && item.loan_situation == "ARREARS"
+            )}
           />
           <DashCountCard
-            cardName={"Pendientes"}
-            amount={currencyFormat(
-              pendingData.filter((item) => item.status_type === "CREATED")
-                .length,
-              false
+            cardName={"Préstamo rápido"}
+            amount={getCountByParams(
+              countData,
+              (item) => item.status_type == "QUICK_LOAN"
             )}
-            movementPct={8.6}
-            movementAmount={10}
-            setSearchParams={setSearchPeriodParams}
-            isLoading={isPendingLoading}
+            customerMessage="Monto total aprovado"
+            movementAmount={currencyFormat(
+              getAmountByParams(
+                countData,
+                (item) => item.status_type == "QUICK_LOAN"
+              )
+            )}
+            isLoading={isCountLoading}
+            normal={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "QUICK_LOAN" &&
+                item.loan_situation == "NORMAL"
+            )}
+            arrear={getCountByParams(
+              countData,
+              (item) =>
+                item.status_type == "QUICK_LOAN" &&
+                item.loan_situation == "ARREARS"
+            )}
           />
 
           <div className="item">
@@ -372,8 +419,8 @@ function LoanRequest() {
                 justifyContent: "space-between",
               }}
             >
-              <div className="name">Por tipos de préstamo</div>
-              <div className="filter">
+              <div className="name">Por categorías de préstamo</div>
+              {/* <div className="filter">
                 <select
                   onChange={(e) => {
                     if (e.target.value.length > 0) {
@@ -446,8 +493,8 @@ function LoanRequest() {
                   </option>
                 </select>
 
-                {/* <input type="date" value={tdate.toLocaleDateString("en-CA")} /> */}
-              </div>
+                <input type="date" value={tdate.toLocaleDateString("en-CA")} />
+              </div> */}
             </div>
             {isPieChartLoading ? (
               <div
@@ -463,12 +510,23 @@ function LoanRequest() {
             ) : (
               <DoughnutChart
                 labels={[
-                  ...pieChartData?.map((item) =>
-                    getLoanTypeLabel(item.loan_type)
+                  ...Object.keys(
+                    countData.reduce(
+                      (k, { loan_type }) => (
+                        (k[getLoanTypeLabel(loan_type)] = ""), k
+                      ),
+                      {}
+                    )
                   ),
                 ]}
                 data={[
-                  ...pieChartData?.map((item) => parseInt(item.amount_of_apps)),
+                  ...Object.values(groupBy(countData, "loan_type")).map(
+                    (item) =>
+                      item.reduce(
+                        (acc, sbItem) => acc + parseInt(sbItem.count),
+                        0
+                      )
+                  ),
                 ]}
                 dataLabels={[]}
               />

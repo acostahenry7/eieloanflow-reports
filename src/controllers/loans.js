@@ -59,15 +59,16 @@ controller.getLoanApplication = async (queryParams) => {
 controller.getLoanApplicationCounter = async (queryParams) => {
   try {
     const [data] = await db.query(`
-    SELECT count(loan_application_id) count, sum(requested_amount) amount
-    FROM loan_application 
-    WHERE status_type <> 'DELETE'
+    SELECT count(loan_application_id), la.status_type, sum(requested_amount) amount, la.loan_type
+    FROM loan_application la
+    WHERE la.status_type <> 'DELETE'
     ${getGenericLikeFilter("outlet_id", queryParams.outletId)}
     ${getDateRangeFilter(
       "created_date",
       queryParams.dateFrom,
       queryParams.dateTo
     )}
+    group by la.status_type, la.loan_type
     `);
 
     console.log(data);

@@ -15,8 +15,16 @@ import { currencyFormat } from "../../utils/reports/report-helpers";
 
 import "./index.css";
 import { FallingLines } from "react-loader-spinner";
-import { getLoanTypeLabel } from "../../utils/stringFunctions";
+import {
+  getAmountByParams,
+  getCountByParams,
+  getLoanTypeLabel,
+} from "../../utils/stringFunctions";
 import { AuthContext } from "../../contexts/AuthContext";
+import { getGeneralBalance } from "../../api/accounting";
+import { BiRightArrow } from "react-icons/bi";
+import { TbFileArrowRight } from "react-icons/tb";
+import { MdArrowRightAlt } from "react-icons/md";
 
 function AccountingDash() {
   const [outlets, setOutlets] = React.useState([]);
@@ -46,6 +54,18 @@ function AccountingDash() {
     dateTo: getPreviousDateByDays(0),
   });
 
+  const [searchPeriodParams, setSearchPeriodParams] = React.useState({
+    dateFrom: getPreviousDateByDays(daysInMonth(0)),
+    dateTo: undefined,
+  });
+
+  const [searchDateFrom, setSearchDateFrom] = React.useState(
+    getPreviousDateByDays(daysInMonth(0))
+  );
+  const [searchDateTo, setSearchDateTo] = React.useState(
+    tdate.toISOString().split("T")[0]
+  );
+
   const [searchAmountParams, setSearchAmountParams] = React.useState({
     dateFrom: getPreviousDateByDays(0),
     dateTo: getPreviousDateByDays(0),
@@ -74,23 +94,30 @@ function AccountingDash() {
       try {
         setCountIsLoading(true);
         const outlets = await getOutletsApi({ outletId: auth.outlet_id });
-        const loanApplication = await getLoanApplication({
+        const generalBalance = await getGeneralBalance({
           outletId: outletParam,
-          ...searchCountParams,
+          prevDate: searchDateFrom,
+          date: searchDateTo,
+
           //dateTo: tdate.toISOString().split("T")[0],
         });
-        if (loanApplication.error == true) {
-          throw new Error(loanApplication.body);
+        if (generalBalance.error == true) {
+          throw new Error(generalBalance.body);
         }
 
         setOutlets(outlets.body);
-        setCountData(loanApplication.body);
+        console.log(generalBalance.body);
+        let temparr = generalBalance.body.dashBalances.map((item) => ({
+          ...item,
+          amount: parseFloat(item.balance),
+        }));
+        setCountData(temparr);
       } catch (error) {
         console.log(error.message);
       }
       setCountIsLoading(false);
     })();
-  }, [outletParam, searchCountParams]);
+  }, [outletParam, searchDateFrom, searchDateTo]);
 
   React.useEffect(() => {
     (async () => {
@@ -187,7 +214,8 @@ function AccountingDash() {
 
         const loanApplication = await getLoanApplicationByType({
           outletId: outletParam,
-          ...searchPieChartParams,
+          dateFrom: searchDateFrom,
+          dateTo: searchDateTo,
           //dateTo: tdate.toISOString().split("T")[0],
         });
         if (loanApplication.error == true) {
@@ -200,7 +228,12 @@ function AccountingDash() {
       }
       setPieChartIsLoading(false);
     })();
-  }, [outletParam, searchPieChartParams]);
+  }, [outletParam, searchDateFrom, searchDateTo]);
+
+  const totalBalance = getAmountByParams(
+    countData,
+    (item) => item.number.startsWith("4") || item.number.startsWith("6")
+  );
 
   return (
     <div className="dash-container">
@@ -214,9 +247,91 @@ function AccountingDash() {
         >
           <div>
             <div className="title">Contabilidad</div>
-            <div className="sub-title">Resumen de transacciones contables </div>
+            <div className="sub-title">Resumen financiero </div>
           </div>
-          <div>
+          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+            {/* <div className="filter">
+              <select
+                onChange={(e) => {
+                  console.log(e.target.value);
+                  if (e.target.value.length > 0) {
+                    console.log("klk");
+                    let { days, isPrev } = JSON.parse(e.target.value);
+                    let daysTo = isPrev == true ? days - 1 : days;
+
+                    let currentDays = new Date().getDate();
+
+                    if (currentDays == days) days--;
+                    console.log({
+                      dateFrom: getPreviousDateByDays(days),
+                      dateTo: getPreviousDateByDays(daysTo, true),
+                    });
+
+                    setSearchPeriodParams({
+                      dateFrom: getPreviousDateByDays(days),
+                      dateTo: getPreviousDateByDays(daysTo, true),
+                    });
+                  } else {
+                    setSearchPeriodParams({
+                      dateFrom: undefined,
+                      dateTo: undefined,
+                    });
+                  }
+                }}
+              >
+                <option
+                  value={JSON.stringify({
+                    days: daysInMonth(0),
+                    isPrev: false,
+                  })}
+                >
+                  Este mes
+                </option>
+                <option value={""}>Todo el tiempo</option>
+                <option value={JSON.stringify({ days: 0, isPrev: false })}>
+                  Hoy
+                </option>
+                <option value={JSON.stringify({ days: 15, isPrev: false })}>
+                  Últimos 15 días
+                </option>
+
+                <option
+                  value={JSON.stringify({ days: daysInMonth(3), isPrev: true })}
+                >
+                  Últimos 3 meses
+                </option>
+                <option
+                  value={JSON.stringify({ days: daysInMonth(6), isPrev: true })}
+                >
+                  Últimos 6 meses
+                </option>
+                <option
+                  value={JSON.stringify({
+                    days: daysInMonth(12),
+                    isPrev: false,
+                  })}
+                >
+                  Últimos 12 meses
+                </option>
+              </select>
+            </div> */}
+            <div className="filter">
+              <input
+                type="date"
+                style={{ zIndex: 10 }}
+                value={searchDateFrom}
+                onChange={(e) => setSearchDateFrom(e.target.value)}
+              />
+            </div>
+            <MdArrowRightAlt />
+            <div className="filter">
+              <input
+                type="date"
+                style={{ zIndex: 10 }}
+                value={searchDateTo}
+                onChange={(e) => setSearchDateTo(e.target.value)}
+              />
+            </div>
             <div className="filter">
               <select
                 onChange={(e) => {
@@ -237,37 +352,65 @@ function AccountingDash() {
         </div>
         <div className="list">
           <DashCountCard
-            cardName={"Activos"}
-            amount={currencyFormat(countData.length, false)}
+            cardName={"Ingresos"}
+            amount={getAmountByParams(countData, (item) =>
+              item.number.startsWith("4")
+            )}
             movementPct={8.6}
-            movementAmount={4000}
+            movementLabel={"Porcentaje ingresos"}
+            movementAmount={"4000"}
             setSearchParams={setSearchCountParams}
             isLoading={isCountLoading}
+            normal={0}
+            arrear={getAmountByParams(countData, (item) =>
+              item.number.startsWith("4")
+            )}
+            base={totalBalance}
           />
 
           <DashCountCard
-            cardName={"Pasivos"}
-            amount={currencyFormat(
-              amountData.reduce(
-                (acc, item) => acc + parseFloat(item.requested_amount),
-                0
-              )
+            cardName={"Egresos"}
+            amount={getAmountByParams(countData, (item) =>
+              item.number.startsWith("6")
             )}
             movementPct={4}
             movementAmount={4000}
+            movementLabel={"Porcentaje egresos"}
             setSearchParams={setSearchAmountParams}
-            isLoading={isAmountLoading}
+            isLoading={isCountLoading}
+            normal={0}
+            arrear={getAmountByParams(countData, (item) =>
+              item.number.startsWith("6")
+            )}
+            base={totalBalance}
           />
           <DashCountCard
-            cardName={"Capital"}
-            amount={currencyFormat(
-              pendingData.filter((item) => item.status_type === "CREATED")
-                .length,
-              false
-            )}
+            cardName={"Balance Neto"}
+            amount={
+              getAmountByParams(countData, (item) =>
+                item.number.startsWith("4")
+              ) -
+              getAmountByParams(countData, (item) =>
+                item.number.startsWith("6")
+              )
+            }
+            movementLabel={"Utilidad neta"}
             movementPct={8.6}
             movementAmount={4000}
             setSearchParams={{}}
+            isLoading={isCountLoading}
+            normal={0}
+            arrear={
+              getAmountByParams(countData, (item) =>
+                item.number.startsWith("4")
+              ) -
+              getAmountByParams(countData, (item) =>
+                item.number.startsWith("6")
+              )
+            }
+            base={getAmountByParams(countData, (item) =>
+              item.number.startsWith("4")
+            )}
           />
 
           <div className="item">
@@ -328,8 +471,8 @@ function AccountingDash() {
                 justifyContent: "space-between",
               }}
             >
-              <div className="name">Por origen de la cuenta</div>
-              <div className="filter">
+              <div className="name">Ingresos - tipos préstamos</div>
+              {/* <div className="filter">
                 <select
                   onChange={(e) => {
                     let { days, isPrev } = JSON.parse(e.target.value);
@@ -391,7 +534,7 @@ function AccountingDash() {
                     Último año
                   </option>
                 </select>
-              </div>
+              </div> */}
             </div>
             {isPieChartLoading ? (
               <div
@@ -420,7 +563,7 @@ function AccountingDash() {
           </div>
           <div className="item">
             <div className="card-header">
-              <div className="name">Ingresos - Gastos</div>
+              <div className="name">Ingresos - Egresos</div>
               <div className="filter">
                 <select
                   style={{ marginRight: 10 }}

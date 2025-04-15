@@ -239,7 +239,20 @@ function getTotalPaymentDiscount(arr) {
   return discount;
 }
 
+const getCountByParams = (arr, cb) => {
+  return arr
+    .filter((item) => cb(item))
+    .reduce((acc, item) => acc + parseInt(item.count), 0);
+};
+const getAmountByParams = (arr, cb) => {
+  return arr
+    .filter((item) => cb(item))
+    .reduce((acc, item) => acc + parseInt(item.amount), 0);
+};
+
 export {
+  getCountByParams,
+  getAmountByParams,
   formatClientName,
   getLoanSituationLabel,
   getLoanTypeLabel,
