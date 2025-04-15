@@ -11,6 +11,7 @@ import {
   sectionSpacing,
   getTextWidth,
 } from "./report-helpers";
+import logo from "./images/logo";
 
 let colsWidth = [85, 115, 155, 190];
 
@@ -20,7 +21,7 @@ function generateReport(data, configParams) {
   let headerTop = 20;
   let top = 40;
   let bot = 215 - 15;
-  let left = 20;
+  let left = 10;
   let right = left + 140;
   let granTotalRight = 460;
   let rightTotal = right;
@@ -45,9 +46,13 @@ function generateReport(data, configParams) {
   let subTitle = `MORA PAGADA`;
   let date = `${configParams.date}`;
 
-  createMainTitle(doc, title, left, headerTop - 5);
-  createMainSubTitle(doc, subTitle, left, headerTop);
-  createDate(doc, date, right + 67, headerTop);
+  createMainTitle(doc, title, right + 50, headerTop - 5);
+  createMainSubTitle(doc, subTitle, right + 50, headerTop);
+  createDate(doc, date, right + 87, headerTop + 10);
+
+  doc.addImage(logo, "png", left, headerTop - 15, 100, 25);
+
+  top += 10;
 
   let counter = 0;
   renderTableHeader(doc, left, top - 10);

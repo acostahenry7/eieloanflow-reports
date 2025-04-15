@@ -11,6 +11,7 @@ import {
   sectionSpacing,
   getTextWidth,
 } from "./report-helpers";
+import logo from "./images/logo";
 import {
   getCustomerEstatusLabel,
   getLoanFrequencyLabel,
@@ -30,7 +31,7 @@ function generateReport(data, configParams) {
   let granTotalRight = 460;
   let rightTotal = right;
   let center = 80;
-  let itemsPerPage = 46;
+  let itemsPerPage = 52;
 
   //-------File settings---------
   let fileNameDate = new Date().toISOString().split("T")[0];
@@ -50,10 +51,13 @@ function generateReport(data, configParams) {
   let subTitle = `CLIENTES`;
   let date = `${configParams.date}`;
 
-  createMainTitle(doc, title, left, headerTop - 5);
-  createMainSubTitle(doc, subTitle, left, headerTop);
-  createDate(doc, date, right + 87, headerTop);
+  createMainTitle(doc, title, right + 50, headerTop - 5);
+  createMainSubTitle(doc, subTitle, right + 50, headerTop);
+  createDate(doc, date, right + 87, headerTop + 10);
 
+  doc.addImage(logo, "png", left, headerTop - 15, 100, 25);
+
+  top += 10;
   let counter = 0;
   renderTableHeader(doc, left, top - 10);
   data.map((item, index) => {
@@ -113,9 +117,17 @@ function generateReport(data, configParams) {
     // doc.text(`${item.defeated_amount}`, left + 210, top);
     top += spacing;
     counter++;
+
+    let pageInfo = doc.internal.getCurrentPageInfo();
+    if (counter == itemsPerPage - 5 && pageInfo.pageNumber == 1) {
+      doc.addPage();
+      top = 20;
+      renderTableHeader(doc, left, top - 10);
+      counter = 0;
+    }
     if (counter == itemsPerPage) {
       doc.addPage();
-      top = 40;
+      top = 20;
       renderTableHeader(doc, left, top - 10);
       counter = 0;
     }

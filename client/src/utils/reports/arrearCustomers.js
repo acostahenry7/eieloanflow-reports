@@ -12,13 +12,14 @@ import {
   getTextWidth,
 } from "./report-helpers";
 import { getLoanFrequencyLabel } from "../stringFunctions";
+import logo from "./images/logo";
 
 let colsWidth = [85, 105, 135, 160, 183, 203, 221, 259];
 
 function generateReport(data, configParams) {
   //General Configuration Params
   //-------Layout--------
-  let headerTop = 20;
+  let headerTop = 10;
   let top = 40;
   let left = 10;
   let right = left + 140;
@@ -43,12 +44,15 @@ function generateReport(data, configParams) {
 
   let title = `${configParams.title}`;
   let subTitle = `CLIENTES EN ATRASO`;
-  let date = `${configParams.date}`;
+  let date = `${configParams.date || new Date().toDateString()}`;
 
-  createMainTitle(doc, title, left, headerTop - 5);
-  createMainSubTitle(doc, subTitle, left, headerTop);
-  createDate(doc, date, right + 87, headerTop);
+  createMainTitle(doc, title, right + 50, headerTop);
+  createMainSubTitle(doc, subTitle, right + 50, headerTop + 5);
+  createMainSubTitle(doc, date, right + 50, headerTop + 16);
 
+  doc.addImage(logo, "png", left + 2, headerTop - 5, 100, 25);
+
+  top += 10;
   let counter = 0;
   renderTableHeader(doc, left, top - 10);
   data.map((item, index) => {

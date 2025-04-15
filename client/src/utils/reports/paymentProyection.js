@@ -11,6 +11,7 @@ import {
   sectionSpacing,
   getTextWidth,
 } from "./report-helpers";
+import logo from "./images/logo";
 
 let colsWidth = [80, 110, 140, 175, 205, 230];
 
@@ -19,7 +20,7 @@ function generateReport(data, configParams) {
   //-------Layout--------
   let headerTop = 20;
   let top = 40;
-  let left = 15;
+  let left = 10;
   let right = left + 140;
   let granTotalRight = 460;
   let rightTotal = right;
@@ -44,9 +45,13 @@ function generateReport(data, configParams) {
   let subTitle = `TENDENCIA DE COBROS`;
   let date = `${configParams.date}`;
 
-  createMainTitle(doc, title, left, headerTop - 5);
-  createMainSubTitle(doc, subTitle, left, headerTop);
-  createDate(doc, date, right + 77, headerTop);
+  createMainTitle(doc, title, right + 50, headerTop - 5);
+  createMainSubTitle(doc, subTitle, right + 50, headerTop);
+  createDate(doc, date, right + 87, headerTop + 10);
+
+  doc.addImage(logo, "png", left, headerTop - 15, 100, 25);
+
+  top += 10;
 
   let counter = 0;
   renderTableHeader(doc, left, top - 10);
