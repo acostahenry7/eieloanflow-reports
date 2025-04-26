@@ -46,7 +46,7 @@
 //   },
 // };
 
-// // PRODUCCION;
+// // PRODUCCION
 module.exports = {
   HOST: "10.202.9.7",
   USER: "webadmin",
