@@ -118,7 +118,7 @@ function generateReport(data, configParams) {
   top += spacing + 5;
   renderTableHeader(doc, left, top);
   const transitChecks = [];
-  console.log(data);
+  console.log("THIS THE DATA TO PRINTED", data);
   data.bankTransactions.map((bt) => {
     bt.transactions
       .filter(

@@ -173,6 +173,10 @@ function LoanActivitiesCrud() {
           label: "Pago cancelado",
           value: "CANCEL_PAYMENT",
         },
+        {
+          label: "Eliminado",
+          value: "DELETE",
+        },
       ],
     },
     {

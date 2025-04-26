@@ -80,6 +80,9 @@ function getLoanSituationLabel(loanSituation) {
     case "CANCEL_PAYMENT":
       label = "Pago cancelado";
       break;
+    case "DELETE":
+      label = "Eliminado";
+      break;
     default:
       break;
   }
@@ -155,6 +158,23 @@ function getLabelByTransactionType(paymentType) {
       result = "Pago";
       break;
     default:
+      break;
+  }
+
+  return result;
+}
+
+function getLabelByBankTransactionType(paymentType) {
+  let result = "";
+  switch (paymentType) {
+    case "DB":
+      result = "Débito";
+      break;
+    case "CR":
+      result = "Crédito";
+      break;
+    default:
+      result = "No especificado";
       break;
   }
 
@@ -261,4 +281,5 @@ export {
   getLoanFrequencyLabel,
   getCustomerEstatusLabel,
   getLabelByTransactionType,
+  getLabelByBankTransactionType,
 };
