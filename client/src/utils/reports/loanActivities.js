@@ -11,20 +11,21 @@ import {
   sectionSpacing,
   getTextWidth,
 } from "./report-helpers";
+import logo from "./images/logo";
 
 let colsWidth = [70, 100, 140, 175, 235];
 
 function generateReport(data, configParams) {
   //General Configuration Params
   //-------Layout--------
-  let headerTop = 10;
+  let headerTop = 20;
   let top = 40;
-  let left = 15;
+  let left = 10;
   let right = left + 140;
   let granTotalRight = 460;
   let rightTotal = right;
   let center = 80;
-  let itemsPerPage = 5;
+  let itemsPerPage = 45;
 
   //-------File settings---------
   let fileNameDate = new Date().toISOString().split("T")[0];
@@ -44,9 +45,13 @@ function generateReport(data, configParams) {
   let subTitle = `ACCIONES REALIZADAS A PRESTAMOS`;
   let date = `${configParams.date}`;
 
-  createMainTitle(doc, title, left, headerTop);
-  createMainSubTitle(doc, subTitle, left, headerTop + spacing + 0.8);
-  createDate(doc, date, left, headerTop + spacing * 2);
+  createMainTitle(doc, title, right + 27, headerTop - 5);
+  createMainSubTitle(doc, subTitle, right + 27, headerTop);
+  createDate(doc, date, right + 80, headerTop + 10);
+
+  doc.addImage(logo, "png", left, headerTop - 15, 100, 25);
+
+  top += 10;
 
   let counter = 0;
   renderTableHeader(doc, left, top - 10);
@@ -95,14 +100,14 @@ function generateReport(data, configParams) {
     counter++;
     if (top == width - 40) {
       doc.addPage();
-      top = 40;
+      top = 20;
       renderTableHeader(doc, left, top - 10);
       counter = 0;
     }
 
     if (counter == itemsPerPage) {
       doc.addPage();
-      top = 40;
+      top = 20;
       renderTableHeader(doc, left, top - 10);
       counter = 0;
     }

@@ -12,6 +12,7 @@ import {
   getTextWidth,
 } from "./report-helpers";
 import { getLoanSituationLabel } from "../stringFunctions";
+import logo from "./images/logo";
 
 let colsWidth = [25, 48, 75, 110, 115, 145, 175, 198, 220, 245];
 
@@ -21,7 +22,7 @@ function generateReport(data, configParams) {
   let headerTop = 20;
   let top = 40;
   let left = 10;
-  let right = left + 226;
+  let right = left + 140;
   let granTotalRight = 460;
   let rightTotal = right;
   let center = 80;
@@ -45,11 +46,15 @@ function generateReport(data, configParams) {
   let subTitle = `TABLA AMORTIZACION`;
   let date = `${configParams.date}`;
 
-  createMainTitle(doc, subTitle, left, headerTop - 3.5);
-  //createMainSubTitle(doc, subTitle, left, headerTop);
-  createDate(doc, date, right, headerTop);
-  doc.text(`Cliente: ${data[0].customer_name}`, left + 65, headerTop - 5);
-  doc.text(`Prestamo: ${data[0].loan_number_id}`, left + 65, headerTop);
+  createMainTitle(doc, title, right + 50, headerTop - 5);
+  createMainSubTitle(doc, subTitle, right + 50, headerTop);
+  createDate(doc, date, right + 87, headerTop + 10);
+
+  doc.addImage(logo, "png", left, headerTop - 15, 100, 25);
+
+  top += 10;
+  // doc.text(`Cliente: ${data[0].customer_name}`, left + 65, headerTop - 5);
+  // doc.text(`Prestamo: ${data[0].loan_number_id}`, left + 65, headerTop);
 
   let counter = 0;
   renderTableHeader(doc, left, top - 10);
@@ -98,6 +103,14 @@ function generateReport(data, configParams) {
 
     top += spacing;
     counter++;
+
+    let pageInfo = doc.internal.getCurrentPageInfo();
+    if (counter == itemsPerPage - 5 && pageInfo.pageNumber == 1) {
+      doc.addPage();
+      top = 20;
+      renderTableHeader(doc, left, top - 10);
+      counter = 0;
+    }
 
     if (counter == itemsPerPage) {
       doc.addPage();

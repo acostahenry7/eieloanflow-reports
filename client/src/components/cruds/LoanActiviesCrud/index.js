@@ -346,7 +346,21 @@ function LoanActivitiesCrud() {
   ]);
 
   const exportPDF = () => {
-    generateReport(data, {});
+    let reportDate = new Date(searchParams.dateTo);
+    let outletName = outlets.filter(
+      (item) => item.outlet_id == searchParams.outletId
+    )[0]?.name;
+    let conf = {
+      title: outletName || "Todas las sucursales",
+      date: reportDate.toLocaleString("es-Es", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+    };
+
+    generateReport(data, conf);
   };
 
   const filterData = data.filter((item) => {

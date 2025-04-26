@@ -12,6 +12,7 @@ import {
   getTextWidth,
 } from "./report-helpers";
 import { getLoanSituationLabel, getLoanTypeLabel } from "../stringFunctions";
+import logo from "./images/logo";
 
 let colsWidth = [70, 120, 150, 195, 232];
 let innerColsWidth = [30, 130, 190, 235];
@@ -46,9 +47,13 @@ function generateReport(data, configParams) {
   let subTitle = `MOVIMIENTO EN EL PRESTAMO`;
   let date = `${configParams.date}`;
 
-  createMainTitle(doc, title, left, headerTop - 5);
-  createMainSubTitle(doc, subTitle, left, headerTop);
-  createDate(doc, date, right + 87, headerTop);
+  createMainTitle(doc, title, right + 50, headerTop - 5);
+  createMainSubTitle(doc, subTitle, right + 50, headerTop);
+  createDate(doc, date, right + 87, headerTop + 10);
+
+  doc.addImage(logo, "png", left, headerTop - 15, 100, 25);
+
+  top += 10;
 
   let counter = 0;
   renderTableHeader(doc, left, top - 10);
