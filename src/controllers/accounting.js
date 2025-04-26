@@ -811,7 +811,10 @@ controller.getTransactionsFromBankFile = async (queryParams) => {
     const comparedTrasactions = [];
 
     const [detail] = await db.query(
-      `SELECT transactions::json from conciliation_detail`
+      `SELECT transactions::json 
+      from conciliation_detail cd
+      join conciliation cl on (cd.conciliation_id = cl.conciliation_id)
+      where cl.status_type not like 'DELETED'`
     );
 
     let alreadyConciliated = detail.map(
@@ -925,7 +928,7 @@ controller.createConciliation = async (data) => {
         adjustment_transaction_id,
         transactions)
         VALUES (
-          '${t.bank?.id || ""}',
+          '${uuid()}',
           '${conciliationId}',
           '${t.bank?.amount || 0}',
           '${t.bank?.description.trim() || ""}',

@@ -69,7 +69,9 @@ function AccountConciliationCrud({ isFormOpened, setIsFormOpened }) {
   const handleRemoveConciliation = async (conciliationId) => {
     console.log(conciliationId);
     return removeConciliationApi({ conciliationId })
-      .then((res) => res)
+      .then((res) => {
+        setReqToggle((prev) => !prev);
+      })
       .catch((err) => {
         console.log(err);
       });
@@ -141,22 +143,23 @@ function AccountConciliationCrud({ isFormOpened, setIsFormOpened }) {
                 exportPDF(row);
               },
             },
-            {
-              name: "Visualizar",
-              icon: <BsEye />,
-              action: (setIsVisible) => {
-                console.log(row);
-                setCurrentItem(row);
-                setIsVisible(null);
-                setIsFormOpened(true);
-              },
-            },
+            // {
+            //   name: "Visualizar",
+            //   icon: <BsEye />,
+            //   action: (setIsVisible) => {
+            //     console.log(row);
+            //     setCurrentItem(row);
+            //     setIsVisible(null);
+            //     setIsFormOpened(true);
+            //   },
+            // },
             {
               name: "Eliminar",
               icon: <BsTrash />,
               action: (setIsVisible) => {
                 console.log("hi");
                 handleRemoveConciliation(row.conciliation_id);
+
                 setIsVisible(null);
               },
             },
@@ -381,6 +384,9 @@ function AccountConciliationCrud({ isFormOpened, setIsFormOpened }) {
           isFormOpened={isFormOpened}
           setIsFormOpened={setIsFormOpened}
           setPrevData={setCurrentItem}
+          onRefetch={() => {
+            setReqToggle((prev) => !prev);
+          }}
         />
       )}
 

@@ -394,7 +394,7 @@ controller.getLoanActivities = async (queryParams) => {
       JOIN customer c ON (la.customer_id = c.customer_id)
       JOIN jhi_user u ON (al.created_by = u.login)
       JOIN employee e ON (u.employee_id = e.employee_id)
-      WHERE l.status_type not in ('DELETE', 'PAID')
+      WHERE l.status_type not in ('')
       ${
         queryParams?.dateFrom != "undefined" && queryParams?.dateFrom
           ? `AND al.created_date::date BETWEEN '${queryParams?.dateFrom}' AND '${queryParams?.dateTo}'`

@@ -17,12 +17,17 @@ import { getOutletsApi } from "../../../api/outlet";
 import { AuthContext } from "../../../contexts/AuthContext";
 import { Oval } from "react-loader-spinner";
 import "./index.css";
+import {
+  getLabelByBankTransactionType,
+  getLabelByTransactionType,
+} from "../../../utils/stringFunctions";
 
 const ConciliationForm = ({
   prevData,
   setPrevData,
   isFormOpened,
   setIsFormOpened,
+  onRefetch,
 }) => {
   const isPrevData = prevData?.transactions?.length > 0;
 
@@ -152,7 +157,7 @@ const ConciliationForm = ({
         ],
       })
         .then((res) => {
-          console.log(res);
+          onRefetch();
         })
         .catch((err) => {})
         .finally(() => {
@@ -322,7 +327,8 @@ const ConciliationForm = ({
     // },
     {
       name: "Tipo transacción",
-      selector: (row) => row.bank.transaction_type,
+      selector: (row) =>
+        getLabelByBankTransactionType(row.bank.transaction_type),
       sortable: true,
       reorder: true,
       wrap: true,
@@ -434,7 +440,7 @@ const ConciliationForm = ({
     // },
     {
       name: "Tipo transacción",
-      selector: (row) => row.transaction_type,
+      selector: (row) => getLabelByTransactionType(row.transaction_type),
       sortable: true,
       reorder: true,
       wrap: true,
@@ -843,7 +849,10 @@ const ConciliationForm = ({
                                     <b>Referencia: </b> {item.bank.reference}
                                   </p>
                                   <p>
-                                    <b>Tipo: </b> {item.bank.transaction_type}
+                                    <b>Tipo: </b>{" "}
+                                    {getLabelByBankTransactionType(
+                                      item.bank.transaction_type
+                                    )}
                                   </p>
                                   <p>
                                     <b>Cuenta: </b> {item.bank.bank_account}
@@ -899,7 +908,10 @@ const ConciliationForm = ({
                                     <b>Referencia: </b> {item.reference_bank}
                                   </p>
                                   <p>
-                                    <b>Tipo: </b> {item.transaction_type}
+                                    <b>Tipo: </b>{" "}
+                                    {getLabelByTransactionType(
+                                      item.transaction_type
+                                    )}
                                   </p>
                                   <p>
                                     <b>Cuenta: </b> {item.bank_number}
