@@ -248,7 +248,7 @@ function getTotalPaymentDiscount(arr) {
     let rowTotal = item.child?.reduce(
       (inAcc, inItem) =>
         inAcc +
-        //parseFloat(inItem.pay_off_loan_discount || 0) +
+        parseFloat(inItem.pay_off_loan_discount || 0) +
         parseFloat(inItem.loan_discount),
       0
     );

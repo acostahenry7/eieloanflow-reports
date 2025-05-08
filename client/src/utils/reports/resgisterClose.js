@@ -97,8 +97,12 @@ function generateReport(data, configParams) {
       top,
       { align: "right" }
     );
+
     doc.text(
-      `${currencyFormat(item.register.total_pay, false)}`,
+      `${currencyFormat(
+        parseFloat(item.register.total_registered) || item.register.total_pay,
+        false
+      )}`,
       left + colsWidth[6] + 13,
       top,
       { align: "right" }
@@ -127,9 +131,15 @@ function generateReport(data, configParams) {
     //   top,
     //   { align: "right" }
     // );
+
+    let diff =
+      item.register.total_registered -
+      item.child
+        .filter((a) => a.status_type == "ENABLED")
+        .reduce((acc, element) => acc + parseFloat(element.pay), 0);
     createSubTitle(
       doc,
-      currencyFormat(item.register.difference, false),
+      currencyFormat(diff > 0 ? diff : 0, false),
       left + 93,
       top,
       { align: "right" }

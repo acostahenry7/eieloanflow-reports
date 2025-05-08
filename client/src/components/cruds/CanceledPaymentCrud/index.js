@@ -69,10 +69,17 @@ function CanceledPaymentCrud() {
       reorder: true,
       omit: false,
     },
-
     {
-      name: "Empleado",
-      selector: (row) => row.employee_name,
+      name: "Fecha creacion",
+      selector: (row) =>
+        new Date(row.created_date).toLocaleString("es-DO").split(",")[0],
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+    {
+      name: "Creado por",
+      selector: (row) => row.created_employee_name,
       sortable: true,
       reorder: true,
       omit: false,
@@ -80,7 +87,14 @@ function CanceledPaymentCrud() {
     {
       name: "Fecha cancelación",
       selector: (row) =>
-        new Date(row.last_modified_date).toLocaleString("es-DO"),
+        new Date(row.last_modified_date).toLocaleString("es-DO").split(",")[0],
+      sortable: true,
+      reorder: true,
+      omit: false,
+    },
+    {
+      name: "Cancelado por",
+      selector: (row) => row.employee_name,
       sortable: true,
       reorder: true,
       omit: false,
@@ -148,6 +162,12 @@ function CanceledPaymentCrud() {
       type: "dateRange",
       from: new Date().toISOString().split("T")[0],
       to: new Date().toISOString().split("T")[0],
+      isActive: true,
+    },
+    {
+      label: "Fecha creacion",
+      field: "createdDate",
+      type: "dateRange",
       isActive: true,
     },
   ]);

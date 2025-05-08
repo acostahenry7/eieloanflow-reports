@@ -309,7 +309,10 @@ function RegisterCloseCrud() {
         day: "numeric",
       }),
     };
-    generateReport(filterData, conf);
+    let arr = [...filterData];
+    arr.shift();
+
+    generateReport(arr, conf);
   };
 
   console.log(filterData);

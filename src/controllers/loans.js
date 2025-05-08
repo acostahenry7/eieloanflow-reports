@@ -542,7 +542,7 @@ controller.getRegisterClose = async (queryParams) => {
     const [data, meta] =
       await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, p.pay, o.name as outlet,
       r.amount, p.register_id, r.total_cash, r.total_check, r.total_transfer, r.total_discount,  p.pay_off_loan_discount, p.individual_discount,
-	    coalesce(amd.discount,0) as loan_discount, r.total_pay, r.total_registered as difference, 
+	    coalesce(amd.discount,0) as loan_discount, r.total_pay, r.total_registered, 
       e.first_name || ' ' || e.last_name as employee_name, r.created_date opening_date, r.last_modified_date, p.created_date, p.payment_type,
       e.commission_debt_collector_percentage as collector_percentage, p.status_type,
       case
@@ -556,16 +556,17 @@ controller.getRegisterClose = async (queryParams) => {
       JOIN jhi_user u ON (r.user_id = u.user_id)
       JOIN employee e ON (u.employee_id = e.employee_id)
       JOIN outlet o ON (l.outlet_id = o.outlet_id)
-      LEFT JOIN amortization_discount amd on (p.loan_id = amd.loan_id and p.created_date::date  = amd.created_date::date)
+      LEFT JOIN amortization_discount amd on (p.loan_id = amd.loan_id and p.created_date::date = amd.created_date::date 
+      and amd.status_type = 'ENABLED')
       --WHERE l.status_type NOT IN ('DELETE')
-      WHERE p.status_type = 'ENABLED'
+      WHERE p.status_type in ('ENABLED', 'CANCEL')
       AND p.outlet_id like '${queryParams.outletId || ""}%'
       ${
         queryParams.dateFrom && queryParams.dateTo
           ? `AND p.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
           : ""
       }
-      AND u.login <> 'y.aragonez' 
+      AND p.created_by <> 'y.aragonez' 
       ORDER BY r.created_date desc,  p.register_id`);
 
     if (data.length == 0) {

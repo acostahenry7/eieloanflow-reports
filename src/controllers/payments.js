@@ -57,17 +57,24 @@ controller.getCanceledPayments = async (queryParams) => {
   try {
     const [data, meta] =
       await db.query(`SELECT c.first_name || ' ' || c.last_name as customer_name, c.identification, l.loan_number_id, r.receipt_number, 
-      e.first_name || ' ' || e.last_name as employee_name, p.last_modified_date, p.comment, p.status_type
+      min(e.first_name || ' ' || e.last_name) as created_employee_name, 
+      max(e.first_name || ' ' || e.last_name) as employee_name, 
+      p.last_modified_date, p.created_date, p.comment, p.status_type
       FROM payment p
       JOIN customer_loan cl ON (p.loan_id = cl.loan_id)
       JOIN customer c ON (cl.customer_id = c.customer_id)
       JOIN loan l ON (p.loan_id = l.loan_id)
       JOIN receipt r ON (r.payment_id = p.payment_id)
-      JOIN jhi_user ju ON (p.last_modified_by = ju.login)
+      JOIN jhi_user ju ON (p.last_modified_by = ju.login or p.created_by = ju.login)
       LEFT JOIN employee e ON (ju.employee_id = e.employee_id)
       WHERE p.status_type = 'CANCEL' 
       AND l.status_type not in ('DELETE', 'PAID')
       ${generateWhereStatement(queryParams)}
+      ${getDateRangeFilter(
+        "p.created_date",
+        queryParams.createdDateFrom,
+        queryParams.createdDateTo
+      )}
       ${
         queryParams.dateFrom
           ? getDateRangeFilter(
@@ -76,7 +83,10 @@ controller.getCanceledPayments = async (queryParams) => {
               queryParams.dateTo
             )
           : ""
-      }`);
+      }
+      group by c.first_name, c.last_name, c.identification, l.loan_number_id, r.receipt_number, 
+      p.last_modified_date, p.created_date, p.comment, p.status_type,
+	    p.created_by, p.last_modified_by`);
 
     if (data.length == 0) {
       return [];
