@@ -463,13 +463,13 @@ ${
     // if (data.length == 0) {
     //   return [];
     // }
-    let response = [...data, ...events];
-    if (
-      queryParams.actionType == "CANCEL_PAYMENT" ||
-      queryParams.actionType == ""
-    ) {
-      response = [...response, ...alerts];
-    }
+    let response = [...data, ...events, ...alerts];
+    // if (
+    //   queryParams.actionType == "CANCEL_PAYMENT" ||
+    //   queryParams.actionType == ""
+    // ) {
+    //   response = [...response, ...alerts];
+    // }
     return response;
   } catch (error) {
     console.log(error);

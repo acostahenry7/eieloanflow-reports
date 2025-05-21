@@ -345,6 +345,12 @@ function LoanActivitiesCrud() {
     // },
   ]);
 
+  const filterData = data.filter((item) => {
+    let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}
+    createdBy${item.created_by}receiptNumber${item.receipt_number}actionType${item.action_type}employeeName${item.employee_name}`;
+    return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
+  });
+
   const exportPDF = () => {
     let reportDate = new Date(searchParams.dateTo);
     let outletName = outlets.filter(
@@ -360,15 +366,8 @@ function LoanActivitiesCrud() {
       }),
     };
 
-    generateReport(data, conf);
+    generateReport(filterData, conf);
   };
-
-  const filterData = data.filter((item) => {
-    let searchText = `customerName${item.customer_name}indetification${item.identification}loanNumber${item.loan_number_id}
-    createdBy${item.created_by}receiptNumber${item.receipt_number}actionType${item.action_type}employeeName${item.employee_name}`;
-    return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
-  });
-
   return (
     <div className="crud-container">
       <SearchBar
