@@ -445,6 +445,7 @@ controller.getMajorGeneral = async (queryParams) => {
         queryParams.accountNumber || queryParams.accountName
       )}
       and gd.status_type = 'ENABLED'
+      and gda.status_type = 'ENABLED'
       and gd.description not like '%226464%'
       and gd.description not like '%227695%'
       ${
