@@ -310,7 +310,7 @@ function RegisterCloseCrud() {
       }),
     };
     let arr = [...filterData];
-    arr.shift();
+    //arr.shift();
 
     generateReport(arr, conf);
   };

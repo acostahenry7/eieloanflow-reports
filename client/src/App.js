@@ -54,6 +54,7 @@ import { AccountingDash } from "./screens/Dashboards/AccountingDash";
 import { MantainingMessage } from "./components/MantainingMessage";
 import { PaymentsDash } from "./screens/Dashboards/Payments";
 import { AccountingConciliation } from "./screens/AccountingConciliation";
+import { ToChargeAccountAgedScreen } from "./screens/ToChargeAccountAgedScreen";
 
 function App() {
   const { token, auth, logout } = React.useContext(AuthContext);
@@ -268,6 +269,13 @@ function App() {
                 element={checkRole(
                   "ACCOUNT_CATALOGS",
                   <ToChargeAccountScreen />
+                )}
+              />
+              <Route
+                path="/reports/charge-account-aged"
+                element={checkRole(
+                  "ACCOUNT_CATALOGS",
+                  <ToChargeAccountAgedScreen />
                 )}
               />
               <Route

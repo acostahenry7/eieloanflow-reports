@@ -131,7 +131,9 @@ const ConciliationForm = ({
       file: "",
     },
     validateOnChange: false,
-    validationSchema: Yup.object({}),
+    validationSchema: Yup.object({
+      description: Yup.string().required("Favor colocar descripcion"),
+    }),
     onSubmit: (values) => {
       values.file = null;
 
@@ -617,6 +619,9 @@ const ConciliationForm = ({
                     );
                   }}
                 />
+                <span style={{ color: "red", fontSize: 12 }}>
+                  {form.errors.description}
+                </span>
               </div>
 
               <div className="SearchBar-main-item">

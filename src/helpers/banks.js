@@ -55,6 +55,7 @@ function popular(arr) {
 }
 
 function banreservas(arr) {
+  console.log("BAN RESERVAS ARR", arr);
   const formatedData = [];
   const itemProperties = [
     "bank_account",
@@ -76,6 +77,13 @@ function banreservas(arr) {
     for (e of item) {
       currentItem[itemProperties[index]] = e.replace(/"/g, "");
 
+      if (index == 4 && parseFloat(e.replace(/"/g, "")) > 0) {
+        currentItem.transaction_type = "DB";
+      }
+
+      if (index == 5 && parseFloat(e.replace(/"/g, "")) > 0) {
+        currentItem.transaction_type = "CR";
+      }
       index++;
     }
 
@@ -90,6 +98,7 @@ function banreservas(arr) {
     formatedData.push(currentItem);
   }
 
+  formatedData.shift();
   return formatedData;
 }
 

@@ -161,6 +161,17 @@ module.exports = (app) => {
       });
   });
 
+  router.get("/api/charge-account-balance-age", (req, res) => {
+    accountingCtrl
+      .getToChargeAccountByBalanceAge(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   //CONCILIATION
   router.get("/api/bank-transactions", (req, res) => {
     accountingCtrl

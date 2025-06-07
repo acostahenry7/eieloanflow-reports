@@ -413,6 +413,17 @@ function Sidebar() {
           selected: false,
         },
         {
+          label: "CxC por atiguedad de saldo",
+          icon: (selected) => (
+            <GiReceiveMoney
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/charge-account-aged",
+          selected: false,
+        },
+        {
           label: "Intereses cobrados",
           icon: (selected) => (
             <GiReceiveMoney

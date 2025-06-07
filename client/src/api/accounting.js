@@ -56,6 +56,20 @@ async function getToChargeAccount(queryParams) {
   }
 }
 
+async function getToChargeAccountAged(queryParams) {
+  try {
+    const chargeAccountAged = await request({
+      method: "GET",
+      path: "/charge-account-balance-age",
+      urlParams: queryParams || {},
+    });
+
+    return chargeAccountAged;
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function getPayableAccount(queryParams) {
   try {
     const payableAccount = await request({
@@ -263,6 +277,7 @@ export {
   getSummarizeMajor,
   getGeneralBalance,
   getToChargeAccount,
+  getToChargeAccountAged,
   getPayableAccount,
   getValidationBalance,
   generate606Api,

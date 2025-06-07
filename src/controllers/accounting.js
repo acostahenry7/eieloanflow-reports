@@ -618,6 +618,73 @@ controller.getToChargeAccount = async (queryParams) => {
   }
 };
 
+controller.getToChargeAccountByBalanceAge = async (queryParams) => {
+  console.log(queryParams);
+  try {
+    const [data] = await db.query(
+      `select c.first_name || ' ' || c.last_name as customer_name, c.identification,
+        l.loan_number_id, la.loan_type, l.status_type, l.loan_situation,
+        sum(a.amount_of_fee) filter(where a.status_type <> 'DELETE') as total_due,
+        coalesce(sum (a.amount_of_fee) filter (where a.payment_date >= date '${
+          queryParams.dateTo
+        }' - interval '30 days' 
+        and a.status_type not in ('DELETE', 'PAID')),0) as thirty_days,
+        coalesce(sum (a.amount_of_fee) filter (where a.payment_date >= date '${
+          queryParams.dateTo
+        }' - interval '60 days'
+        and a.payment_date < date '${queryParams.dateTo}' - interval '30 days'
+        and a.status_type not in ('DELETE', 'PAID')),0) as one_or_two_months,
+        coalesce(sum (a.amount_of_fee) filter (where a.payment_date >= date '${
+          queryParams.dateTo
+        }' - interval '90 days' 
+        and a.payment_date < date '${queryParams.dateTo}' - interval '60 days'
+       and a.status_type not in ('DELETE', 'PAID')),0) as two_or_three_months,
+       coalesce(sum (a.amount_of_fee) filter (where a.payment_date >= date '${
+         queryParams.dateTo
+       }' - interval '180 days' 
+      and a.payment_date < date '${queryParams.dateTo}' - interval '90 days'
+      and a.status_type not in ('DELETE', 'PAID')),0) as three_or_six_months,
+      coalesce(sum (a.amount_of_fee) filter (where a.payment_date >= date '${
+        queryParams.dateTo
+      }' - interval '365 days' 
+     and a.payment_date < date '${queryParams.dateTo}' - interval '180 days'
+     and a.status_type not in ('DELETE', 'PAID')),0) as six_or_twelve_months,
+     coalesce(sum (a.amount_of_fee) filter (where a.payment_date < date '${
+       queryParams.dateTo
+     }' - interval '365 days' 
+   and a.status_type not in ('DELETE', 'PAID')),0) as more_than_year		
+        from loan l
+        join loan_application la on (l.loan_application_id = la.loan_application_id)
+        join customer c on (la.customer_id = c.customer_id)
+        join amortization a on (l.loan_id = a.loan_id)
+        where l.status_type not in ('DELETE', 'PAID', 'REFINANCE')
+        AND  l.outlet_id like '${queryParams.outletId || ""}%'
+        AND c.identification like '${queryParams.identification || ""}%'
+        AND l.loan_number_id::varchar like '${queryParams.loanNumber || ""}%'
+        AND l.status_type like '${queryParams.loanStatus || ""}%'
+        AND la.loan_type like '${queryParams.loanType || ""}%'
+        AND l.loan_situation like '${queryParams.loanSituation || ""}%'
+        ${
+          Boolean(queryParams.isInterest) == true
+            ? `AND a.payment_date::date >= '${queryParams.dateFrom}'`
+            : ""
+        }
+        AND a.payment_date::date <='${queryParams.dateTo}'
+        group by l.loan_number_id, la.loan_type, l.status_type, l.loan_situation,
+        l.amount_approved, c.first_name, c.last_name, c.identification,l.created_date
+        having  coalesce(sum (a.interest) filter(where a.status_type <> 'DELETE' and a.paid = 'true'),0) +
+        coalesce(sum (a.interest) filter(where a.total_paid > a.interest and a.status_type <> 'DELETE' and a.paid = 'false'),0) +
+        coalesce(sum (a.total_paid) filter(where a.total_paid <= a.interest and a.status_type <> 'DELETE' and a.paid = 'false'),0) > 0
+        order by l.created_date desc
+        `
+    );
+
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 controller.getSummarizeMajor = async (queryParams) => {
   try {
     let [data] =
