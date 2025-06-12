@@ -1,4 +1,8 @@
-function processTransactionsFormat(bankId, transactions) {
+function processTransactionsFormat(
+  bankId,
+  transactions,
+  notParsedTransactions
+) {
   let result = [];
   switch (bankId) {
     case "11110111":
@@ -8,7 +12,7 @@ function processTransactionsFormat(bankId, transactions) {
       result = banreservas(transactions);
       break;
     case "11110113":
-      result = bhd(transactions);
+      result = bhd(notParsedTransactions);
       break;
     default:
       break;
@@ -103,39 +107,72 @@ function banreservas(arr) {
 }
 
 function bhd(arr) {
-  const formatedData = [];
-  const itemProperties = [
-    "bank_account",
-    "date",
-    "unformated_date",
-    "amount",
-    "transaction_type",
-    "description",
-    "ref",
-    "other_1",
-    "other_2",
-  ];
-  for (item of arr) {
-    const currentItem = {};
-    let index = 0;
-    for (e of item) {
-      if (index == 0 || index == 3) {
-        e = parseFloat(e);
-      }
+  //console.log(arr);
 
-      if (index == 1) {
-        const [day, month, year] = e.split("/");
-        e = `${year}-${month}-${day}`;
-      }
+  // const formatedData = [];
+  // const itemProperties = [
+  //   "bank_account",
+  //   "date",
+  //   "unformated_date",
+  //   "amount",
+  //   "transaction_type",
+  //   "description",
+  //   "ref",
+  //   "other_1",
+  //   "other_2",
+  // ];
+  // for (item of arr) {
+  //   const currentItem = {};
+  //   let index = 0;
+  //   for (e of item) {
+  //     if (index == 0 || index == 3) {
+  //       e = parseFloat(e);
+  //     }
 
-      currentItem[itemProperties[index]] = e;
+  //     if (index == 1) {
+  //       const [day, month, year] = e.split("/");
+  //       e = `${year}-${month}-${day}`;
+  //     }
 
-      index++;
-    }
-    formatedData.push(currentItem);
-  }
+  //     currentItem[itemProperties[index]] = e;
 
-  return formatedData;
+  //     index++;
+  //   }
+  //   formatedData.push(currentItem);
+  // }
+
+  // return formatedData;
+  console.log("hiii");
+
+  const lineas = arr.trim().split("\n");
+
+  const datos = lineas
+    .filter((ln, index) => ln.length > 1 && index > 0)
+    .map((linea, index) => {
+      //console.log(`LINEA ${index + 1}`, linea, linea.length);
+
+      const date = linea.slice(0, 10).trim();
+      const reference = linea.slice(11, 21).trim();
+      const description = linea.slice(26, 68).trim();
+      const debito = parseFloat(linea.slice(68, 82).replace(/,/g, "")) || 0;
+      const credito = parseFloat(linea.slice(82, 95).replace(/,/g, "")) || 0;
+      const balance = parseFloat(linea.slice(95).replace(/,/g, "")) || 0;
+
+      return {
+        date,
+        reference,
+        transaction_type: debito > 0 ? "DB" : "CR",
+        description,
+        amount: debito > 0 ? debito : credito,
+        debito,
+        credito,
+        balance,
+      };
+    });
+
+  //console.log(datos);
+
+  return datos;
 }
 
 module.exports = { processTransactionsFormat };

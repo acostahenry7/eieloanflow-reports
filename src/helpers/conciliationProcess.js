@@ -16,7 +16,7 @@ function conciliarTransacciones(localTransactions, bankTransactions) {
     let posiblesMatches = localTransactions.filter((local) => {
       return (
         //local.reference_bank == bank.reference &&
-        parseFloat(local.amount) == parseFloat(bank.amount)
+        parseFloat(local.diary_amount) == parseFloat(bank.amount)
         //&& calcularDiferenciaDias(local.target_date, bank.date) <= dayRange
       );
     });

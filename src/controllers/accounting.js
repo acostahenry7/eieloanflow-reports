@@ -758,7 +758,7 @@ controller.getBankDiaryTransactions = async (queryParams) => {
             left join account_catalog ac on (gda.account_catalog_id = ac.account_catalog_id)
             where lower(gd.description) like any (array['%desembolso%', '%pago%proveedor%'])
             ${getGenericLikeFilter("gd.outlet_id", queryParams.outletId)}
-            and number like any (array['110%', '4%', '12%', '21%'])
+            and number like any (array['110%'])
             ${getDateRangeFilter(
               "general_diary_date",
               queryParams.dateFrom,
@@ -860,7 +860,7 @@ controller.getTransactionsFromBankFile = async (queryParams) => {
     const data = fs.readFileSync(queryParams.filepath);
 
     const length = data.toString().split("\n").length;
-    console.log(data.toString().split("\n")[1]);
+    //console.log(data.toString());
     const parseData = data
       .toString()
       .split("\n")
@@ -870,11 +870,18 @@ controller.getTransactionsFromBankFile = async (queryParams) => {
     fs.unlink(queryParams.filepath, () => {
       console.log("File deleted");
     });
+    //console.log(bankId);
 
-    const formatedData = processTransactionsFormat(bankId, parseData);
+    const formatedData = processTransactionsFormat(
+      bankId,
+      parseData,
+      data.toString()
+    );
 
     let { transactions: localTransactions } =
       await controller.getBankDiaryTransactions(queryParams);
+
+    //console.log(localTransactions);
 
     const comparedTrasactions = [];
 
@@ -900,7 +907,7 @@ controller.getTransactionsFromBankFile = async (queryParams) => {
       }
     });
 
-    console.log(localTransactions);
+    // console.log(localTransactions);
 
     const result = conciliarTransacciones(
       localTransactions.filter(
@@ -910,19 +917,20 @@ controller.getTransactionsFromBankFile = async (queryParams) => {
       formatedData
     );
 
+    console.log(localTransactions.length);
+
     for (bt of formatedData) {
       const t = localTransactions.find(
         (item) =>
-          item.transaction_type == "ENTRY"
-            ? item.amount == bt.amount
-            : item.reference_bank == bt.reference // && item.target_date == bt.date
+          //item.transaction_type == "ENTRY"
+          item.diary_amount == bt.amount || item.reference_bank == bt.reference // && item.target_date == bt.date
       );
 
       if (t) {
         comparedTrasactions.push({
           transaction_id: t.transaction_id,
           ...bt,
-          local_amount: t.amount,
+          local_amount: t.diary_amount,
           general_diary_id: t.general_diary_id,
           diary_amount: t.diary_amount,
           transaction_type: t.transaction_type,

@@ -482,6 +482,8 @@ const ConciliationForm = ({
     },
   ];
 
+  //console.log("DIARY TRANSACTOINS", data);
+
   const conciliatedColumns = [];
 
   const loadFileTransactions = async (values) => {
@@ -500,6 +502,8 @@ const ConciliationForm = ({
       // });
 
       //setData(trasactions.filter((item) => item.is_conciliated == false));
+
+      console.log(res.body.unconciliated);
 
       setData(res.body.unconciliated);
       setBankTransactions(res.body.manualRevisions);
@@ -929,11 +933,12 @@ const ConciliationForm = ({
                                         fontWeight: "bold",
                                       }}
                                     >
-                                      {item.amount}
+                                      {item.diary_amount}
                                     </span>
                                   </p>
                                   <p style={{}}>
-                                    <b>Descripcion: </b> {item.description}
+                                    <b>Descripcion: </b>{" "}
+                                    {item.diary_description}
                                   </p>
                                 </label>
                               </li>
