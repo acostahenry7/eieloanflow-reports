@@ -15,6 +15,7 @@ import { currencyFormat } from "../../../utils/reports/report-helpers";
 import { TotalBar } from "../../TotalBar";
 import { generateReport } from "../../../utils/reports/resgisterClose";
 import "./index.css";
+import { AuthContext } from "../../../contexts/AuthContext";
 
 function RegisterCloseCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -32,11 +33,13 @@ function RegisterCloseCrud() {
     page: { margin: Margin.MEDIUM },
   });
 
+  const { auth } = React.useContext(AuthContext);
+
   React.useEffect(() => {
     (async () => {
       try {
         setIsLoading(true);
-        const outlets = await getOutletsApi();
+        const outlets = await getOutletsApi({ outletId: auth.outlet_id });
         const registers = await getRegisterClose(searchParams);
         if (registers.error == true) {
           throw new Error(registers.body);
@@ -142,7 +145,7 @@ function RegisterCloseCrud() {
         row.register.employee_name == totalsLabel
           ? currencyFormat(row.register.total_transfer, false)
           : currencyFormat(
-              getPaymentTotalByType([{ child: row.child }], "CASH"),
+              getPaymentTotalByType([{ child: row.child }], "TRANSFER"),
               false
             ),
       sortable: true,
@@ -170,7 +173,7 @@ function RegisterCloseCrud() {
       omit: false,
     },
     {
-      name: "Total pagado",
+      name: "Total cobrado",
       width: tableUIHelper.columns.width.amount,
       selector: (row) =>
         row.register.employee_name == totalsLabel

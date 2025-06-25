@@ -55,6 +55,7 @@ import { MantainingMessage } from "./components/MantainingMessage";
 import { PaymentsDash } from "./screens/Dashboards/Payments";
 import { AccountingConciliation } from "./screens/AccountingConciliation";
 import { ToChargeAccountAgedScreen } from "./screens/ToChargeAccountAgedScreen";
+import { CustomerAccountScreen } from "./screens/CustomerAccountScreen";
 
 function App() {
   const { token, auth, logout } = React.useContext(AuthContext);
@@ -115,6 +116,10 @@ function App() {
               <Route
                 path="/reports/customer-loan"
                 element={checkRole("CUSTOMERS", <CustomerLoanScreen />)}
+              />
+              <Route
+                path="/reports/customer-account-status"
+                element={checkRole("CUSTOMERS", <CustomerAccountScreen />)}
               />
 
               <Route

@@ -2,11 +2,15 @@ import React from "react";
 import { SearchBar } from "../../SearchBar";
 import { Datatable } from "../../Datatable";
 import { getHistoryPaymentControl } from "../../../api/payment";
-import { formatClientName } from "../../../utils/stringFunctions";
+import {
+  formatClientName,
+  getPaymentControlHistoryLabel,
+} from "../../../utils/stringFunctions";
 import { getOutletsApi } from "../../../api/outlet";
 import { generateReport } from "../../../utils/reports/paymentControlHistory";
 import { getZonesApi } from "../../../api/zone";
 import { orderBy, uniq, uniqBy } from "lodash";
+import { AuthContext } from "../../../contexts/AuthContext";
 
 function PaymentControlHistoryCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -15,25 +19,51 @@ function PaymentControlHistoryCrud() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [reqToggle, setReqToggle] = React.useState([]);
   const [searchedText, setSearchedText] = React.useState("");
-  const [searchParams, setSearchParams] = React.useState({
-    dateFrom: new Date().toISOString().split("T")[0],
-    dateTo: new Date().toISOString().split("T")[0],
-  });
+  const [searchParams, setSearchParams] = React.useState({});
+
+  const { auth } = React.useContext(AuthContext);
+
+  React.useEffect(() => {
+    const loadPrevData = async () => {
+      try {
+        const outlets = await getOutletsApi({ outletId: auth.outlet_id });
+        setOutlets(outlets.body);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    loadPrevData();
+  }, []);
+
+  React.useEffect(() => {
+    const loadPrevData = async () => {
+      try {
+        const zones = await getZonesApi({
+          outletId: searchParams.outletId || "",
+        });
+        setZones(zones.body);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    loadPrevData();
+  }, [searchParams.outletId]);
 
   React.useEffect(() => {
     (async () => {
       try {
         setIsLoading(true);
-        const outlets = await getOutletsApi();
-        const zones = await getZonesApi(searchParams);
+
+        //const zones = await getZonesApi(searchParams);
         const payments = await getHistoryPaymentControl(searchParams);
         if (payments.error == true) {
           throw new Error(payments.body);
         }
-        console.log("ZONES", zones);
-        setOutlets(outlets.body);
-        setZones([]);
-        setZones(zones.body);
+
+        //setZones([]);
+        //setZones(zones.body);
         setData(payments.body);
       } catch (error) {
         console.log(error.message);
@@ -105,7 +135,7 @@ function PaymentControlHistoryCrud() {
       selector: (row) => new Date(row.comment_date).toLocaleString("en-US"),
       sortable: true,
       reorder: true,
-      omit: true,
+      omit: false,
     },
     {
       name: "Comentario",
@@ -116,7 +146,7 @@ function PaymentControlHistoryCrud() {
     },
     {
       name: "Tipo de comentario",
-      selector: (row) => row.comment_type,
+      selector: (row) => getPaymentControlHistoryLabel(row.comment_type),
       sortable: true,
       reorder: true,
       omit: true,
@@ -161,6 +191,7 @@ function PaymentControlHistoryCrud() {
       label: "Sucursal",
       field: "outletId",
       type: "select",
+      updateForm: true,
       currentValue: searchParams.outletId,
       options: [
         {
@@ -184,7 +215,7 @@ function PaymentControlHistoryCrud() {
           label: "Todas las zonas",
           value: "",
         },
-        ...orderBy(uniqBy(zones, "name"), ["name"]).map((zone) => ({
+        ...zones.map((zone) => ({
           label: zone.name,
           value: zone.name,
         })),

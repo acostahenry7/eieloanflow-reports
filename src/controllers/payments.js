@@ -18,7 +18,7 @@ controller.getTodayPayments = async (queryParams) => {
         FROM customer_loan cl
         JOIN customer c ON (cl.customer_id = c.customer_id)
         JOIN loan l ON (cl.loan_id = l.loan_id)
-        JOIN amortization a ON (a.loan_id = l.loan_id)
+        JOIN amortization a ON (a.loan_id = l.loan_id AND a.status_type <> 'DELETE')
         GROUP BY c.first_name, c.last_name, l.status_type,  c.identification, c.phone, l.loan_number_id, 
         l.created_date, l.amount_approved, l.amount_of_free,  l.outlet_id ${
           queryParams.dateFrom ? ", a.payment_date" : ""
@@ -39,7 +39,7 @@ controller.getTodayPayments = async (queryParams) => {
               )
             : ""
         }
-        
+        AND min(a.payment_date)filter(where a.paid = 'false') is not null
         `);
 
     if (data.length == 0) {
@@ -118,11 +118,15 @@ controller.getReceivedPayments = async (queryParams) => {
       LEFT JOIN receipt r ON (p.payment_id = r.payment_id)
       GROUP BY c.first_name, c.last_name, c.identification, l.loan_number_id, p.created_by, p.payment_type, p.created_date,
       p.payment_origin, p.pay, l.status_type, l.outlet_id,r.receipt_number, p.status_type
-      HAVING l.status_type not in ('DELETE', 'PAID')
+      HAVING l.status_type not in ('DELETE')
       ${generateWhereStatement(queryParams)}
-      AND p.created_date::date between '${queryParams.dateFrom}' and '${
-        queryParams.dateTo
-      }'`);
+      
+      ${getDateRangeFilter(
+        "p.created_date",
+        queryParams.dateFrom,
+        queryParams.dateTo,
+        true
+      )}`);
 
     if (data.length == 0) {
       return [];
@@ -153,7 +157,15 @@ controller.getPaymentProyection = async (queryParams) => {
       WHERE l.outlet_id like '${queryParams.outletId}%'
       GROUP BY l.loan_number_id, z.name, e.first_name, e.last_name, l.status_type
       HAVING l.status_type NOT IN ('PAID', 'DELETE')
-      AND max(p.created_date)::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`);
+      --AND max(p.created_date)::date between '${queryParams.dateFrom}' and '${
+        queryParams.dateTo
+      }'
+      ${getDateRangeFilter(
+        "max(p.created_date)",
+        queryParams.dateFrom,
+        queryParams.dateTo,
+        true
+      )}`);
 
     if (data.length == 0) {
       return [];
@@ -183,10 +195,12 @@ controller.getHistoryPaymentControl = async (queryParams) => {
       JOIN employee e ON (ju.employee_id = e.employee_id)
       WHERE l.status_type not in ('DELETE', 'PAID')
       ${generateWhereStatement(queryParams)}
-      
-      AND pcc.created_date BETWEEN '${queryParams.dateFrom}' AND '${
-        queryParams.dateTo
-      }'
+      ${getDateRangeFilter(
+        "pcc.created_date",
+        queryParams.dateFrom,
+        queryParams.dateTo,
+        true
+      )}
       GROUP BY c.first_name, c.last_name, c.identification, l.loan_number_id, 
       e.first_name, e.last_name, pcc.status_type, pcc.comment_type, pcc.created_date, pcc.comment, 
       pcc.letters_sent_type, pcc.commitment_date, l.loan_situation

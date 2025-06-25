@@ -110,6 +110,9 @@ function Datatable({
         selectAllRowsItemText: "Todos",
       }}
       {...dtOptions}
+      noDataComponent={
+        <span>No se encontraron coincidencias para la búsqueda</span>
+      }
       //expandOnRowClicked
     />
   );

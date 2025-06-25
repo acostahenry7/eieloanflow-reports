@@ -28,4 +28,22 @@ async function getCustomerLoanApi(queryParams) {
   }
 }
 
-export { getArrearCustomersApi, getCustomerLoanApi };
+async function getCustomerAccountStatusApi(queryParams) {
+  try {
+    const customers = await request({
+      method: "GET",
+      path: "/customer-account-status",
+      urlParams: queryParams,
+    });
+
+    return customers;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export {
+  getArrearCustomersApi,
+  getCustomerLoanApi,
+  getCustomerAccountStatusApi,
+};

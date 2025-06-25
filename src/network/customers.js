@@ -26,5 +26,16 @@ module.exports = (app) => {
       });
   });
 
+  router.get("/api/customer-account-status", (req, res) => {
+    customerCtrl
+      .getCustomerAccountStatus(req.query)
+      .then((msg) => {
+        response.success(req, res, msg, 200);
+      })
+      .catch((err) => {
+        response.error(req, res, err.message, 500);
+      });
+  });
+
   app.use(router);
 };

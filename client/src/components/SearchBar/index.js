@@ -79,6 +79,32 @@ function SearchBar({
     <div className="SearchBar">
       <div className="SearchBar-main-items">
         {mainFilters
+          .filter((item) => item.type === "select")
+          .map((mf, index) => (
+            <div key={index} className="SearchBar-main-item">
+              <label>{mf.label}</label>
+              <select
+                value={searchForm.values[mf.field]}
+                onChange={(e) => {
+                  searchForm.setFieldValue(mf.field, e.target.value);
+                  if (mf.customAction) {
+                    console.log("hi");
+                    mf.customAction(e.target.value);
+                  }
+                  if (mf.updateForm == true) {
+                    searchForm.handleSubmit();
+                  }
+                }}
+              >
+                {mf.options.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+        {mainFilters
           .filter((item) => item.type === "text")
           .map((mf, index) => (
             <div key={index} className="SearchBar-main-item">
@@ -125,32 +151,6 @@ function SearchBar({
                   {searchParams != undefined ? searchParams[`${mf.field}`] : ""}
                 </b>
               </div> */}
-            </div>
-          ))}
-        {mainFilters
-          .filter((item) => item.type === "select")
-          .map((mf, index) => (
-            <div key={index} className="SearchBar-main-item">
-              <label>{mf.label}</label>
-              <select
-                value={searchForm.values[mf.field]}
-                onChange={(e) => {
-                  searchForm.setFieldValue(mf.field, e.target.value);
-                  if (mf.customAction) {
-                    console.log("hi");
-                    mf.customAction(e.target.value);
-                  }
-                  if (mf.updateForm == true) {
-                    searchForm.handleSubmit();
-                  }
-                }}
-              >
-                {mf.options.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
             </div>
           ))}
       </div>

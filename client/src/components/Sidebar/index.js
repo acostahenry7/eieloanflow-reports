@@ -14,6 +14,7 @@ import {
   FaUser,
   FaUsers,
   FaCoins,
+  FaFileInvoice,
 } from "react-icons/fa";
 import { BiDollar, BiSolidDashboard } from "react-icons/bi";
 import { AiOutlineAudit, AiTwotoneBank } from "react-icons/ai";
@@ -137,6 +138,17 @@ function Sidebar() {
             />
           ),
           route: "/reports/arrear-customers",
+          selected: false,
+        },
+        {
+          label: "Estado de cuenta",
+          icon: (selected) => (
+            <FaFileInvoice
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/customer-account-status",
           selected: false,
         },
       ],

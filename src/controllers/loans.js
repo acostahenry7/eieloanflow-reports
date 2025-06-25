@@ -6,7 +6,7 @@ const {
   getDateRangeFilter,
   getGenericLikeFilter,
 } = require("../utils");
-var _ = require("lodash");
+const _ = require("lodash");
 const { nanoid } = require("nanoid");
 
 const controller = {};
@@ -561,11 +561,13 @@ controller.getRegisterClose = async (queryParams) => {
       --WHERE l.status_type NOT IN ('DELETE')
       WHERE p.status_type in ('ENABLED', 'CANCEL')
       AND p.outlet_id like '${queryParams.outletId || ""}%'
-      ${
-        queryParams.dateFrom && queryParams.dateTo
-          ? `AND p.created_date::date between '${queryParams.dateFrom}' and '${queryParams.dateTo}'`
-          : ""
-      }
+      
+      ${getDateRangeFilter(
+        "p.created_date",
+        queryParams.dateFrom,
+        queryParams.dateTo,
+        true
+      )}
       AND p.created_by <> 'y.aragonez' 
       ORDER BY r.created_date desc,  p.register_id`);
 
@@ -594,9 +596,13 @@ controller.getGroupedRegisterClose = async (queryParams) => {
       left join employee e on (ju.employee_id = e.employee_id)
       left join outlet o on (r.outlet_id = o.outlet_id)
       where r.outlet_id like '${queryParams.outletId || ""}%'
-      AND p.created_date::date between '${queryParams.dateFrom}' and '${
-      queryParams.dateTo
-    }'
+     
+      ${getDateRangeFilter(
+        "p.created_date",
+        queryParams.dateFrom,
+        queryParams.dateTo,
+        true
+      )}
       group by ju.login, e.first_name, e.last_name, o.name`);
 
     return data;
@@ -606,6 +612,7 @@ controller.getGroupedRegisterClose = async (queryParams) => {
 };
 
 controller.getLoanMovement = async (queryParams) => {
+  console.log(queryParams);
   try {
     const [data, meta] = await db.query(`
     SELECT l.loan_number_id, la.loan_type, l.status_type, l.loan_situation,
@@ -621,9 +628,13 @@ controller.getLoanMovement = async (queryParams) => {
     INNER JOIN amortization a ON (pd.amortization_id = a.amortization_id AND a.status_type <> 'DELETE')
     WHERE l.status_type <> 'DELETE'
     AND p.outlet_id like '${queryParams.outletId || ""}%'
-    AND p.created_date::date between '${queryParams.dateFrom}' and '${
-      queryParams.dateTo
-    }'
+    
+    ${getDateRangeFilter(
+      "p.created_date",
+      queryParams.dateFrom,
+      queryParams.dateTo,
+      true
+    )}
     GROUP BY l.loan_number_id, c.first_name, c.last_name, p.pay, p.created_date,
     la.loan_type, l.status_type, l.loan_situation, p.outlet_id, p.payment_type
     ORDER BY p.created_date
@@ -647,10 +658,14 @@ controller.getDatacreditLoans = async (queryParams) => {
       JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
       JOIN customer c ON (la.customer_id = c.customer_id)
       JOIN amortization a ON (l.loan_id = a.loan_id)
-      WHERE a.payment_date::date BETWEEN '${queryParams.dateFrom}' AND '${
-        queryParams.dateTo
-      }'
-      AND l.outlet_id like '${queryParams.outletId || "%"}'
+      WHERE l.outlet_id like '${queryParams.outletId || "%"}'
+      
+      ${getDateRangeFilter(
+        "a.payment_date",
+        queryParams.dateFrom,
+        queryParams.dateTo,
+        true
+      )}
       AND l.status_type like '${queryParams.loanStatus || ""}%'
 	  AND la.loan_type like '${queryParams.loanType || ""}%'
 	  AND l.loan_situation like '${queryParams.loanSituation || ""}%'
@@ -688,10 +703,13 @@ FROM loan l
 JOIN loan_application la ON (l.loan_application_id = la.loan_application_id)
 JOIN customer c ON (la.customer_id = c.customer_id)
 JOIN amortization a ON (l.loan_id = a.loan_id)
-WHERE a.payment_date::date BETWEEN '${queryParams.dateFrom}' AND '${
-    queryParams.dateTo
-  }'
-AND l.outlet_id like '${queryParams.outletId || "%"}'
+WHERE l.outlet_id like '${queryParams.outletId || "%"}'
+${getDateRangeFilter(
+  "a.payment_date",
+  queryParams.dateFrom,
+  queryParams.dateTo,
+  true
+)}
 AND l.status_type like '${queryParams.loanStatus || ""}%'
 	  AND la.loan_type like '${queryParams.loanType || ""}%'
 	  AND l.loan_situation like '${queryParams.loanSituation || ""}%'

@@ -80,10 +80,17 @@ function getLoanSituationLabel(loanSituation) {
     case "CANCEL_PAYMENT":
       label = "Pago cancelado";
       break;
+    case "CANCEL":
+      label = "Cancelado";
+      break;
+    case "ENABLED":
+      label = "Activo";
+      break;
     case "DELETE":
       label = "Eliminado";
       break;
     default:
+      label = loanSituation;
       break;
   }
 
@@ -223,6 +230,28 @@ function getCustomerEstatusLabel(key) {
   return result;
 }
 
+function getPaymentControlHistoryLabel(key) {
+  let label = "";
+  switch (key) {
+    case "PROMISES_OF_PAYMENT":
+      label = "Promesa de pago";
+      break;
+    case "CALLING_AGAIN":
+      label = "LLamar otra vez";
+      break;
+    case "NOT_CONTACTED":
+      label = "No contactado";
+      break;
+    case "OTHER":
+      label = "Otro";
+      break;
+    default:
+      label = key;
+      break;
+  }
+  return label;
+}
+
 export function getPaymentTotalByType(arr, type) {
   let totalCash = 0;
   arr.map(function (item) {
@@ -270,6 +299,22 @@ const getAmountByParams = (arr, cb) => {
     .reduce((acc, item) => acc + parseInt(item.amount), 0);
 };
 
+const getSumWithIdx = (arr, index, field) => {
+  let sum = 0;
+
+  if (index == 0) {
+    sum = parseFloat(arr[index][field]);
+  }
+
+  for (let i = 0; i < index; i++) {
+    sum += parseFloat(arr[i][field]);
+  }
+
+  console.log(index, sum);
+
+  return sum;
+};
+
 export {
   getCountByParams,
   getAmountByParams,
@@ -282,4 +327,6 @@ export {
   getCustomerEstatusLabel,
   getLabelByTransactionType,
   getLabelByBankTransactionType,
+  getPaymentControlHistoryLabel,
+  getSumWithIdx,
 };

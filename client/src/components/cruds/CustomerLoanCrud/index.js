@@ -12,6 +12,7 @@ import {
 import { getOutletsApi } from "../../../api/outlet";
 import { tableUIHelper } from "../../../utils/ui-helpers";
 import { generateReport } from "../../../utils/reports/customerLoan";
+import { AuthContext } from "../../../contexts/AuthContext";
 
 function CustomerLoanCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -26,17 +27,32 @@ function CustomerLoanCrud() {
     paymentDateTo: new Date().toISOString().split("T")[0],
   });
 
+  const { auth } = React.useContext(AuthContext);
+
+  React.useEffect(() => {
+    const loadPrevData = async () => {
+      try {
+        const outlets = await getOutletsApi({ outletId: auth.outlet_id });
+        setOutlets(outlets.body);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    loadPrevData();
+  }, []);
+
   React.useEffect(() => {
     (async () => {
       try {
         setIsLoading(true);
-        const outlets = await getOutletsApi();
+
         const customers = await getCustomerLoanApi(searchParams);
         if (customers.error == true) {
           throw new Error(customers.body);
         }
         console.log(customers.body);
-        setOutlets(outlets.body);
+
         setData(customers.body);
       } catch (error) {
         console.log(error.message);

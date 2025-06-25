@@ -12,6 +12,7 @@ import {
   getTextWidth,
 } from "./report-helpers";
 import logo from "./images/logo";
+import { getPaymentControlHistoryLabel } from "../stringFunctions";
 
 let colsWidth = [70, 90, 130, 155, 185, 220];
 
@@ -86,7 +87,13 @@ function generateReport(data, configParams) {
       top
     );
     doc.text(
-      `${formatComment(item.comment_type, 10, "_")[0]}`,
+      `${
+        formatComment(
+          getPaymentControlHistoryLabel(item.comment_type),
+          10,
+          "_"
+        )[0]
+      }`,
       left + colsWidth[4],
       top + commentSpacing
     );

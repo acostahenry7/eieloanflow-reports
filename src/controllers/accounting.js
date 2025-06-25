@@ -872,6 +872,7 @@ controller.getTransactionsFromBankFile = async (queryParams) => {
     });
     //console.log(bankId);
 
+    console.log("#### PROBANDO BHD", parseData);
     const formatedData = processTransactionsFormat(
       bankId,
       parseData,

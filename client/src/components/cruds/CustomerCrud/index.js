@@ -11,6 +11,7 @@ import { tableUIHelper } from "../../../utils/ui-helpers";
 import { generateReport } from "../../../utils/reports/arrearCustomers";
 import { getZonesApi } from "../../../api/zone";
 import { orderBy, uniqBy } from "lodash";
+import { AuthContext } from "../../../contexts/AuthContext";
 
 function CustomerCrud() {
   const [zones, setZones] = React.useState([]);
@@ -26,20 +27,54 @@ function CustomerCrud() {
     // paymentDateTo: new Date().toISOString().split("T")[0],
   });
 
+  const { auth } = React.useContext(AuthContext);
+
+  React.useEffect(() => {
+    const loadPrevData = async () => {
+      try {
+        const outlets = await getOutletsApi({ outletId: auth.outlet_id });
+        const zones = await getZonesApi({
+          outletId: outlets.body[0].outlet_id,
+        });
+        setOutlets(outlets.body);
+        setZones(zones.body);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    loadPrevData();
+  }, []);
+
+  React.useEffect(() => {
+    const loadPrevData = async () => {
+      try {
+        const zones = await getZonesApi({
+          outletId: searchParams.outletId || "",
+        });
+        setZones(zones.body);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    loadPrevData();
+  }, [searchParams.outletId]);
+
   React.useEffect(() => {
     (async () => {
       try {
         setIsLoading(true);
-        const outlets = await getOutletsApi();
-        const zones = await getZonesApi(searchParams);
+
+        //const zones = await getZonesApi(searchParams);
         const customers = await getArrearCustomersApi(searchParams);
         if (customers.error == true) {
           throw new Error(customers.body);
         }
         console.log("ZONES", zones);
         // setZones([]);
-        setZones(zones.body);
-        setOutlets(outlets.body);
+        //setZones(zones.body);
+
         setData(customers.body);
       } catch (error) {
         console.log(error.message);
@@ -218,6 +253,39 @@ function CustomerCrud() {
     },
 
     {
+      label: "Sucursal",
+      field: "outletId",
+      type: "select",
+      updateForm: true,
+      options: [
+        {
+          label: "Todas las sucursales",
+          value: "",
+        },
+        ...outlets.map((item) => {
+          return {
+            label: item.name,
+            value: item.outlet_id,
+          };
+        }),
+      ],
+    },
+    {
+      label: "Zona",
+      field: "zoneName",
+      type: "select",
+      options: [
+        {
+          label: "Todas las zonas",
+          value: "",
+        },
+        ...zones.map((zone) => ({
+          label: zone.name,
+          value: zone.name,
+        })),
+      ],
+    },
+    {
       label: "Frequencia de pago",
       field: "paymentFrequency",
       type: "select",
@@ -246,38 +314,6 @@ function CustomerCrud() {
           label: "Diario",
           value: "DAILY",
         },
-      ],
-    },
-    {
-      label: "Zona",
-      field: "zoneName",
-      type: "select",
-      options: [
-        {
-          label: "Todas las zonas",
-          value: "",
-        },
-        ...zones.map((zone) => ({
-          label: zone.name,
-          value: zone.name,
-        })),
-      ],
-    },
-    {
-      label: "Sucursal",
-      field: "outletId",
-      type: "select",
-      options: [
-        {
-          label: "Todas las sucursales",
-          value: "",
-        },
-        ...outlets.map((item) => {
-          return {
-            label: item.name,
-            value: item.outlet_id,
-          };
-        }),
       ],
     },
   ];
