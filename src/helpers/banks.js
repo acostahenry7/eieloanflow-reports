@@ -52,7 +52,7 @@ function popular(arr) {
       index++;
     }
     currentItem.ref = currentItem.reference;
-    formatedData.push(currentItem);
+    formatedData.push({ ...currentItem, origin: "popular" });
   }
 
   return formatedData;
@@ -70,7 +70,7 @@ function banreservas(arr) {
     "amount_2",
     "balance",
     "detail",
-    "ref",
+    "reference",
     "other_1",
   ];
 
@@ -99,7 +99,7 @@ function banreservas(arr) {
     const [day, month, year] = currentItem.date.split("/");
     currentItem.date = `${year}-${month}-${day}`;
     delete currentItem.amount_2;
-    formatedData.push(currentItem);
+    formatedData.push({ ...currentItem, origin: "banreservas" });
   }
 
   formatedData.shift();
@@ -167,6 +167,7 @@ function bhd(arr) {
         debito,
         credito,
         balance,
+        origin: "bhd",
       };
     });
 

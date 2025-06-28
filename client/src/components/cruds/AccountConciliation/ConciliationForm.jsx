@@ -518,7 +518,7 @@ const ConciliationForm = ({
     try {
       const res = await getMajorGeneral({ ...values, outletId });
 
-      //setPrevBalances(res.body.balanceByAccount);
+      setPrevBalances(res.body.balanceByAccount);
       updateDiaryBalance(form.values.bankAccountId, res.body.balanceByAccount);
 
       console.log();
@@ -833,7 +833,7 @@ const ConciliationForm = ({
                     <div style={{ display: "flex", gap: 8 }}>
                       <div style={{ width: "60%" }}>
                         <h4 style={{ marginTop: 0 }}>
-                          Transacciones del Banco
+                          Transacciones del Banco ({bankTransactions.length})
                         </h4>
                         <div className="comparison-card">
                           <ul>
@@ -889,7 +889,7 @@ const ConciliationForm = ({
                       </div>
                       <div style={{ width: "40%" }}>
                         <h4 style={{ marginTop: 0 }}>
-                          Transacciones del Diario
+                          Transacciones del Diario ({data.length})
                         </h4>
                         <div className={"comparison-card"}>
                           <ul>
@@ -1037,7 +1037,9 @@ const ConciliationForm = ({
           </div>
           <div className="form-section">
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <h4>Transacciones conciliadas</h4>
+              <h4>
+                Transacciones conciliadas ({conciliatedTransactions.length})
+              </h4>
               {isThirdSectionLoading && (
                 <Oval
                   color="var(--main-color)"

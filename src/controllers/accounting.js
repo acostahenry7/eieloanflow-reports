@@ -746,7 +746,7 @@ controller.getBankDiaryTransactions = async (queryParams) => {
           queryParams.dateTo,
           false
         )}
-        order by check_payment_date desc)t1
+        order by check_payment_date)t1
       LEFT JOIN (select gd.general_diary_id,
             length(trim(leading '0' from substring(gd.description, position('0' in gd.description), 8))) desc_length,
             trim(leading '0' from substring(gd.description, position('0' in gd.description), 8)) description,
@@ -771,7 +771,7 @@ controller.getBankDiaryTransactions = async (queryParams) => {
       left join conciliation cl on (cd.conciliation_id = cl.conciliation_id AND (cl.status_type = 'ENABLED' or cl.status_type is null))
       where t1.status_type in ('APPROVED', 'TRANSIT')
       ${getGenericLikeFilter("t1.bank_account_id", queryParams.bankAccountId)}
-      order by check_payment_date desc
+      order by check_payment_date
 
     `);
 
@@ -802,7 +802,7 @@ controller.getBankDiaryTransactions = async (queryParams) => {
       ber.type_movement, ber.general_diary_id, ba.number, ber.bank_account_id, ber.reference,
       gd.description, ber.target_date, ber.outlet_id, cd.is_conciliated, cd.conciliation_id,
       cl.status_type, gd.general_diary_number_id
-      order by ber.target_date desc
+      order by ber.target_date 
       `
     );
 
