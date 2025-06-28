@@ -833,7 +833,20 @@ const ConciliationForm = ({
                     <div style={{ display: "flex", gap: 8 }}>
                       <div style={{ width: "60%" }}>
                         <h4 style={{ marginTop: 0 }}>
-                          Transacciones del Banco ({bankTransactions.length})
+                          Transacciones del Banco ({bankTransactions.length}) /
+                          Cargos bancarios (
+                          {
+                            bankTransactions.filter(
+                              (t) =>
+                                t.bank.description
+                                  .toLowerCase()
+                                  .includes("servicio") ||
+                                t.bank.description
+                                  .toLowerCase()
+                                  .includes("impuesto")
+                            ).length
+                          }
+                          )
                         </h4>
                         <div className="comparison-card">
                           <ul>
@@ -885,7 +898,26 @@ const ConciliationForm = ({
                             ))}
                           </ul>
                         </div>
-                        <p>{currencyFormat(totalBankTransactions)}</p>
+                        <p>
+                          Total transacciones:{" "}
+                          {currencyFormat(totalBankTransactions)}
+                        </p>
+                        <p>
+                          Total cargos{" "}
+                          {currencyFormat(
+                            bankTransactions
+                              .filter(
+                                (t) =>
+                                  t.bank.description
+                                    .toLowerCase()
+                                    .includes("servicio") ||
+                                  t.bank.description
+                                    .toLowerCase()
+                                    .includes("impuesto")
+                              )
+                              .reduce((acc, i) => acc + i.bank.amount, 0)
+                          )}
+                        </p>
                       </div>
                       <div style={{ width: "40%" }}>
                         <h4 style={{ marginTop: 0 }}>

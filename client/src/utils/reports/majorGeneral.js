@@ -122,7 +122,21 @@ function generateReport(data, configParams) {
         getDiaryDescription(transaction.description);
 
       doc.text(transaction.created_date.split("T")[0], left + 3, top);
-      doc.text(transaction.reference_bank || "", left + colsWidth[0] + 3, top);
+      let checkNum;
+      if (getDiaryDescription(transaction.description)) {
+        console.log(getDiaryDescription(transaction.description));
+
+        checkNum = getDiaryDescription(transaction.description)?.slice(
+          getDiaryDescription(transaction.description)?.indexOf("CK")
+        );
+      }
+      doc.text(
+        transaction.reference_bank
+          ? `DP ${transaction.reference_bank}`
+          : undefined || checkNum || "",
+        left + colsWidth[0] + 3,
+        top
+      );
       // doc.text(
       //   `${description[0] || ""} ${description[1] || ""} ${
       //     description[2] || ""
