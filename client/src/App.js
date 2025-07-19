@@ -56,6 +56,8 @@ import { PaymentsDash } from "./screens/Dashboards/Payments";
 import { AccountingConciliation } from "./screens/AccountingConciliation";
 import { ToChargeAccountAgedScreen } from "./screens/ToChargeAccountAgedScreen";
 import { CustomerAccountScreen } from "./screens/CustomerAccountScreen";
+import { HolidaysScreen } from "./screens/HolidaysScreen";
+import { EmployeeLoanScreen } from "./screens/EmployeeLoanScreen";
 
 function App() {
   const { token, auth, logout } = React.useContext(AuthContext);
@@ -311,6 +313,24 @@ function App() {
                   "REPORT_COMMISSION",
                   <CollectorCommissionScreen />
                 )}
+              />
+              <Route
+                path="/reports/rrhh-holidays"
+                element={checkRole(
+                  "REPORT_COMMISSION",
+                  <HolidaysScreen title={"Dias feriados"} type={"DF"} />
+                )}
+              />
+              <Route
+                path="/reports/rrhh-extra-hours"
+                element={checkRole(
+                  "REPORT_COMMISSION",
+                  <HolidaysScreen title={"Horas Extra"} type={"HE"} />
+                )}
+              />
+              <Route
+                path="/reports/rrhh-employee-loan"
+                element={checkRole("REPORT_COMMISSION", <EmployeeLoanScreen />)}
               />
             </Routes>
           </div>

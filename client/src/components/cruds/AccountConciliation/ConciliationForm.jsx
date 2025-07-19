@@ -61,7 +61,7 @@ const ConciliationForm = ({
 
   const totalLocalTransactions = data
     .filter((item) => item.selected)
-    .reduce((acc, t) => acc + parseFloat(t.diary_amount), 0);
+    .reduce((acc, t) => acc + parseFloat(t.amount), 0);
 
   const totalTransitTransactions = transitTransactions.reduce(
     (acc, t) =>
@@ -285,7 +285,7 @@ const ConciliationForm = ({
     },
     {
       name: "Referencia",
-      selector: (row) => row.bank.reference,
+      selector: (row) => row.bank.reference_bank,
       width: "140px",
       sortable: true,
       reorder: true,
@@ -572,16 +572,16 @@ const ConciliationForm = ({
         const currentAmount = item.local.reduce(
           (acc2, sbItem) =>
             sbItem.transaction_type == "ENTRY"
-              ? acc2 + parseFloat(sbItem.diary_amount)
-              : acc2 - parseFloat(sbItem.diary_amount),
+              ? acc2 + parseFloat(sbItem.amount)
+              : acc2 - parseFloat(sbItem.amount),
           0
         );
 
         return acc + currentAmount;
       } else {
         return item.local.transaction_type == "ENTRY"
-          ? acc + parseFloat(item.local.diary_amount)
-          : acc - parseFloat(item.local.diary_amount);
+          ? acc + parseFloat(item.local.amount)
+          : acc - parseFloat(item.local.amount);
       }
     }, 0) +
     totalTransitTransactions;
@@ -833,8 +833,28 @@ const ConciliationForm = ({
                     <div style={{ display: "flex", gap: 8 }}>
                       <div style={{ width: "60%" }}>
                         <h4 style={{ marginTop: 0 }}>
-                          Transacciones del Banco ({bankTransactions.length}) /
-                          Cargos bancarios (
+                          Transacciones del Banco (
+                          {
+                            bankTransactions.filter(
+                              (t) =>
+                                !t.bank.description
+                                  .toLowerCase()
+                                  .includes("servicio") &&
+                                !t.bank.description
+                                  .toLowerCase()
+                                  .includes("impuesto") &&
+                                !t.bank.description
+                                  .toLowerCase()
+                                  .includes("com.") &&
+                                !t.bank.description
+                                  .toLowerCase()
+                                  .includes("comisi") &&
+                                !t.bank.description
+                                  .toLowerCase()
+                                  .includes("reten")
+                            ).length
+                          }
+                          ) / Cargos bancarios (
                           {
                             bankTransactions.filter(
                               (t) =>
@@ -843,59 +863,88 @@ const ConciliationForm = ({
                                   .includes("servicio") ||
                                 t.bank.description
                                   .toLowerCase()
-                                  .includes("impuesto")
+                                  .includes("impuesto") ||
+                                t.bank.description
+                                  .toLowerCase()
+                                  .includes("com.") ||
+                                t.bank.description
+                                  .toLowerCase()
+                                  .includes("comisi") ||
+                                t.bank.description
+                                  .toLowerCase()
+                                  .includes("reten")
                             ).length
                           }
                           )
                         </h4>
                         <div className="comparison-card">
                           <ul>
-                            {bankTransactions.map((item) => (
-                              <li
-                                onClick={() =>
-                                  selectTransaction("bank", item.bank.id)
-                                }
-                                className={`${
-                                  item.selected ? "active" : "disabled"
-                                }`}
-                              >
-                                <input
-                                  checked={item.selected}
-                                  type="checkbox"
-                                />
-                                <label htmlFor="card-bank-trans">
-                                  <p>
-                                    <b>Fecha: </b> {item.bank.date}
-                                  </p>
-                                  <p>
-                                    <b>Referencia: </b> {item.bank.reference}
-                                  </p>
-                                  <p>
-                                    <b>Tipo: </b>{" "}
-                                    {getLabelByBankTransactionType(
-                                      item.bank.transaction_type
-                                    )}
-                                  </p>
-                                  <p>
-                                    <b>Cuenta: </b> {item.bank.bank_account}
-                                  </p>
-                                  <p>
-                                    <b>Monto: </b>{" "}
-                                    <span
-                                      style={{
-                                        color: "green",
-                                        fontWeight: "bold",
-                                      }}
-                                    >
-                                      {item.bank.amount}
-                                    </span>
-                                  </p>
-                                  <p style={{}}>
-                                    <b>Descripcion: </b> {item.bank.description}
-                                  </p>
-                                </label>
-                              </li>
-                            ))}
+                            {bankTransactions
+                              .filter(
+                                (t) =>
+                                  !t.bank.description
+                                    .toLowerCase()
+                                    .includes("servicio") &&
+                                  !t.bank.description
+                                    .toLowerCase()
+                                    .includes("impuesto") &&
+                                  !t.bank.description
+                                    .toLowerCase()
+                                    .includes("com.") &&
+                                  !t.bank.description
+                                    .toLowerCase()
+                                    .includes("comisi") &&
+                                  !t.bank.description
+                                    .toLowerCase()
+                                    .includes("reten")
+                              )
+                              .map((item) => (
+                                <li
+                                  onClick={() =>
+                                    selectTransaction("bank", item.bank.id)
+                                  }
+                                  className={`${
+                                    item.selected ? "active" : "disabled"
+                                  }`}
+                                >
+                                  <input
+                                    checked={item.selected}
+                                    type="checkbox"
+                                  />
+                                  <label htmlFor="card-bank-trans">
+                                    <p>
+                                      <b>Fecha: </b> {item.bank.date}
+                                    </p>
+                                    <p>
+                                      <b>Referencia: </b> {item.bank.reference}
+                                    </p>
+                                    <p>
+                                      <b>Tipo: </b>{" "}
+                                      {getLabelByBankTransactionType(
+                                        item.bank.transaction_type
+                                      )}
+                                    </p>
+                                    <p>
+                                      <b>Cuenta: </b> {item.bank.bank_account}
+                                    </p>
+                                    <p>
+                                      <b>Monto: </b>{" "}
+                                      <span
+                                        style={{
+                                          color: "green",
+                                          fontWeight: "bold",
+                                        }}
+                                      >
+                                        {item.bank.amount}
+                                      </span>
+                                    </p>
+                                    <p style={{}}>
+                                      <b>Descripcion: </b>{" "}
+                                      {item.bank.description}
+                                    </p>
+                                  </label>
+                                </li>
+                              ))}
                           </ul>
                         </div>
                         <p>
@@ -946,7 +995,8 @@ const ConciliationForm = ({
                                     <b>Fecha: </b> {item.target_date}
                                   </p>
                                   <p>
-                                    <b>Referencia: </b> {item.reference_bank}
+                                    <b>Referencia: </b>{" "}
+                                    {item.bank_reference || item.reference_bank}
                                   </p>
                                   <p>
                                     <b>Tipo: </b>{" "}
@@ -965,7 +1015,7 @@ const ConciliationForm = ({
                                         fontWeight: "bold",
                                       }}
                                     >
-                                      {item.diary_amount}
+                                      {item.amount}
                                     </span>
                                   </p>
                                   <p style={{}}>
@@ -1136,7 +1186,7 @@ const ConciliationForm = ({
                               selector: (row) => (
                                 <b style={{ fontSize: 16 }}>
                                   {" "}
-                                  {currencyFormat(row.diary_amount || 0, false)}
+                                  {currencyFormat(row.amount || 0, false)}
                                 </b>
                               ),
                               sortable: true,

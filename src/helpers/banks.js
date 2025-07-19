@@ -145,7 +145,7 @@ function bhd(arr) {
   console.log("hiii");
 
   const lineas = arr.trim().split("\n");
-
+  lineas.pop();
   const datos = lineas
     .filter((ln, index) => ln.length > 1 && index > 0)
     .map((linea, index) => {

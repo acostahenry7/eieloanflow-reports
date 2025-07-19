@@ -31,17 +31,21 @@ function SearchBar({
     validateOnChange: false,
     enableReinitialize: false,
     onSubmit: async (values, { resetForm }) => {
+      console.log(values);
       let haveAnyValue = Object.values(values).some(
         (item) => item != undefined
       );
+
+      //console.log(haveAnyValue);
       if (haveAnyValue) {
         console.log("hi");
         Object.entries(values).map(([key, value], index) => {
-          if (!value) {
+          if (value == undefined || value == null) {
             delete values[key];
           }
         });
 
+        console.log({ ...searchParams, ...values });
         setSearchParams({ ...searchParams, ...values });
       }
 
@@ -86,6 +90,7 @@ function SearchBar({
               <select
                 value={searchForm.values[mf.field]}
                 onChange={(e) => {
+                  console.log(e.target.value);
                   searchForm.setFieldValue(mf.field, e.target.value);
                   if (mf.customAction) {
                     console.log("hi");

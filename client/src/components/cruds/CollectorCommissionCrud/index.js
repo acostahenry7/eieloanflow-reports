@@ -11,6 +11,7 @@ import { currencyFormat } from "../../../utils/reports/report-helpers";
 import { TotalBar } from "../../TotalBar";
 import { generateReport } from "../../../utils/reports/resgisterClose";
 import "./index.css";
+import { getCollectorsCommissionApi } from "../../../api/rrhh";
 
 function CollectorCommissionCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -19,8 +20,8 @@ function CollectorCommissionCrud() {
   const [reqToggle, setReqToggle] = React.useState([]);
   const [searchedText, setSearchedText] = React.useState("");
   const [searchParams, setSearchParams] = React.useState({
-    dateFrom: new Date().toISOString().split("T")[0],
-    dateTo: new Date().toISOString().split("T")[0],
+    // dateFrom: "2024-06-01",
+    // dateTo: "2024-06-30",
   });
 
   const { toPDF, targetRef } = usePDF({
@@ -33,21 +34,19 @@ function CollectorCommissionCrud() {
       try {
         setIsLoading(true);
         const outlets = await getOutletsApi();
-        const registers = await getRegisterClose(searchParams);
+        const registers = await getCollectorsCommissionApi(searchParams);
         if (registers.error == true) {
           throw new Error(registers.body);
         }
 
         setOutlets(outlets.body);
 
-        let parseData = Object.values(registers.body).map((i, index) => ({
-          register: i[0],
-          child: i,
-        }));
+        // let parseData = Object.values(registers.body).map((i, index) => ({
+        //   register: i[0],
+        //   child: i,
+        // }));
 
-        setData(parseData);
-
-        console.log(parseData);
+        setData(registers.body);
       } catch (error) {
         console.log(error.message);
       }
@@ -57,13 +56,11 @@ function CollectorCommissionCrud() {
 
   const [columns, setColumns] = React.useState([
     {
-      name: "Empleado",
-      width: "198px",
+      name: "Fecha cobros",
+
       selector: (row) => (
         <div>
-          <p style={{ margin: 0, fontWeight: 500 }}>
-            {formatClientName(row.register.employee_name)}
-          </p>
+          <p style={{ margin: 0, fontWeight: 500 }}>{row.date}</p>
           {/* <span style={{ fontSize: 12 }}>{row.identification}</span> */}
         </div>
       ),
@@ -73,88 +70,112 @@ function CollectorCommissionCrud() {
       omit: false,
     },
     {
-      name: "Cant. Transacciones",
-      width: tableUIHelper.columns.width.amount,
-      selector: (row) => row.child.length,
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
-    {
-      name: "Total apertura",
-      width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.amount),
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
-    {
-      name: "Total de efectivo",
-      width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.total_cash),
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
+      name: "Cobrador",
 
-    {
-      name: "Total de cheques",
-      width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.total_check),
+      selector: (row) => row.employee_name,
       sortable: true,
       reorder: true,
       omit: false,
     },
     {
-      name: "Total de transferencia",
-      width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.total_transfer),
+      name: "Total cobrado",
+
+      selector: (row) => currencyFormat(row.pay, false),
       sortable: true,
       reorder: true,
       omit: false,
     },
     {
-      name: "Descuento",
-      width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.total_discount),
+      name: "Efectivo recibido",
+
+      selector: (row) => currencyFormat(row.total_registered, false),
       sortable: true,
       reorder: true,
       omit: false,
     },
     {
-      name: "Total pagado",
-      width: tableUIHelper.columns.width.amount,
-      selector: (row) => currencyFormat(row.register.total_pay),
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
-    {
-      name: "Fecha de apertura",
-      selector: (row) =>
-        new Date(row.register.opening_date)
-          .toLocaleString("es-ES", {
-            day: "2-digit",
-            month: "numeric",
-            year: "numeric",
-          })
-          .split(",")[0],
+      name: "Diferencia",
+
+      selector: (row) => currencyFormat(row.difference, false),
       sortable: true,
       reorder: true,
       omit: false,
     },
     {
       name: "Comisión",
-      width: tableUIHelper.columns.width.amount,
-      selector: (row) =>
-        currencyFormat(
-          parseFloat(row.register.collector_percentage / 100 || 0) *
-            row.child.reduce((acc, item) => acc + parseFloat(item.pay), 0)
-        ),
+
+      selector: (row) => currencyFormat(row.commission, false),
       sortable: true,
       reorder: true,
       omit: false,
     },
+    // {
+    //   name: "Total de efectivo",
+
+    //   selector: (row) => currencyFormat(row.register.total_cash),
+    //   sortable: true,
+    //   reorder: true,
+    //   omit: false,
+    // },
+
+    // {
+    //   name: "Total de cheques",
+
+    //   selector: (row) => currencyFormat(row.register.total_check),
+    //   sortable: true,
+    //   reorder: true,
+    //   omit: false,
+    // },
+    // {
+    //   name: "Total de transferencia",
+
+    //   selector: (row) => currencyFormat(row.register.total_transfer),
+    //   sortable: true,
+    //   reorder: true,
+    //   omit: false,
+    // },
+    // {
+    //   name: "Descuento",
+
+    //   selector: (row) => currencyFormat(row.register.total_discount),
+    //   sortable: true,
+    //   reorder: true,
+    //   omit: false,
+    // },
+    // {
+    //   name: "Total pagado",
+
+    //   selector: (row) => currencyFormat(row.register.total_pay),
+    //   sortable: true,
+    //   reorder: true,
+    //   omit: false,
+    // },
+    // {
+    //   name: "Fecha de apertura",
+    //   selector: (row) =>
+    //     new Date(row.register.opening_date)
+    //       .toLocaleString("es-ES", {
+    //         day: "2-digit",
+    //         month: "numeric",
+    //         year: "numeric",
+    //       })
+    //       .split(",")[0],
+    //   sortable: true,
+    //   reorder: true,
+    //   omit: false,
+    // },
+    // {
+    //   name: "Comisión",
+
+    //   selector: (row) =>
+    //     currencyFormat(
+    //       parseFloat(row.register.collector_percentage / 100 || 0) *
+    //         row.child.reduce((acc, item) => acc + parseFloat(item.pay), 0)
+    //     ),
+    //   sortable: true,
+    //   reorder: true,
+    //   omit: false,
+    // },
   ]);
 
   const mainFilters = [
@@ -201,7 +222,7 @@ function CollectorCommissionCrud() {
   ]);
 
   const filterData = data.filter((item) => {
-    let searchText = `employeeName${item.register.employee_name}indetification${item.identification}loanNumber${item.loan_number_id}createdBy${item.created_by}receiptNumber${item.receipt_number}`;
+    let searchText = ``;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
 
@@ -242,123 +263,123 @@ function CollectorCommissionCrud() {
           columns={columns}
           data={filterData}
           isLoading={isLoading}
-          dtOptions={{
-            expandableRows: true,
-            expandableRowsComponent: ({ data }) => {
-              let innerColumns = [
-                {
-                  name: "Préstamo",
-                  width: "120px",
-                  selector: (row) => row.loan_number_id,
-                  sortable: true,
-                  reorder: true,
-                  omit: false,
-                },
-                {
-                  name: "Cliente",
-                  selector: (row) => row.customer_name,
-                  sortable: true,
-                  reorder: true,
-                  omit: false,
-                },
-                {
-                  name: "Pago",
-                  selector: (row) => row.pay,
-                  sortable: true,
-                  reorder: true,
-                  omit: false,
-                },
-                {
-                  name: "Tipo de pago",
-                  selector: (row) =>
-                    row.payment_type == "CASH" ? "Efectivo" : "Transferencia",
-                  sortable: true,
-                  reorder: true,
-                  omit: false,
-                },
+          // dtOptions={{
+          //   expandableRows: true,
+          //   expandableRowsComponent: ({ data }) => {
+          //     let innerColumns = [
+          //       {
+          //         name: "Préstamo",
+          //         width: "120px",
+          //         selector: (row) => row.loan_number_id,
+          //         sortable: true,
+          //         reorder: true,
+          //         omit: false,
+          //       },
+          //       {
+          //         name: "Cliente",
+          //         selector: (row) => row.customer_name,
+          //         sortable: true,
+          //         reorder: true,
+          //         omit: false,
+          //       },
+          //       {
+          //         name: "Pago",
+          //         selector: (row) => row.pay,
+          //         sortable: true,
+          //         reorder: true,
+          //         omit: false,
+          //       },
+          //       {
+          //         name: "Tipo de pago",
+          //         selector: (row) =>
+          //           row.payment_type == "CASH" ? "Efectivo" : "Transferencia",
+          //         sortable: true,
+          //         reorder: true,
+          //         omit: false,
+          //       },
 
-                {
-                  name: "Fecha",
-                  selector: (row) =>
-                    new Date(row.created_date)
-                      .toLocaleString("es-ES")
-                      .split(",")[0],
-                  sortable: true,
-                  reorder: true,
-                  omit: false,
-                },
-              ];
+          //       {
+          //         name: "Fecha",
+          //         selector: (row) =>
+          //           new Date(row.created_date)
+          //             .toLocaleString("es-ES")
+          //             .split(",")[0],
+          //         sortable: true,
+          //         reorder: true,
+          //         omit: false,
+          //       },
+          //     ];
 
-              return (
-                <div
-                  style={{
-                    boxShadow: "inset 1px 4px 3px rgba(0,0,0,0.2)",
-                    padding: 20,
-                    borderRadius: 2,
-                    backgroundColor: "#f7fbff",
-                  }}
-                >
-                  <Datatable
-                    columns={innerColumns}
-                    data={data.child}
-                    marginTopPagination={18}
-                  />
-                  {filterData.length > 0 && (
-                    <div
-                      style={{
-                        display: isLoading ? "none" : "flex",
-                        alignItems: "center",
-                        marginTop: "-46px",
-                        paddingLeft: 8,
-                        // justifyContent: "space-between",
-                        width: "100%",
-                      }}
-                    >
-                      <div>Total</div>
-                      <div style={{ zIndex: 3 }} className="list-container">
-                        <ul
-                          style={{
-                            display: "flex",
-                            // width: "100%",
-                            // paddingLeft: 200,
-                            // boxSizing: "border-box",
-                            // width: "70%",
-                            // justifyContent: "flex-start",
-                          }}
-                        >
-                          <li
-                            style={{
-                              fontWeight: "bold",
-                              fontSize: 12,
-                              marginLeft: "175px",
-                            }}
-                          >
-                            <CurrencyFormat
-                              value={data.child
-                                ?.reduce(
-                                  (acc, item) => acc + parseFloat(item.pay),
-                                  0
-                                )
-                                .toFixed(2)}
-                              displayType={"text"}
-                              thousandSeparator={true}
-                              prefix={"RD$"}
-                            />
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            },
-            fixedHeader: true,
-          }}
-          marginTopPagination={100}
+          //     return (
+          //       <div
+          //         style={{
+          //           boxShadow: "inset 1px 4px 3px rgba(0,0,0,0.2)",
+          //           padding: 20,
+          //           borderRadius: 2,
+          //           backgroundColor: "#f7fbff",
+          //         }}
+          //       >
+          //         <Datatable
+          //           columns={innerColumns}
+          //           data={data.child}
+          //           marginTopPagination={18}
+          //         />
+          //         {filterData.length > 0 && (
+          //           <div
+          //             style={{
+          //               display: isLoading ? "none" : "flex",
+          //               alignItems: "center",
+          //               marginTop: "-46px",
+          //               paddingLeft: 8,
+          //               // justifyContent: "space-between",
+          //               width: "100%",
+          //             }}
+          //           >
+          //             <div>Total</div>
+          //             <div style={{ zIndex: 3 }} className="list-container">
+          //               <ul
+          //                 style={{
+          //                   display: "flex",
+          //                   // width: "100%",
+          //                   // paddingLeft: 200,
+          //                   // boxSizing: "border-box",
+          //                   // width: "70%",
+          //                   // justifyContent: "flex-start",
+          //                 }}
+          //               >
+          //                 <li
+          //                   style={{
+          //                     fontWeight: "bold",
+          //                     fontSize: 12,
+          //                     marginLeft: "175px",
+          //                   }}
+          //                 >
+          //                   <CurrencyFormat
+          //                     value={data.child
+          //                       ?.reduce(
+          //                         (acc, item) => acc + parseFloat(item.pay),
+          //                         0
+          //                       )
+          //                       .toFixed(2)}
+          //                     displayType={"text"}
+          //                     thousandSeparator={true}
+          //                     prefix={"RD$"}
+          //                   />
+          //                 </li>
+          //               </ul>
+          //             </div>
+          //           </div>
+          //         )}
+          //       </div>
+          //     );
+          //   },
+          //   fixedHeader: true,
+          // }}
+          //marginTopPagination={100}
         />
-        {filterData.length > 0 && (
-          <TotalBar data={filterData} loadingStatus={isLoading} />
-        )}
+        {/* {filterData.length > 0 && (
+          // <TotalBar data={filterData} loadingStatus={isLoading} />
+        )} */}
       </div>
     </div>
   );

@@ -606,7 +606,7 @@ function Sidebar() {
         },
         {
           privilege: "PAYROLLS",
-          label: "Reporte comisión cobrador",
+          label: "Comisiones por cobros",
           icon: (selected) => (
             <FaChartBar
               className="Sidebar-content-item-icon"
@@ -614,6 +614,39 @@ function Sidebar() {
             />
           ),
           route: "/reports/rrhh-collector-commission",
+          selected: false,
+        },
+        {
+          label: "Dias feriados",
+          icon: (selected) => (
+            <FaChartBar
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/rrhh-holidays",
+          selected: false,
+        },
+        {
+          label: "Horas extra",
+          icon: (selected) => (
+            <FaChartBar
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/rrhh-extra-hours",
+          selected: false,
+        },
+        {
+          label: "Préstamos a empleados",
+          icon: (selected) => (
+            <FaChartBar
+              className="Sidebar-content-item-icon"
+              color={`${selected === true ? "var(--main-color)" : "#888888"}`}
+            />
+          ),
+          route: "/reports/rrhh-employee-loan",
           selected: false,
         },
       ],

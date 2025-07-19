@@ -459,7 +459,7 @@ controller.getMajorGeneral = async (queryParams) => {
       ${queryParams.transType == "debit" ? "and gda.debit > 0" : ""}
       ${queryParams.transType == "credit" ? "and gda.credit > 0" : ""}
       and u.login not in ('y.aragonez')
-      order by created_date asc`
+      order by created_date asc, cp.reference_bank`
     );
 
     const [balanceByAccount] = await db.query(
@@ -726,13 +726,13 @@ controller.getSummarizeMajor = async (queryParams) => {
 controller.getBankDiaryTransactions = async (queryParams) => {
   try {
     const [checkPayment] = await db.query(`
-      SELECT t1.check_payment_id as transaction_id, t1.amount, t1.description, t1.status_type, t1.check_payment_type transaction_type, t1.loan_number_id,
+      SELECT t1.check_payment_id as transaction_id,  t1.amount as orig_amount, t1.amount - t1.charge as amount, t1.description, t1.status_type, t1.check_payment_type transaction_type, t1.loan_number_id,
       t2.general_diary_id, t2.general_diary_number_id, t2.credit as diary_amount, t1.bank as bank_number, t1.bank_account_id, t1.reference,
       t2.diary_description, t1.check_payment_date as target_date, t1.outlet_id, cd.is_conciliated, CASE
 	  	WHEN cl.status_type = 'ENABLED' AND cd.is_conciliated = true THEN true
 	    ELSE false
 	  END is_conciliated, cd.conciliation_id, t1.reference_bank
-      FROM (select cp.check_payment_id, cp.amount, cp.description, cp.reference, cp.status_type, cp.check_payment_date, cp.check_payment_type,
+      FROM (select cp.check_payment_id, cp.amount, cp.charge, cp.description, cp.reference, cp.status_type, cp.check_payment_date, cp.check_payment_type,
         ba.number as bank, ac.number, cp.bank_account_id, cp.general_diary_id, l.loan_number_id, cp.outlet_id, cp.reference_bank
         from check_payment cp
         left join bank_account ba on (cp.bank_account_id = ba.bank_account_id)
@@ -771,12 +771,12 @@ controller.getBankDiaryTransactions = async (queryParams) => {
       left join conciliation cl on (cd.conciliation_id = cl.conciliation_id AND (cl.status_type = 'ENABLED' or cl.status_type is null))
       where t1.status_type in ('APPROVED', 'TRANSIT')
       ${getGenericLikeFilter("t1.bank_account_id", queryParams.bankAccountId)}
-      order by check_payment_date
+      order by check_payment_date, t1.reference_bank
 
     `);
 
     const [bankEntryRetire] = await db.query(
-      `select ber.bank_entry_retirement_id as transaction_id, ber.amount, ber.description, ber.status_type,
+      `select ber.bank_entry_retirement_id as transaction_id, ber.amount, ber.description, ber.status_type,  ber.bank_reference,
       ber.type_movement as transaction_type, ber.general_diary_id, sum(gda.debit) as diary_amount, ba.number as bank_number,
       ber.bank_account_id, ber.reference, gd.description as diary_description, ber.target_date, ber.outlet_id, ber.created_date,
       CASE

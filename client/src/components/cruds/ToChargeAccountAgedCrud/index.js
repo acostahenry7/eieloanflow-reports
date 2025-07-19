@@ -95,7 +95,7 @@ function ToChargeAccountAgedCrud() {
     },
 
     {
-      name: "De 1 a 30 dias",
+      name: "30 días",
       width: "150px",
       selector: (row) => currencyFormat(row.thirty_days, false),
       sortable: true,
@@ -103,7 +103,7 @@ function ToChargeAccountAgedCrud() {
       omit: false,
     },
     {
-      name: "De 1 a 2 meses",
+      name: "60 días",
       width: "150px",
       selector: (row) => currencyFormat(row.one_or_two_months, false),
       sortable: true,
@@ -111,37 +111,37 @@ function ToChargeAccountAgedCrud() {
       omit: false,
     },
     {
-      name: "De 2 a 3 meses",
+      name: "90 días",
       width: "150px",
       selector: (row) => currencyFormat(row.two_or_three_months, false),
       sortable: true,
       reorder: true,
       omit: false,
     },
-    {
-      name: "De 3 a 6 meses",
-      width: "150px",
-      selector: (row) => currencyFormat(row.three_or_six_months, false),
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
-    {
-      name: "De 1/2 a 1 año",
-      width: "150px",
-      selector: (row) => currencyFormat(row.six_or_twelve_months, false),
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
-    {
-      name: "Más de 1 año",
-      width: "150px",
-      selector: (row) => currencyFormat(row.more_than_year, false),
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
+    // {
+    //   name: "> 120 días",
+    //   width: "150px",
+    //   selector: (row) => currencyFormat(row.three_or_six_months, false),
+    //   sortable: true,
+    //   reorder: true,
+    //   omit: false,
+    // },
+    // {
+    //   name: "De 1/2 a 1 año",
+    //   width: "150px",
+    //   selector: (row) => currencyFormat(row.six_or_twelve_months, false),
+    //   sortable: true,
+    //   reorder: true,
+    //   omit: false,
+    // },
+    // {
+    //   name: "Más de 1 año",
+    //   width: "150px",
+    //   selector: (row) => currencyFormat(row.more_than_year, false),
+    //   sortable: true,
+    //   reorder: true,
+    //   omit: false,
+    // },
   ]);
 
   const mainFilters = [

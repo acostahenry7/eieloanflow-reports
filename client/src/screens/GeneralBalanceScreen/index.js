@@ -97,11 +97,6 @@ function GeneralBalanceScreen() {
         }),
       ],
     },
-    {
-      label: "A la Fecha De",
-      field: "date",
-      type: "date",
-    },
   ];
 
   let secondaryFilters = [
@@ -111,6 +106,12 @@ function GeneralBalanceScreen() {
     //   placeholder: "Búsqueda por nombre",
     //   type: "dateRange",
     // },
+    {
+      label: "De",
+      field: "date",
+      type: "dateRange",
+      isActive: true,
+    },
   ];
 
   return (

@@ -35,32 +35,27 @@ function conciliarTransacciones(localTransactions, bankTransactions) {
       // }
 
       let condition;
+      let checkTypes = ["DISBURSEMENT", "RETIREMENT", "PAYMENT"];
 
-      if (local.diary_description.toLowerCase().includes("desembolso")) {
-        condition = parseFloat(local.diary_amount) == parseFloat(bank.amount);
+      if (checkTypes.some((i) => i == local.transaction_type)) {
+        condition = bank.reference.includes(local.reference_bank);
+        //condition = parseFloat(local.amount) == parseFloat(bank.amount);
       } else {
         condition =
-          parseFloat(local.diary_amount) == parseFloat(bank.amount) &&
+          parseFloat(local.amount) == parseFloat(bank.amount) &&
           calcularDiferenciaDias(local.target_date, bank.date) <= dayRange;
       }
 
-      if (bank.reference == "0000022379" && local.diary_amount == 65000) {
-        console.log(
-          parseFloat(local.diary_amount),
-          "/",
-          parseFloat(bank.amount),
-          local
-        );
+      if (bank.transaction_type == "CR") {
+        return condition == true && local.transaction_type == "ENTRY";
+      } else {
+        return condition == true;
       }
 
-      return condition == true;
       //local.reference_bank == bank.reference &&
       //&& calcularDiferenciaDias(local.target_date, bank.date) <= dayRange
     });
 
-    if (bank.reference == "0000022379") {
-      console.log("Posible matches", posiblesMatches);
-    }
     if (posiblesMatches.length === 1) {
       // Si solo hay un match claro
       resutls.push({
@@ -75,6 +70,8 @@ function conciliarTransacciones(localTransactions, bankTransactions) {
       );
     } else if (posiblesMatches.length > 1) {
       // Si hay varios matches, revisar si un la referencia o la descripción coinciden
+      if ((bank.reference = "0000000000" && bank.amount == 9500))
+        console.log(posiblesMatches, bank.transaction_type);
       let mejorMatch = posiblesMatches.find(
         (local) =>
           local.reference_bank == bank.reference ||

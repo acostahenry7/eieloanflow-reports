@@ -5,7 +5,7 @@ import { CollectorCommissionCrud } from "../../components/cruds/CollectorCommiss
 function CollectorCommissionScreen() {
   return (
     <div className="">
-      <TopBar title="Comisión por cobrador" />
+      <TopBar title="Comisiones por cobros" />
       <div className="screen-content">
         <CollectorCommissionCrud />
       </div>
