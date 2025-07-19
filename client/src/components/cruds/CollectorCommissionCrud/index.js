@@ -80,7 +80,7 @@ function CollectorCommissionCrud() {
     {
       name: "Total cobrado",
 
-      selector: (row) => currencyFormat(row.pay, false),
+      selector: (row) => currencyFormat(row.total_collected, false),
       sortable: true,
       reorder: true,
       omit: false,
@@ -88,7 +88,7 @@ function CollectorCommissionCrud() {
     {
       name: "Efectivo recibido",
 
-      selector: (row) => currencyFormat(row.total_registered, false),
+      selector: (row) => currencyFormat(row.total_cash_registered, false),
       sortable: true,
       reorder: true,
       omit: false,

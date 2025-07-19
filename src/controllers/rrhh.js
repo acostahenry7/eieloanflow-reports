@@ -37,12 +37,14 @@ controller.getCollectorsCommission = async (queryParams) => {
       min(ec.commission_pct) || '%' as commission_pct, 
       round(sum(p.pay) * min(ec.commission_pct)/100 /11) commission, 
       (count(l.loan_number_id::varchar) filter (where p.payment_origin = 'APP'))/11 as app_payments,
-      (count(l.loan_number_id::varchar) filter (where p.payment_origin = 'SOFWARE'))/11 as soft ware_payments,
+      (count(l.loan_number_id::varchar) filter (where p.payment_origin = 'SOFWARE'))/11 as software_payments,
       p.register_id,
 	  r.total_cash + r.total_transfer + r.total_check as total_collected,
-      sum(rd.total)  as total_cash_registered,
-	  r.total_deposit,
-      (sum(rd.total) + r.total_deposit) - (r.total_cash + r.total_transfer + r.total_check) as difference
+    round(sum(rd.total)/(count(l.loan_number_id::varchar)/11)) as total_cash_registered,
+	 --rd.amount,
+          r.total_deposit,
+     (round(sum(rd.total)/(count(l.loan_number_id::varchar)/11)) + coalesce(r.total_deposit,0)) 
+     - (r.total_cash + r.total_transfer + r.total_check) as difference
     from payment p
     join (select employee_id, first_name || ' ' || last_name as employee_name,
        coalesce(commission_debt_collector_percentage,0) commission_pct
@@ -145,7 +147,10 @@ controller.getEmployeeLoans = async (queryParams) => {
   join employee e on (cl.employee_id = e.employee_id)
   join loan_application la on (l.loan_application_id = la.loan_application_id)
   where cl.employee_id is not null
+  ${getGenericLikeFilter("l.outlet_id", queryParams.outletId)}
+  ${getGenericLikeFilter("l.status_type", queryParams.loanStatus)}
   and l.status_type <> 'DELETE'
+  order by e.first_name
   `);
 
     return data;

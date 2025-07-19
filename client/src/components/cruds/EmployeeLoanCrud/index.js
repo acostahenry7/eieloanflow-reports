@@ -81,14 +81,14 @@ function EmployeeLoanCrud() {
       reorder: true,
       omit: false,
     },
-    {
-      name: "Estatus empleado",
-      //width: tableUIHelper.columns.width.phone,
-      selector: (row) => getCustomerEstatusLabel(row.employee_status),
-      sortable: true,
-      reorder: true,
-      omit: false,
-    },
+    // {
+    //   name: "Estatus empleado",
+    //   //width: tableUIHelper.columns.width.phone,
+    //   selector: (row) => getCustomerEstatusLabel(row.employee_status),
+    //   sortable: true,
+    //   reorder: true,
+    //   omit: false,
+    // },
     {
       name: "Préstamo",
       //width: tableUIHelper.columns.width.loan,
@@ -198,25 +198,6 @@ function EmployeeLoanCrud() {
             value: item.outlet_id,
           };
         }),
-      ],
-    },
-    {
-      label: "Estatus Empleado",
-      field: "customerStatus",
-      type: "select",
-      options: [
-        {
-          label: "Todos",
-          value: "",
-        },
-        {
-          label: "Activo",
-          value: "ENABLED",
-        },
-        {
-          label: "Inactivo",
-          value: "DISABLED",
-        },
       ],
     },
   ];
