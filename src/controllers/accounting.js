@@ -401,8 +401,15 @@ controller.getMajorGeneral = async (queryParams) => {
   console.log(queryParams);
 
   try {
+    const [sequenceMax] = await db.query(`select account_catalog_id, count(*)
+    from general_diary_account gda
+    join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
+    where gda.status_type = 'ENABLED'
+    ${getGenericLikeFilter("gd.outlet_id", queryParams.outletId)}
+    group by account_catalog_id`);
+
     const [majorGeneral, meta] = await db.query(
-      `select ac.number, ac.name, gd.description, 'Deposito ' || ber.description deposit_description,
+      `select ac.account_catalog_id, ac.number, ac.name, gd.description, 'Deposito ' || ber.description deposit_description,
       'Desembolso a Préstamo '|| l.loan_number_id || ' ' || c.first_name || ' ' || c.last_name as check_description,
       gda.debit, gda.credit, e.first_name || ' ' || e.last_name as employee_name,
       l.loan_number_id loan_number,
@@ -500,9 +507,7 @@ controller.getMajorGeneral = async (queryParams) => {
     // console.log(majorGeneral);
     let data = _(majorGeneral).groupBy("number");
 
-    console.log(Object.entries(data).length);
-
-    return { data, balanceByAccount };
+    return { data, balanceByAccount, sequenceMax };
   } catch (err) {
     console.log(err);
   }

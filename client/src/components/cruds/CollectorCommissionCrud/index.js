@@ -10,8 +10,8 @@ import CurrencyFormat from "react-currency-format";
 import { currencyFormat } from "../../../utils/reports/report-helpers";
 import { TotalBar } from "../../TotalBar";
 import { generateReport } from "../../../utils/reports/resgisterClose";
-import "./index.css";
 import { getCollectorsCommissionApi } from "../../../api/rrhh";
+import "./index.css";
 
 function CollectorCommissionCrud() {
   const [outlets, setOutlets] = React.useState([]);
@@ -222,7 +222,7 @@ function CollectorCommissionCrud() {
   ]);
 
   const filterData = data.filter((item) => {
-    let searchText = ``;
+    let searchText = `employeeName${item.employee_name}`;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
 

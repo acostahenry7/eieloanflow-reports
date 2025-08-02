@@ -16,7 +16,7 @@ import { AuthContext } from "../../../contexts/AuthContext";
 import { getEmployeeLoansApi } from "../../../api/rrhh";
 import { currencyFormat } from "../../../utils/reports/report-helpers";
 
-function EmployeeLoanCrud() {
+function EmployeeLoanCrudd() {
   const [outlets, setOutlets] = React.useState([]);
   const [data, setData] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -306,4 +306,4 @@ function EmployeeLoanCrud() {
   );
 }
 
-export { EmployeeLoanCrud };
+export { EmployeeLoanCrudd };

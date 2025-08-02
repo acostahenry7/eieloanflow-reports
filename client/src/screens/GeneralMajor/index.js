@@ -9,6 +9,7 @@ import { getOutletsApi } from "../../api/outlet";
 import { Datatable } from "../../components/Datatable";
 import "./index.css";
 import CurrencyFormat from "react-currency-format";
+import { orderBy } from "lodash";
 
 function GeneralMajor() {
   const [outlets, setOutlets] = React.useState([]);
@@ -21,6 +22,7 @@ function GeneralMajor() {
   const [reqToggle, setReqToggle] = React.useState([]);
   const [searchedText, setSearchedText] = React.useState("");
   const [accountBalances, setAccountBalances] = React.useState([]);
+  const [sequenceMax, setSequenceMax] = React.useState({});
 
   React.useEffect(() => {
     (async () => {
@@ -33,6 +35,8 @@ function GeneralMajor() {
     (async () => {
       setAccountBalances([]);
       let response = await getMajorGeneral(searchParams);
+      console.log(response.body.sequenceMax);
+      setSequenceMax(response.body.sequenceMax);
       setAccountBalances(response.body.balanceByAccount);
     })();
   }, [searchParams.outletId, searchParams.accountName, reqToggle]);
@@ -231,9 +235,9 @@ function GeneralMajor() {
       // let response = await getMajorGeneral(searchParams);
 
       let reportConfig = {
-        title: outlets.filter(
+        title: outlets?.filter(
           (item) => item.outlet_id == searchParams.outletId
-        )[0].name,
+        )[0]?.name,
         date: `De ${new Date(searchParams.dateFrom)
           .toUTCString()
           .slice(5, 16)} al ${new Date(searchParams.dateTo)
@@ -241,6 +245,7 @@ function GeneralMajor() {
           .slice(5, 16)}`,
         currentAccount: searchParams.accountName,
         previousBalances: accountBalances,
+        sequenceMax,
       };
       console.log(data);
       generateReport(filterData, reportConfig);

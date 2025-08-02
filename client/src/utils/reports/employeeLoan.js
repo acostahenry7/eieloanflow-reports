@@ -63,7 +63,7 @@ function generateReport(data, configParams) {
   data.map((item, index) => {
     //Adding one entry
     let employeeName = `${item.employee_name
-      .split(" ")
+      ?.split(" ")
       .map((item, index) => (index <= 3 ? item : undefined))
       .filter((item) => item != undefined)
       .join(" ")}`;

@@ -275,7 +275,7 @@ function EmployeeCrud() {
   ];
 
   const filterData = data.filter((item) => {
-    let searchText = `employeeName${item.customer_name}identification${item.identification}loanNumber${item.loan_number_id}`;
+    let searchText = `employeeName${item.employee_name}identification${item.identification}loanNumber${item.loan_number_id}`;
     return searchText.toLowerCase().includes(searchedText.toLocaleLowerCase());
   });
 

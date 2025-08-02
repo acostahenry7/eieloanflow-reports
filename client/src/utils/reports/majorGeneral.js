@@ -66,6 +66,19 @@ function generateReport(data, configParams) {
   console.log(parsedData);
   let origin = "";
   parsedData.map((pd, acIndex) => {
+    if (acIndex == 0) {
+      console.log(pd);
+    }
+
+    console.log(configParams?.sequenceMax);
+    let accountCounter = Number(
+      configParams?.sequenceMax.find(
+        (item) => item.account_catalog_id == pd.account_catalog_id
+      )?.count || 0
+    );
+
+    console.log(accountCounter);
+
     //console.log(pd);
     // createTitle(doc, pd.account.name, right + 42, headerTop + 18, {
     //   align: "right",
@@ -145,7 +158,7 @@ function generateReport(data, configParams) {
           `${
             transaction.reference_bank?.includes("CK")
               ? transaction.reference_bank
-              : "DP" + transaction.reference_bank
+              : "DP" + accountCounter
           }`.slice(2),
           left + colsWidth[0] + colsWidth[1] + 3,
           top
@@ -269,6 +282,15 @@ function generateReport(data, configParams) {
             align: "right",
           }
         );
+      }
+      if (
+        `${
+          transaction.reference_bank?.includes("CK")
+            ? transaction.reference_bank
+            : "DP" + transaction.reference_bank
+        }`.slice(0, 2) == "DP"
+      ) {
+        accountCounter++;
       }
     });
 
