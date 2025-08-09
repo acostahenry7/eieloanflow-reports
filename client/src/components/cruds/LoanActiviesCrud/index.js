@@ -22,6 +22,8 @@ function LoanActivitiesCrud() {
       try {
         setIsLoading(true);
         const outlets = await getOutletsApi();
+
+        console.log(searchParams);
         const loanActivities = await getLoanActivities(searchParams);
         if (loanActivities.error == true) {
           throw new Error(loanActivities.body);

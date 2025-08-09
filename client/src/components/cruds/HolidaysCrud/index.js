@@ -40,6 +40,7 @@ function HolidaysCrud({ type }) {
     })();
   }, [reqToggle, type]);
 
+  console.log(type);
   const [columns, setColumns] = React.useState([
     {
       name: "Empleado",
@@ -102,6 +103,13 @@ function HolidaysCrud({ type }) {
       sortable: true,
       reorder: true,
       omit: true,
+    },
+    {
+      name: `Cantidad de ${type == "DF" ? "dias" : "horas"}`,
+      selector: (row) => currencyFormat(row.value, false, 0),
+      sortable: true,
+      reorder: true,
+      omit: false,
     },
     {
       name: "Monto a pagar",

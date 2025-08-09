@@ -401,18 +401,36 @@ controller.getMajorGeneral = async (queryParams) => {
   console.log(queryParams);
 
   try {
-    const [sequenceMax] = await db.query(`select account_catalog_id, count(*)
-    from general_diary_account gda
-    join general_diary gd on (gda.general_diary_id = gd.general_diary_id)
-    where gda.status_type = 'ENABLED'
-    ${getGenericLikeFilter("gd.outlet_id", queryParams.outletId)}
-    group by account_catalog_id`);
+    const [sequenceMax] =
+      await db.query(`select ba.account_catalog_id, ac.number,count(bank_entry_retirement_id) last_num
+      from bank_entry_retirement ber
+      join bank_account ba on (ber.bank_account_id = ba.bank_account_id)
+      join account_catalog ac on (ba.account_catalog_id = ac.account_catalog_id)
+      where type_movement = 'ENTRY'
+      and ber.status_type <> 'DELETE'
+      ${getGenericLikeFilter("ber.outlet_id", queryParams.outletId)}
+      ${
+        queryParams.dateFrom
+          ? `and ber.target_date < '${queryParams.dateFrom}'`
+          : ""
+      }
+      group by ba.account_catalog_id, ac.number`);
 
     const [majorGeneral, meta] = await db.query(
       `select ac.account_catalog_id, ac.number, ac.name, gd.description, 'Deposito ' || ber.description deposit_description,
       'Desembolso a Préstamo '|| l.loan_number_id || ' ' || c.first_name || ' ' || c.last_name as check_description,
       gda.debit, gda.credit, e.first_name || ' ' || e.last_name as employee_name,
       l.loan_number_id loan_number,
+      CASE  
+        WHEN cp.check_payment_id IS NOT NULL THEN 'CK'
+        WHEN ber.bank_entry_retirement_id IS NOT NULL THEN 'DP'
+        ELSE 'P'
+      END transaction_type,
+      CASE  
+        WHEN cp.check_payment_id IS NOT NULL THEN cp.reference_bank
+        WHEN ber.bank_entry_retirement_id IS NOT NULL THEN 'deposit'
+        ELSE ''
+	    END doc_num,
       CASE 
         WHEN cp.check_payment_type IS NULL AND ber.target_date IS NOT NULL THEN ber.target_date
         WHEN ber.target_date IS NULL AND cp.check_payment_type IS NOT NULL THEN cp.check_payment_date
@@ -593,9 +611,9 @@ controller.getToChargeAccount = async (queryParams) => {
         sum(a.amount_of_fee - a.total_paid - a.discount_interest) filter(where a.paid = 'false' and a.status_type <> 'DELETE')
         as total_pending
         from loan l
-        join loan_application la on (l.loan_application_id = la.loan_application_id)
-        join customer c on (la.customer_id = c.customer_id)
-        join amortization a on (l.loan_id = a.loan_id)
+        left join loan_application la on (l.loan_application_id = la.loan_application_id)
+        left join customer c on (la.customer_id = c.customer_id)
+        left join amortization a on (l.loan_id = a.loan_id)
         where l.status_type not in ('DELETE', 'PAID', 'REFINANCE')
         AND  l.outlet_id like '${queryParams.outletId || ""}%'
         AND c.identification like '${queryParams.identification || ""}%'
@@ -604,11 +622,17 @@ controller.getToChargeAccount = async (queryParams) => {
         AND la.loan_type like '${queryParams.loanType || ""}%'
         AND l.loan_situation like '${queryParams.loanSituation || ""}%'
         ${
-          Boolean(queryParams.isInterest) == true
-            ? `AND a.payment_date::date >= '${queryParams.dateFrom}'`
-            : ""
+          ""
+          // Boolean(queryParams.isInterest) == true
+          //   ? `AND a.payment_date::date >= '${queryParams.dateFrom}'`
+          //   : ""
         }
-        AND a.payment_date::date <='${queryParams.dateTo}'
+        ${getDateRangeFilter(
+          "a.payment_date",
+          queryParams.dateFrom,
+          queryParams.dateTo,
+          true
+        )}
         group by l.loan_number_id, la.loan_type, l.status_type, l.loan_situation,
         l.amount_approved, c.first_name, c.last_name, c.identification,l.created_date
         having  coalesce(sum (a.interest) filter(where a.status_type <> 'DELETE' and a.paid = 'true'),0) +

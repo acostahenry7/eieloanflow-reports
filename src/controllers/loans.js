@@ -463,7 +463,15 @@ ${
     // if (data.length == 0) {
     //   return [];
     // }
-    let response = [...data, ...events, ...alerts];
+
+    let response = [...data, ...events];
+    if (
+      queryParams.actionType == "" ||
+      queryParams.actionType == "CANCEL_PAYMENT"
+    ) {
+      response.alerts = alerts;
+    }
+
     // if (
     //   queryParams.actionType == "CANCEL_PAYMENT" ||
     //   queryParams.actionType == ""

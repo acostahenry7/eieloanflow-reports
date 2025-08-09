@@ -285,7 +285,10 @@ const ConciliationForm = ({
     },
     {
       name: "Referencia",
-      selector: (row) => row.bank.reference_bank,
+      selector: (row) =>
+        row.bank.reference_bank ||
+        row.local.reference_bank ||
+        row.local.bank_reference,
       width: "140px",
       sortable: true,
       reorder: true,

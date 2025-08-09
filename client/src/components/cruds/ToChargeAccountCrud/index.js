@@ -24,7 +24,7 @@ function ToChargeAccountCrud() {
   const [currentLoanId, setCurrentLoanId] = React.useState("");
   const [searchParams, setSearchParams] = React.useState({
     // dateFrom: new Date().toISOString().split("T")[0],
-    dateTo: new Date().toISOString().split("T")[0],
+    //dateTo: new Date().toISOString().split("T")[0],
   });
 
   React.useEffect(() => {

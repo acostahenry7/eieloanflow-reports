@@ -63,18 +63,18 @@ function generateReport(data, configParams) {
 
   //---------------------- TRANSACTIONS--------------------
   let counter = 0;
-  console.log(parsedData);
+
   let origin = "";
   parsedData.map((pd, acIndex) => {
     if (acIndex == 0) {
       console.log(pd);
     }
 
-    console.log(configParams?.sequenceMax);
+    console.log("CONFIG", configParams?.sequenceMax);
     let accountCounter = Number(
       configParams?.sequenceMax.find(
-        (item) => item.account_catalog_id == pd.account_catalog_id
-      )?.count || 0
+        (item) => item.account_catalog_id === pd.account.account_catalog_id
+      )?.last_num
     );
 
     console.log(accountCounter);
@@ -102,13 +102,6 @@ function generateReport(data, configParams) {
     let currentTotalBalance = 0;
 
     //adding previous balance
-
-    console.log(
-      configParams.previousBalances[0],
-      "vs",
-      configParams.currentAccount
-    );
-
     if (pd.transactions[0].isFirst == true) {
       pd.transactions.shift();
     }
@@ -121,8 +114,6 @@ function generateReport(data, configParams) {
       obj.isFirst = true;
       obj.description = "Balance al mes anterior";
       obj.created_date = "";
-
-      console.log(obj);
 
       pd.transactions.unshift(obj);
     }
@@ -137,32 +128,32 @@ function generateReport(data, configParams) {
       doc.text(transaction.created_date.split("T")[0], left + 3, top);
       let checkNum;
       if (getDiaryDescription(transaction.description)) {
-        console.log(getDiaryDescription(transaction.description));
-
         checkNum = getDiaryDescription(transaction.description)?.slice(
           getDiaryDescription(transaction.description)?.indexOf("CK")
         );
       }
-      console.log("TRANSACTION", transaction);
+
       if (index > 0) {
         doc.text(
-          `${
-            transaction.reference_bank?.includes("CK")
-              ? transaction.reference_bank
-              : "DP" + transaction.reference_bank
-          }`.slice(0, 2),
+          `${transaction.transaction_type}`,
           left + colsWidth[0] + 3,
           top
         );
-        doc.text(
-          `${
-            transaction.reference_bank?.includes("CK")
-              ? transaction.reference_bank
-              : "DP" + accountCounter
-          }`.slice(2),
-          left + colsWidth[0] + colsWidth[1] + 3,
-          top
-        );
+
+        let docNum;
+
+        switch (transaction.doc_num) {
+          case "deposit":
+            docNum = accountCounter;
+            break;
+          case "P":
+            docNum = 0;
+            break;
+          default:
+            docNum = transaction.doc_num;
+            break;
+        }
+        doc.text(`${docNum}`, left + colsWidth[0] + colsWidth[1] + 3, top);
       }
 
       // doc.text(
