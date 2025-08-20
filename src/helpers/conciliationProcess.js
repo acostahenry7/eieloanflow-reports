@@ -38,7 +38,9 @@ function conciliarTransacciones(localTransactions, bankTransactions) {
       let checkTypes = ["DISBURSEMENT", "RETIREMENT", "PAYMENT"];
 
       if (checkTypes.some((i) => i == local.transaction_type)) {
-        condition = bank.reference.includes(local.reference_bank);
+        condition =
+          bank.reference.includes(local.reference_bank) ||
+          parseFloat(local.amount) == parseFloat(bank.amount);
         //condition = parseFloat(local.amount) == parseFloat(bank.amount);
       } else {
         condition =

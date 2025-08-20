@@ -135,40 +135,45 @@ const ConciliationForm = ({
       description: Yup.string().required("Favor colocar descripcion"),
     }),
     onSubmit: (values) => {
-      values.file = null;
+      console.log("hia");
+      try {
+        values.file = null;
 
-      values.createdBy = auth.login;
-      values.lastModifiedBy = auth.login;
+        values.createdBy = auth.login;
+        values.lastModifiedBy = auth.login;
 
-      for (let i = 0; i < conciliatedTransactions.length; i++) {
-        if (Array.isArray(conciliatedTransactions[i].local) == false) {
-          conciliatedTransactions[i].local = [
-            { ...conciliatedTransactions[i].local },
-          ];
+        for (let i = 0; i < conciliatedTransactions.length; i++) {
+          if (Array.isArray(conciliatedTransactions[i].local) == false) {
+            conciliatedTransactions[i].local = [
+              { ...conciliatedTransactions[i].local },
+            ];
+          }
         }
-      }
 
-      console.log(values);
-      console.log(transitTransactions);
+        console.log("value", values);
 
-      createConciliationApi({
-        ...values,
-        transactions: [
-          ...conciliatedTransactions,
-          ...transitTransactions.map((item) => ({ local: [item] })),
-        ],
-      })
-        .then((res) => {
-          onRefetch();
+        createConciliationApi({
+          ...values,
+          transactions: [
+            ...conciliatedTransactions,
+            ...transitTransactions.map((item) => ({ local: [item] })),
+          ],
         })
-        .catch((err) => {})
-        .finally(() => {
-          handleCloseForm();
-        });
+          .then((res) => {
+            console.log(res);
+            //onRefetch();
+          })
+          .catch((err) => {
+            console.log(err);
+          })
+          .finally(() => {
+            handleCloseForm();
+          });
+      } catch (error) {
+        console.log(error);
+      }
     },
   });
-
-  console.log(transitTransactions);
 
   const conciliateTransaction = () => {
     let bTIndex = -1;
@@ -882,72 +887,52 @@ const ConciliationForm = ({
                         </h4>
                         <div className="comparison-card">
                           <ul>
-                            {bankTransactions
-                              .filter(
-                                (t) =>
-                                  !t.bank.description
-                                    .toLowerCase()
-                                    .includes("servicio") &&
-                                  !t.bank.description
-                                    .toLowerCase()
-                                    .includes("impuesto") &&
-                                  !t.bank.description
-                                    .toLowerCase()
-                                    .includes("com.") &&
-                                  !t.bank.description
-                                    .toLowerCase()
-                                    .includes("comisi") &&
-                                  !t.bank.description
-                                    .toLowerCase()
-                                    .includes("reten")
-                              )
-                              .map((item) => (
-                                <li
-                                  onClick={() =>
-                                    selectTransaction("bank", item.bank.id)
-                                  }
-                                  className={`${
-                                    item.selected ? "active" : "disabled"
-                                  }`}
-                                >
-                                  <input
-                                    checked={item.selected}
-                                    type="checkbox"
-                                  />
-                                  <label htmlFor="card-bank-trans">
-                                    <p>
-                                      <b>Fecha: </b> {item.bank.date}
-                                    </p>
-                                    <p>
-                                      <b>Referencia: </b> {item.bank.reference}
-                                    </p>
-                                    <p>
-                                      <b>Tipo: </b>{" "}
-                                      {getLabelByBankTransactionType(
-                                        item.bank.transaction_type
-                                      )}
-                                    </p>
-                                    <p>
-                                      <b>Cuenta: </b> {item.bank.bank_account}
-                                    </p>
-                                    <p>
-                                      <b>Monto: </b>{" "}
-                                      <span
-                                        style={{
-                                          color: "green",
-                                          fontWeight: "bold",
-                                        }}
-                                      >
-                                        {item.bank.amount}
-                                      </span>
-                                    </p>
-                                    <p style={{}}>
-                                      <b>Descripcion: </b>{" "}
-                                      {item.bank.description}
-                                    </p>
-                                  </label>
-                                </li>
-                              ))}
+                            {bankTransactions.map((item) => (
+                              <li
+                                onClick={() =>
+                                  selectTransaction("bank", item.bank.id)
+                                }
+                                className={`${
+                                  item.selected ? "active" : "disabled"
+                                }`}
+                              >
+                                <input
+                                  checked={item.selected}
+                                  type="checkbox"
+                                />
+                                <label htmlFor="card-bank-trans">
+                                  <p>
+                                    <b>Fecha: </b> {item.bank.date}
+                                  </p>
+                                  <p>
+                                    <b>Referencia: </b> {item.bank.reference}
+                                  </p>
+                                  <p>
+                                    <b>Tipo: </b>{" "}
+                                    {getLabelByBankTransactionType(
+                                      item.bank.transaction_type
+                                    )}
+                                  </p>
+                                  <p>
+                                    <b>Cuenta: </b> {item.bank.bank_account}
+                                  </p>
+                                  <p>
+                                    <b>Monto: </b>{" "}
+                                    <span
+                                      style={{
+                                        color: "green",
+                                        fontWeight: "bold",
+                                      }}
+                                    >
+                                      {item.bank.amount}
+                                    </span>
+                                  </p>
+                                  <p style={{}}>
+                                    <b>Descripcion: </b> {item.bank.description}
+                                  </p>
+                                </label>
+                              </li>
+                            ))}
                           </ul>
                         </div>
                         <p>
@@ -1255,8 +1240,9 @@ const ConciliationForm = ({
           <button onClick={handleCloseForm}>Cancelar</button>
           <button
             className={`${bankBalance != diaryBalance ? "disabled" : ""}`}
-            disabled={bankBalance != diaryBalance ? true : false}
-            onClick={form.handleSubmit}
+            disabled={false}
+            type="button"
+            onClick={() => form.handleSubmit()}
           >
             Guardar
           </button>

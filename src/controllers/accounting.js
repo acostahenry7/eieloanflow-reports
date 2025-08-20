@@ -901,7 +901,7 @@ controller.getTransactionsFromBankFile = async (queryParams) => {
     });
     //console.log(bankId);
 
-    console.log("#### PROBANDO BHD", parseData);
+    //console.log("#### PROBANDO BHD", parseData);
     const formatedData = processTransactionsFormat(
       bankId,
       parseData,
@@ -947,7 +947,7 @@ controller.getTransactionsFromBankFile = async (queryParams) => {
       formatedData
     );
 
-    console.log(localTransactions.length);
+    //console.log(localTransactions.length);
 
     for (bt of formatedData) {
       const t = localTransactions.find(
@@ -979,6 +979,25 @@ controller.getTransactionsFromBankFile = async (queryParams) => {
     }
 
     //return comparedTrasactions;
+
+    const chargesTypes = ["servicio", "impuesto", "com.", "comisi", "reten"];
+    const bankCharges = result.manualRevisions.filter(
+      (item) =>
+        chargesTypes.some((c) =>
+          item.bank.description?.toLowerCase().includes(c.toLowerCase())
+        ) == true
+    );
+
+    const chargeFreeTransactions = result.manualRevisions.filter(
+      (item) =>
+        chargesTypes.some((c) =>
+          item.bank.description?.toLowerCase().includes(c.toLowerCase())
+        ) == false
+    );
+
+    result.manualRevisions = chargeFreeTransactions;
+    result.charges = bankCharges;
+
     result.transit = localTransactions.filter(
       (item) => item.status_type == "TRANSIT"
     );
