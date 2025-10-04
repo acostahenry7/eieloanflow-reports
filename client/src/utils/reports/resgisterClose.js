@@ -15,7 +15,7 @@ import { groupBy } from "lodash";
 import logo from "./images/logo";
 
 let colsWidth = [40, 70, 100, 127, 152, 184, 214, 237];
-let innerColsWidth = [30, 105, 180, 210, 240];
+let innerColsWidth = [20, 90, 160, 180, 210, 230];
 
 function generateReport(data, configParams) {
   //General Configuration Params
@@ -198,7 +198,14 @@ function generateReport(data, configParams) {
         `${
           new Date(innerItem.created_date).toLocaleString("es-Es").split(",")[0]
         }`,
-        left + innerColsWidth[4] + 15,
+        left + innerColsWidth[4] + 10,
+        top,
+        { align: "right" }
+      );
+
+      doc.text(
+        `${innerItem.status_type == "ENABLED" ? "Realizado" : "Cancelado"}`,
+        left + innerColsWidth[5] + 10,
         top,
         { align: "right" }
       );
@@ -297,6 +304,7 @@ function renderInnerTableHeader(doc, pos, top) {
   createSubTitle(doc, "Monto\nPago", pos + innerColsWidth[2], top - 2);
   createSubTitle(doc, "Tipo\nPago", pos + innerColsWidth[3], top - 2);
   createSubTitle(doc, "Fecha", pos + innerColsWidth[4], top);
+  createSubTitle(doc, "Estado", pos + innerColsWidth[5], top);
   // createSubTitle(doc, "Total\nTransferencia", pos + colsWidth[4], top - 2);
   // createSubTitle(doc, "Total\nDescuento", pos + colsWidth[5], top - 2);
   // createSubTitle(doc, "Total\nPagado", pos + colsWidth[6], top - 2);

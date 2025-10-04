@@ -104,6 +104,7 @@ function conciliarTransacciones(localTransactions, bankTransactions) {
       }
     } else {
       // No hay matches, requiere revisión manual
+
       manualRevisions.push({
         bank,
         is_conciliated: false,

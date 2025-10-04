@@ -998,9 +998,9 @@ controller.getTransactionsFromBankFile = async (queryParams) => {
     result.manualRevisions = chargeFreeTransactions;
     result.charges = bankCharges;
 
-    result.transit = localTransactions.filter(
-      (item) => item.status_type == "TRANSIT"
-    );
+    result.transit = result.unconciliated;
+    result.unconciliated = [];
+
     return result;
   } catch (error) {
     console.error(`Got an error trying to read the file: ${error.message}`);

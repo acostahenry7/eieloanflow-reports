@@ -338,6 +338,14 @@ function RegisterCloseCrud() {
         getPaymentTotalByType(filterData, "CHECK") +
         getPaymentTotalByType(filterData, "TRANSFER") -
         getTotalPaymentDiscount(filterData),
+
+      total_registered: currencyFormat(
+        filterData.reduce(
+          (acc, i) => acc + parseFloat(i.register.total_registered),
+          0
+        ),
+        false
+      ),
     },
     child: [],
   });

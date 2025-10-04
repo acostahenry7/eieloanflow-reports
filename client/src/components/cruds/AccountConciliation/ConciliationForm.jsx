@@ -47,6 +47,7 @@ const ConciliationForm = ({
   const [selectedBankTransactions, setSelectedBankTransactions] = useState([]);
   const [conciliatedTransactions, setConciliatedTransactions] = useState([]);
   const [transitTransactions, setTransitTransactions] = useState([]);
+  const [charges, setCharges] = useState([]);
   const [prevBalances, setPrevBalances] = useState([]);
   const loadersSize = 18;
 
@@ -516,6 +517,7 @@ const ConciliationForm = ({
       setData(res.body.unconciliated);
       setBankTransactions(res.body.manualRevisions);
       setConciliatedTransactions(res.body.conciliated);
+      setCharges(res.body.charges);
       setOriginalData(res.body);
       setTransitTransactions(res.body.transit);
       setIsSecondSectionLoading(false);
@@ -862,28 +864,7 @@ const ConciliationForm = ({
                                   .includes("reten")
                             ).length
                           }
-                          ) / Cargos bancarios (
-                          {
-                            bankTransactions.filter(
-                              (t) =>
-                                t.bank.description
-                                  .toLowerCase()
-                                  .includes("servicio") ||
-                                t.bank.description
-                                  .toLowerCase()
-                                  .includes("impuesto") ||
-                                t.bank.description
-                                  .toLowerCase()
-                                  .includes("com.") ||
-                                t.bank.description
-                                  .toLowerCase()
-                                  .includes("comisi") ||
-                                t.bank.description
-                                  .toLowerCase()
-                                  .includes("reten")
-                            ).length
-                          }
-                          )
+                          ) / Cargos bancarios ({charges.length})
                         </h4>
                         <div className="comparison-card">
                           <ul>
@@ -942,17 +923,10 @@ const ConciliationForm = ({
                         <p>
                           Total cargos{" "}
                           {currencyFormat(
-                            bankTransactions
-                              .filter(
-                                (t) =>
-                                  t.bank.description
-                                    .toLowerCase()
-                                    .includes("servicio") ||
-                                  t.bank.description
-                                    .toLowerCase()
-                                    .includes("impuesto")
-                              )
-                              .reduce((acc, i) => acc + i.bank.amount, 0)
+                            charges.reduce(
+                              (acc, i) => acc + parseFloat(i.bank.amount),
+                              0
+                            )
                           )}
                         </p>
                       </div>
