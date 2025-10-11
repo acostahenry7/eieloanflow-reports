@@ -314,6 +314,7 @@ function RegisterCloseCrud() {
     };
     let arr = [...filterData];
     //arr.shift();
+    console.log(arr);
 
     generateReport(arr, conf);
   };

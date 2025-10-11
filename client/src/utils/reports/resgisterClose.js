@@ -99,10 +99,7 @@ function generateReport(data, configParams) {
     );
 
     doc.text(
-      `${currencyFormat(
-        parseFloat(item.register.total_registered) || item.register.total_pay,
-        false
-      )}`,
+      `${currencyFormat(item.register.total_pay, false)}`,
       left + colsWidth[6] + 13,
       top,
       { align: "right" }
@@ -286,7 +283,7 @@ function renderTableHeader(doc, pos, top) {
   createSubTitle(doc, "Total\nCheques", pos + colsWidth[3], top - 2);
   createSubTitle(doc, "Total\nTransferencia", pos + colsWidth[4], top - 2);
   createSubTitle(doc, "Total\nDescuento", pos + colsWidth[5], top - 2);
-  createSubTitle(doc, "Total\nPagado", pos + colsWidth[6], top - 2);
+  createSubTitle(doc, "Total\nCobrado", pos + colsWidth[6], top - 2);
   createSubTitle(doc, "Fecha\nApertura", pos + colsWidth[7], top - 2);
 
   // pos += colsWidth[2];

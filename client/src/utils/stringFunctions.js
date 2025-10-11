@@ -253,6 +253,7 @@ function getPaymentControlHistoryLabel(key) {
 }
 
 export function getPaymentTotalByType(arr, type) {
+  if (arr.length == 0) return;
   let totalCash = 0;
   arr.map(function (item) {
     item.child
