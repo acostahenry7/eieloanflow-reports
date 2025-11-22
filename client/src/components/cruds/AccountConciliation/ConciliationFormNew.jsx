@@ -420,6 +420,7 @@ const ConciliationFormNew = ({ isPrevData, setIsFormOpened }) => {
           >
             <div>Fecha</div>
             <div>No. diario</div>
+            <div>Ref. banco</div>
             <div>Monto</div>
             <div style={{ flexGrow: 2 }}>Descripción</div>
             <div>Tipo de transacción</div>
@@ -442,6 +443,7 @@ const ConciliationFormNew = ({ isPrevData, setIsFormOpened }) => {
               >
                 <div>{dt.target_date.split("-").reverse().join("/")}</div>
                 <div>{dt.general_diary_number_id}</div>
+                <div>{dt.reference_bank}</div>
                 <div>{dt.amount}</div>
                 <div style={{ flexGrow: 2 }}>{dt.description}</div>
                 <div>{getLabelByTransactionType(dt.transaction_type)}</div>
