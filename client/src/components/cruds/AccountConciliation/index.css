@@ -121,3 +121,54 @@
 button.disabled {
   background-color: rgba(0, 0, 0, 0.3);
 }
+
+/* ACCOUNT CONCILIATION */
+
+.conciliation_form_group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.conciliation_form_group input,
+.conciliation_form_group select {
+  height: 2.5rem;
+  margin-top: 8px;
+  border-radius: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  padding: 0 1rem;
+  background-color: white;
+}
+
+.conciliation_form_group input:focus,
+.conciliation_form_group select:focus {
+  border: 2px solid rgb(67, 146, 192);
+  outline: none;
+}
+
+.manual_conciliation_item {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 12px;
+  font-size: 14px;
+}
+
+.manual_conciliation_item:nth-child(odd) {
+  background-color: #fafafa;
+}
+.manual_conciliation_item div {
+  flex: 1;
+}
+
+.manual_conciliation_item.checked {
+  background-color: rgb(190, 255, 226);
+}
+
+.manual_conciliation_button {
+  border: none;
+  font-weight: bold;
+  padding: 8px;
+  border-radius: 8px;
+  margin-top: 12px;
+  cursor: pointer;
+}
