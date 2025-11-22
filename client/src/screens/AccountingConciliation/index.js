@@ -184,17 +184,31 @@ import { AccountConciliationCrud } from "../../components/cruds/AccountConciliat
 
 function AccountingConciliation() {
   const [isFormOpened, setIsFormOpened] = useState(false);
+  const [isManualFormOpened, setIsManualFormOpened] = useState(false);
+  const [isManual, setIsManual] = useState(false);
   return (
     <div className="">
       <TopBar
         title="Conciliación bancaria"
         buttonTitle={"Nueva conciliacion"}
-        btnOnClick={() => setIsFormOpened(true)}
+        btnOnClick={() => {
+          if (isManual) {
+            setIsManualFormOpened(true);
+          } else {
+            setIsFormOpened(true);
+          }
+        }}
+        onManual={(e) => {
+          setIsManual(e.target.checked);
+        }}
+        isConciliation={true}
       />
       <div className="screen-content">
         <AccountConciliationCrud
           isFormOpened={isFormOpened}
           setIsFormOpened={setIsFormOpened}
+          isManualFormOpened={isManualFormOpened}
+          setIsManualFormOpened={setIsManualFormOpened}
         />
       </div>
     </div>

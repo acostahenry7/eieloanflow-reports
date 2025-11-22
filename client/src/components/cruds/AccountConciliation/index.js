@@ -23,8 +23,15 @@ import ConciliationForm from "./ConciliationForm";
 import PopoverMenu from "../../PopoverMenu";
 import {} from "react-icons/bi";
 import { BsEye, BsTrash } from "react-icons/bs";
+import ConciliationFormNew from "./ConciliationFormNew";
+import { getFormatedDate } from "../../../utils/dateFunctions";
 
-function AccountConciliationCrud({ isFormOpened, setIsFormOpened }) {
+function AccountConciliationCrud({
+  isFormOpened,
+  setIsFormOpened,
+  isManualFormOpened,
+  setIsManualFormOpened,
+}) {
   const [outlets, setOutlets] = React.useState([]);
   const [accounts, setAccounts] = React.useState([]);
   const [data, setData] = React.useState([]);
@@ -83,7 +90,9 @@ function AccountConciliationCrud({ isFormOpened, setIsFormOpened }) {
       width: "250px",
       selector: (row) => (
         <p style={{ margin: 0, fontWeight: 500 }}>
-          {new Date(row.start_date).toLocaleString({})}
+          <span>{getFormatedDate(row.start_date)}</span>
+          {" - "}
+          <span>{getFormatedDate(row.end_date)}</span>
         </p>
       ),
       sortable: true,
@@ -112,10 +121,11 @@ function AccountConciliationCrud({ isFormOpened, setIsFormOpened }) {
       // width: tableUIHelper.columns.width.amount,
       selector: (row) =>
         currencyFormat(
-          row.bankTransactions.reduce(
-            (acc, i) => acc + parseFloat(i.amount),
-            0
-          ),
+          row.bankTransactions.reduce((acc, item) => {
+            return item.transaction_type == "ENTRY"
+              ? acc + parseFloat(item.amount)
+              : acc - parseFloat(item.amount);
+          }, 0),
           false
         ),
       sortable: true,
@@ -383,6 +393,17 @@ function AccountConciliationCrud({ isFormOpened, setIsFormOpened }) {
           prevData={currentItem}
           isFormOpened={isFormOpened}
           setIsFormOpened={setIsFormOpened}
+          setPrevData={setCurrentItem}
+          onRefetch={() => {
+            setReqToggle((prev) => !prev);
+          }}
+        />
+      )}
+
+      {isManualFormOpened && (
+        <ConciliationFormNew
+          prevData={currentItem}
+          setIsFormOpened={setIsManualFormOpened}
           setPrevData={setCurrentItem}
           onRefetch={() => {
             setReqToggle((prev) => !prev);

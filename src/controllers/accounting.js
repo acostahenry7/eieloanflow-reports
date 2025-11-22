@@ -835,7 +835,11 @@ controller.getBankDiaryTransactions = async (queryParams) => {
       `
     );
 
-    const transactions = checkPayment.concat(...bankEntryRetire);
+    const transactions = bankEntryRetire
+      .concat(...checkPayment)
+      .sort((a, b) => new Date(a.target_date) - new Date(b.target_date));
+
+    console.log(transactions[0], transactions[1]);
 
     const totalIn = transactions
       .filter((i) => i.transaction_type === "ENTRY")
@@ -1024,7 +1028,9 @@ controller.createConciliation = async (data) => {
       created_date,
       last_modified_date,
       status_type,
-      outlet_id)
+      outlet_id, 
+      bank_balance, 
+      prev_diary_balance)
   VALUES('${conciliationId}',
     '${data.description}',
     '${data.dateFrom}',
@@ -1034,9 +1040,11 @@ controller.createConciliation = async (data) => {
     '${currentDate}',
     '${currentDate}',
     'ENABLED',
-    '${data.outletId}')`;
+    '${data.outletId}',
+    '${data.bankBalance}',
+    '${data.diaryBalance}')`;
 
-    console.log(data);
+    console.log(data.transactions[0]);
     //Statements excution
     await db.query(conciliationStm);
     let conciliationDetailStm = "";
@@ -1055,14 +1063,18 @@ controller.createConciliation = async (data) => {
         VALUES (
           '${uuid()}',
           '${conciliationId}',
-          '${t.bank?.amount || 0}',
-          '${t.bank?.description.trim() || ""}',
-          '${t.bank?.transaction_type || ""}',
-          '${t.local[0]?.bank_account_id}',
-          ${t.bank?.date ? "'" + t.bank?.date + "'" : null},
+          '${t.bank?.amount || t.local.amount}',
+          '${t.bank?.description?.trim() || "Manual Revision"}',
+          '${t.bank?.transaction_type || t.local.transaction_type}',
+          '${t.local[0]?.bank_account_id || t.local.bank_account_id}',
+          ${
+            t.bank?.date
+              ? "'" + t.bank?.date + "'"
+              : "'" + `${t.local.target_date}T00:00:00` + "'"
+          },
           '${true}',
           '${null}',
-          '${JSON.stringify(t.local)}')`;
+          '${JSON.stringify([t.local])}')`;
 
       await db.query(conciliationDetailStm);
     }
@@ -1104,6 +1116,8 @@ controller.getConciliations = async (queryParams) => {
         outlet_id: items[0].outlet_id,
         outlet_name: items[0].outlet_name,
         amount: items[0].amount,
+        bank_balance: parseFloat(items[0].bank_balance),
+        prev_diary_balance: parseFloat(items[0].prev_diary_balance),
         status:
           items?.every((item) => item.is_conciliated == true) == true
             ? "Completada"

@@ -16,6 +16,9 @@ import { getLoanTypeLabel, getLoanSituationLabel } from "../stringFunctions";
 let colsWidth = [40, 80, 135, 162, 190, 215, 240];
 
 function generateReport(data, configParams) {
+  const isManual =
+    data.bankTransactions[0].transaction_description.includes("Manual");
+
   //General Configuration Params
   //-------Layout--------
   let headerTop = 20;
@@ -57,19 +60,20 @@ function generateReport(data, configParams) {
     headerTop + 10
   );
 
-  console.log(data.bankTransactions);
   let totalBankBalance = data.bankTransactions.reduce(
     (acc, i) =>
-      i.transaction_type == "CR"
+      i.transaction_type == "CR" || i.transaction_type == "ENTRY"
         ? acc + parseFloat(i.amount)
         : acc - parseFloat(i.amount),
     0
   );
 
+  console.log(data.bankTransactions[0].transactions[0].description);
+
   createTitle(doc, "Balance en Banco", left, headerTop + 10);
   createSubTitle(
     doc,
-    currencyFormat(totalBankBalance),
+    currencyFormat(isManual ? data.bank_balance : totalBankBalance),
     left + 43,
     headerTop + 10
   );
@@ -98,7 +102,7 @@ function generateReport(data, configParams) {
   transitDeposits.map((deposit) => {
     doc.text(`${deposit.target_date}`, left, top);
     doc.text(
-      `${currencyFormat(deposit.diary_amount, false)}`,
+      `${currencyFormat(deposit.amount, false)}`,
       left + colsWidth[0],
       top
     );
@@ -108,7 +112,7 @@ function generateReport(data, configParams) {
   top += 5;
   createSubTitle(doc, "Total", left, top);
   const totalTransitDeposits = transitDeposits.reduce(
-    (acc, i) => acc + parseFloat(i.diary_amount),
+    (acc, i) => acc + parseFloat(i.amount),
     0
   );
   doc.text(`${currencyFormat(totalTransitDeposits)}`, left + 15, top);
@@ -139,7 +143,7 @@ function generateReport(data, configParams) {
   transitChecks.map((deposit) => {
     doc.text(`${deposit.target_date}`, left, top);
     doc.text(
-      `${currencyFormat(deposit.diary_amount, false)}`,
+      `${currencyFormat(deposit.amount, false)}`,
       left + colsWidth[0],
       top
     );
@@ -149,7 +153,7 @@ function generateReport(data, configParams) {
   top += 5;
   createSubTitle(doc, "Total", left, top);
   const totalTransitChecks = transitChecks.reduce(
-    (acc, i) => acc + parseFloat(i.diary_amount),
+    (acc, i) => acc + parseFloat(i.amount),
     0
   );
   doc.text(`${currencyFormat(totalTransitChecks)}`, left + 15, top);
@@ -165,7 +169,11 @@ function generateReport(data, configParams) {
   );
   doc.text(
     currencyFormat(
-      `${totalBankBalance + totalTransitDeposits - totalTransitChecks}`
+      `${
+        (isManual ? data.bank_balance : totalBankBalance) +
+        totalTransitDeposits -
+        totalTransitChecks
+      }`
     ),
     100,
     top
@@ -178,15 +186,20 @@ function generateReport(data, configParams) {
       allLocalTransactions.push(t);
     });
   });
+
+  console.log(allLocalTransactions);
   doc.text(
     currencyFormat(
-      `${allLocalTransactions.reduce(
-        (acc, i) =>
-          i.transaction_type == "ENTRY"
-            ? acc + parseFloat(i.diary_amount)
-            : acc - parseFloat(i.diary_amount),
-        0
-      )}`
+      `${
+        data.prev_diary_balance +
+        allLocalTransactions.reduce(
+          (acc, i) =>
+            i.transaction_type == "ENTRY"
+              ? acc + parseFloat(i.amount)
+              : acc - parseFloat(i.amount),
+          0
+        )
+      }`
     ),
     100,
     top

@@ -31,4 +31,12 @@ function daysInMonth(n) {
   return days;
 }
 
-export { getPreviousDateByDays, daysInMonth };
+function getFormatedDate(date, IntlFormat = "es-DO") {
+  return new Date(date).toLocaleDateString(IntlFormat, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+export { getPreviousDateByDays, daysInMonth, getFormatedDate };
