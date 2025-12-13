@@ -14,6 +14,8 @@ import { currencyFormat } from "../../../utils/reports/report-helpers";
 import { BiCheck } from "react-icons/bi";
 import { getLabelByTransactionType } from "../../../utils/stringFunctions";
 import "./index.css";
+import { Datatable } from "../../Datatable";
+import { dtCustomSort } from "../../../utils/datatable-helpers";
 
 const ConciliationFormNew = ({ isPrevData, setIsFormOpened }) => {
   const { auth } = React.useContext(AuthContext);
@@ -214,7 +216,10 @@ const ConciliationFormNew = ({ isPrevData, setIsFormOpened }) => {
   const filteredTransactions = diaryTransactions
     .filter((item) => {
       const date = item.target_date.split("-").reverse().join("");
-      const matchText = item?.description?.toLowerCase() + date.toLowerCase();
+      const matchText =
+        item?.description?.toLowerCase() +
+        date.toLowerCase() +
+        currencyFormat(item?.amount).toLowerCase();
 
       return matchText?.includes(searchedText.toLowerCase());
     })
@@ -407,7 +412,7 @@ const ConciliationFormNew = ({ isPrevData, setIsFormOpened }) => {
             />
           </div>
         </div>
-        <div style={{ borderRadius: 20, overflowX: "hidden", maxHeight: 420 }}>
+        {/* <div style={{ borderRadius: 20, overflowX: "hidden", maxHeight: 420 }}>
           <div
             className="manual_conciliation_item"
             style={{
@@ -471,7 +476,90 @@ const ConciliationFormNew = ({ isPrevData, setIsFormOpened }) => {
               </div>
             );
           })}
-        </div>
+        </div> */}
+        <Datatable
+          columns={[
+            {
+              name: "Fecha",
+              width: "140px",
+              selector: (row) => row.target_date.split("-").reverse().join("/"),
+              sortable: true,
+              reorder: true,
+              omit: false,
+            },
+            {
+              name: "No.diario",
+              width: "140px",
+              selector: (row) => row.general_diary_number_id,
+              sortFunction: dtCustomSort((row) => row.general_diary_number_id),
+              sortable: true,
+              reorder: true,
+              omit: false,
+            },
+            {
+              name: "Ref. banco",
+              width: "140px",
+              selector: (row) => row.reference_bank,
+              sortFunction: dtCustomSort((row) => row.reference_bank),
+              sortable: true,
+              reorder: true,
+              omit: false,
+            },
+            {
+              name: "Monto",
+              width: "220px",
+              selector: (row) => currencyFormat(row.amount, false),
+              sortFunction: dtCustomSort((row) => row.amount),
+              sortable: true,
+              reorder: true,
+              omit: false,
+            },
+            {
+              name: "Descripcion",
+              width: "400px",
+              selector: (row) => row.description,
+              sortable: true,
+              reorder: true,
+              omit: false,
+            },
+            {
+              name: "Tipo de transaccion",
+              width: "220px",
+              selector: (row) =>
+                getLabelByTransactionType(row.transaction_type),
+              sortable: true,
+              reorder: true,
+              omit: false,
+            },
+            {
+              name: "Conciliado",
+              width: "220px",
+              selector: (row) => {
+                const isChecked = checkedItems.includes(row.transaction_id);
+                return (
+                  <span
+                    style={{ cursor: "pointer", marginRight: 20 }}
+                    onClick={() => handleCheck(row.transaction_id)}
+                  >
+                    <BiCheck
+                      color={isChecked ? "white" : "green"}
+                      size={20}
+                      style={{
+                        background: isChecked ? "green" : "transparent",
+                        borderRadius: "50%",
+                        padding: 2,
+                      }}
+                    />
+                  </span>
+                );
+              },
+              sortable: true,
+              reorder: true,
+              omit: false,
+            },
+          ]}
+          data={filteredTransactions}
+        />
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
           <button
             className="manual_conciliation_button"

@@ -22,7 +22,7 @@ const Modal = ({ children }) => {
         style={{
           backgroundColor: "white",
           minHeight: "80vh",
-          width: "80vw",
+          width: "85vw",
           borderRadius: 12,
           boxSizing: "border-box",
           padding: 20,
